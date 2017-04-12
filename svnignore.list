@@ -1,0 +1,7 @@
+*.gcno
+*.gcda
+*.gcov
+core.*
+core
+vgcore.*
+tags
