@@ -21,6 +21,7 @@ class GenericsPrettyPrinter:
             "G_BOOL_T":  str(v['boolean']),
             "G_VECTOR_T": str(v['ptr']),
             "G_DICT_T":   str(v['ptr']),
+            "G_MCHUNK_T": str(v['ptr']),
         }.get(str(t), "unknown") + "}"
 
 def print_generic_t(val):

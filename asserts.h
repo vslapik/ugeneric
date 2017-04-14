@@ -48,8 +48,9 @@
 #define ASSERT_NO_ERROR(g) do {                                             \
     if (G_IS_ERROR(g))                                                      \
     {                                                                       \
-        fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__, G_AS_STR(g));    \
+        fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__, G_AS_STR(g));     \
         ufree(G_AS_STR(g));                                                 \
+        print_trace();                                                      \
         abort();                                                            \
     }                                                                       \
 } while (0)
