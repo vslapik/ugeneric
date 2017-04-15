@@ -1,3 +1,5 @@
+https://travis-ci.org/vslapik/ugeneric.svg?branch=master
+
 The library is a pile of code around concept of generic data item represented by 'generic_t' type. It is not well structured, not well tested, not production ready, contains a lot of bugs, lacks UT coverage, lacks documentation and has no clear development roadmap. However I'd love to fix all above sooner or later and keep this repository as a set of reusable pieces of code for my other projects. The library routines are not supposed to be super fast but rather convenient to use. Also there is no clear library boundaries, it is just rather scattered files which can be separately copied in another project to provide some pieces of functionality. Below some random notes instead of documentation which is apparently missing so far.
 
 The generic_t is a tagged union capable to represent most of the widely used C data types (for sure at some added cost). There are primitive types which can be wrapped by generic_t (like signed/unsigned integers, strings, booleans, pointers) and two composite types:
