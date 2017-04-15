@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     generic_t g;
     generic_t gr = file_reader_create("ttt", atoi(argv[1]));
     ASSERT_NO_ERROR(gr);
-    generic_t gw = file_writer_create("ttt2", atoi(argv[1]));
+    generic_t gw = file_writer_create("ttt2");
     ASSERT_NO_ERROR(gw);
 
     file_reader_t *fr = G_AS_PTR(gr);

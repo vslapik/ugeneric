@@ -196,7 +196,7 @@ generic_t file_reader_destroy(file_reader_t *fr)
     return g;
 }
 
-generic_t file_writer_create(const char *path, size_t buffer_size)
+generic_t file_writer_create(const char *path)
 {
     ASSERT_INPUT(path);
 
