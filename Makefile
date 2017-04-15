@@ -2,8 +2,9 @@ lib = libugeneric.a
 CC = gcc
 #CC = clang
 PFALGS = -fprofile-arcs -ftest-coverage
-CFLAGS = -I. -g -O0 -Wall -Wextra -Winline -pedantic -std=c11 -rdynamic -DENABLE_ASSERT_INPUT
-#CFLAGS = -I. -g -O3 -Wall -Wextra -Winline -pedantic -rdynamic -std=c11
+CFLAGS_COMMON=-I. -g -Wall -Wextra -Winline -pedantic -rdynamic -std=c99
+CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_ASSERT_INPUT
+#CFLAGS = $(CFLAGS_COMMON) -O3
 VFLAGS = -q --child-silent-after-fork=yes --leak-check=full --error-exitcode=3
 
 src = generic.c stack.c vector.c queue.c heap.c list.c graph.c bitmap.c sort.c string_utils.c file_utils.c bst.c mem.c dsu.c buffer.c dict.c htbl.c deque.c
