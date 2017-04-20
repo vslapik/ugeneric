@@ -18,6 +18,41 @@ struct file_writer_opaq {
     size_t write_offset;
 };
 
+generic_t _get_file_size(FILE *f, bool save_pos)
+{
+    long saved_pos;
+
+    if (save_pos)
+    {
+        saved_pos = ftell(f);
+        if (saved_pos == -1)
+        {
+            return G_ERROR_IO;
+        }
+    }
+
+    if (fseek(f, 0, SEEK_END) == -1)
+    {
+        return G_ERROR_IO;
+    }
+
+    long fsize = ftell(f);
+    if (fsize == -1)
+    {
+        return G_ERROR_IO;
+    }
+
+    if (save_pos)
+    {
+        if (fseek(f, saved_pos, SEEK_SET) == -1)
+        {
+            return G_ERROR_IO;
+        }
+    }
+
+    return G_SIZE(fsize);
+}
+
 generic_t file_get_size(const char *path)
 {
     ASSERT_INPUT(path);
@@ -29,23 +64,14 @@ generic_t file_get_size(const char *path)
     }
 
     FILE *f = G_AS_PTR(g);
-    if (fseek(f, 0, SEEK_END) != 0)
-    {
-        return G_ERROR_IO;
-    }
-
-    long fsize = ftell(f);
-    if (fsize == -1)
-    {
-        return G_ERROR_IO;
-    }
+    g = _get_file_size(f, false);
 
     if (fclose(f) != 0)
     {
         return G_ERROR_IO;
     }
 
-    return G_SIZE(fsize);
+    return g;
 }
 
 generic_t file_read_to_string(const char *path)
@@ -148,7 +174,7 @@ generic_t file_reader_create(const char *path, size_t buffer_size)
     fr->file = G_AS_PTR(g);
     fr->read_offset = 0;
 
-    if (G_IS_ERROR(g = file_get_size(path)))
+    if (G_IS_ERROR(g = _get_file_size(fr->file, true)))
     {
         return g;
     }
@@ -196,6 +222,12 @@ generic_t file_reader_destroy(file_reader_t *fr)
     return g;
 }
 
+generic_t file_reader_get_size(file_reader_t *fr)
+{
+    ASSERT_INPUT(fr);
+    return _get_file_size(fr->file, true);
+}
+
 generic_t file_writer_create(const char *path)
 {
     ASSERT_INPUT(path);
@@ -209,16 +241,13 @@ generic_t file_writer_create(const char *path)
     fw->file = G_AS_PTR(g);
     fw->write_offset = 0;
 
-    if (G_IS_ERROR(g = file_get_size(path)))
-    {
-        return g;
-    }
-
     return G_PTR(fw);
 }
 
 generic_t file_writer_write_next(file_writer_t *fw, memchunk_t mchunk)
 {
+    ASSERT_INPUT(fw);
+
     size_t size = fwrite(mchunk.data, 1, mchunk.size, fw->file);
     fw->write_offset += size;
 
@@ -229,6 +258,12 @@ generic_t file_writer_write_next(file_writer_t *fw, memchunk_t mchunk)
     }
 
     return G_NULL;
+}
+
+generic_t file_writer_get_size(file_writer_t *fw)
+{
+    ASSERT_INPUT(fw);
+    return G_SIZE(fw->write_offset);
 }
 
 generic_t file_writer_destroy(file_writer_t *fw)

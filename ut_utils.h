@@ -33,6 +33,18 @@
     }                                                                       \
 } while (0)
 
+#define ASSERT_SIZE_EQ(sz1, sz2) do {                                       \
+    size_t __sz1 = (sz1);                                                   \
+    size_t __sz2 = (sz2);                                                   \
+    if (__sz1 != __sz2)                                                     \
+    {                                                                       \
+        fprintf(stderr, "Assertion failed at %s:%d: %zd != %zd.\n",         \
+                __FILE__, __LINE__, __sz1, __sz2);                          \
+        print_trace();                                                      \
+        abort();                                                            \
+    }                                                                       \
+} while (0)
+
 #define ASSERT_ABORTS(s) do {                                               \
     pid_t pid = fork();                                                     \
     if (pid == 0)                                                           \
