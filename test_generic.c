@@ -2,6 +2,7 @@
 #include <string.h>
 #include "generic.h"
 #include "dict.h"
+#include "vector.h"
 #include "mem.h"
 #include "asserts.h"
 #include "file_utils.h"
@@ -9,11 +10,31 @@
 
 void test_types(void)
 {
-    generic_t g;
-    g = G_INT(0);
-    ASSERT(G_IS_INT(g));
+    generic_t g_integer = G_INT(333);
+    generic_t g_real = G_REAL(33.33);
+    generic_t g_string = G_STR(string_dup("hello ugeneric"));
+    generic_t g_cstring = G_STR("hello constant ugeneric");
+    generic_t g_size = G_SIZE(123412341);
+    generic_t g_null = G_NULL;
+    generic_t g_true = G_TRUE;
+    generic_t g_false = G_FALSE;
+    generic_t g_vector = G_VECTOR(vector_create_empty());
+    generic_t g_dict = G_DICT(dict_create(DICT_BACKEND_DEFAULT));
 
-    g = G_MCHUNK(&g, sizeof(g));
+    ASSERT(G_IS_INT(g_integer));
+    ASSERT(G_IS_REAL(g_real));
+    ASSERT(G_IS_STR(g_string));
+    ASSERT(G_IS_CSTR(g_cstring));
+    ASSERT(G_IS_STRING(g_cstring));
+    ASSERT(G_IS_STRING(g_string));
+    ASSERT(G_IS_SIZE(g_size));
+    ASSERT(G_IS_NULL(g_null));
+    ASSERT(G_IS_TRUE(g_true));
+    ASSERT(G_IS_FALSE(g_false));
+    ASSERT(G_IS_VECTOR(g_vector));
+    ASSERT(G_IS_DICT(g_dict));
+
+    generic_t g = G_MCHUNK(&g, sizeof(g));
     ASSERT(G_IS_MCHUNK(g));
     ASSERT(G_AS_MCHUNK_DATA(g) == &g);
     ASSERT(G_AS_MCHUNK_SIZE(g) == sizeof(g));
@@ -21,6 +42,10 @@ void test_types(void)
     char *str = memchunk_as_str(t);
     ASSERT_STR_EQ("31323334ff", str);
     ufree(str);
+
+    generic_destroy(g_vector, NULL);
+    generic_destroy(g_dict, NULL);
+    generic_destroy(g_string, NULL);
 }
 
 void test_generic(void)

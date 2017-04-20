@@ -10,22 +10,24 @@
 #include "asserts.h"
 
 typedef enum {
-    G_ERROR_T = 0,      // Error object.
-    G_NULL_T,           // null, None, NULL, nil, whatever ...
-    G_PTR_T,            // Generic data, no size information.
-    G_STR_T,            // Reference to a string.
-    G_CSTR_T,           // Reference to a constant string.
-    G_INT_T,            // Signed integer value (long).
-    G_REAL_T,           // Real value (double).
-    G_SIZE_T,           // Unsigned integer value (size_t).
-    G_BOOL_T,           // Boolean (G_TRUE or G_FALSE).
-    G_VECTOR_T,         // Dynamically resizable array of generics.
-    G_DICT_T,           // Associative array of generics.
+    G_ERROR_T   = 0,    // Error object.
+    G_NULL_T    = 1,    // null, None, NULL, nil, whatever ...
+    G_PTR_T     = 2,    // Generic data pointer, no size information.
+    G_STR_T     = 3,    // Reference to a string.
+    G_CSTR_T    = 4,    // Reference to a constant string.
+    G_INT_T     = 5,    // Signed integer value (long).
+    G_REAL_T    = 6,    // Real value (double).
+    G_SIZE_T    = 7,    // Unsigned integer value (size_t).
+    G_BOOL_T    = 8,    // Boolean (G_TRUE or G_FALSE).
+    G_VECTOR_T  = 9,    // Dynamically resizable array of generics.
+    G_DICT_T   = 10,    // Associative array of generics.
+
     /*
-     * G_MCHUNK_T should be the last in the list, values
-     * greater than G_MCHUNK_T represent size of mchunk.
+     * G_MCHUNK_T should be the last in the list, values greater than
+     * G_MCHUNK_T represent size of mchunk. Value of G_MCHUNK_T
+     * essentially represents memory chunk of exactly 0 size.
      */
-    G_MCHUNK_T,         // Reference to a chunk of memory.
+    G_MCHUNK_T = 11,    // Reference to a chunk of memory.
 } generic_type_e;
 
 /*
@@ -69,13 +71,9 @@ static inline generic_type_e generic_get_type(generic_t g)
 }
 
 #define G_NULL         ((generic_t){.type.type = G_NULL_T})
-#define G_TRUE         ((generic_t){.type.type = G_BOOL_T,             \
-                                    .value = {.boolean = true}})
+
 #define G_ERROR(v)     ((generic_t){.type.type = G_ERROR_T,            \
                                     .value = {.str = (v)}})
-#define G_FALSE        ((generic_t){.type.type = G_BOOL_T,             \
-                                    .value = {.boolean = false}})
-
 #define G_PTR(v)       ((generic_t){.value = {.ptr = (v)},             \
                                     .type.type = G_PTR_T})
 #define G_STR(v)       ((generic_t){.value = {.str = (v)},             \
@@ -95,6 +93,10 @@ static inline generic_type_e generic_get_type(generic_t g)
 
 #define G_MCHUNK(p, s) ((generic_t){.value = {.ptr = (p)},             \
                                     .type.size = s + G_MCHUNK_T})
+#define G_TRUE         ((generic_t){.type.type = G_BOOL_T,             \
+                                    .value = {.boolean = true}})
+#define G_FALSE        ((generic_t){.type.type = G_BOOL_T,             \
+                                    .value = {.boolean = false}})
 
 #define G_AS_INT(g)    ((g).value.integer)
 #define G_AS_REAL(g)   ((g).value.real)
@@ -113,6 +115,7 @@ static inline bool G_IS_NULL(generic_t g)  {return g.type.type == G_NULL_T;}
 static inline bool G_IS_PTR(generic_t g)   {return g.type.type == G_PTR_T;}
 static inline bool G_IS_STR(generic_t g)   {return g.type.type == G_STR_T;}
 static inline bool G_IS_CSTR(generic_t g)  {return g.type.type == G_STR_T;}
+static inline bool G_IS_STRING(generic_t g){return G_IS_CSTR(g) || G_IS_STR(g);}
 static inline bool G_IS_INT(generic_t g)   {return g.type.type == G_INT_T;}
 static inline bool G_IS_REAL(generic_t g)  {return g.type.type == G_REAL_T;}
 static inline bool G_IS_SIZE(generic_t g)  {return g.type.type == G_SIZE_T;}
@@ -152,9 +155,10 @@ size_t generic_bsearch(generic_t *base, size_t nmembs, generic_t e,
 
 int random_from_range(int start, int stop);
 
-
+// MAX and MIN are Not side-effect free, be cautious.
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 #define ARR_LEN(a) sizeof(a)/sizeof(a[0])
 
 #define SCALE_FACTOR 2

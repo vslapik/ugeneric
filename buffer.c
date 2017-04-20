@@ -1,17 +1,16 @@
 #include <string.h>
 #include <stdint.h>
+#include "generic.h"
 #include "mem.h"
 #include "buffer.h"
 #include "asserts.h"
-
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 static void _reserve_capacity(buffer_t *buf, size_t new_capacity)
 {
     if (buf->capacity < new_capacity)
     {
         new_capacity = MAX(new_capacity * BUFFER_SCALE_FACTOR,
-                              BUFFER_INITIAL_CAPACITY);
+                           BUFFER_INITIAL_CAPACITY);
         void *p = urealloc(buf->data, new_capacity);
         buf->data = p;
         buf->capacity = new_capacity;
