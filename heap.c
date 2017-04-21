@@ -11,7 +11,6 @@
 
 struct heap_opaq {
     vector_t *data;
-    void_cmp_t cmp;
 };
 
 heap_t *heap_create(void)
@@ -52,9 +51,10 @@ void heap_push(heap_t *h, generic_t e)
     generic_t *a = vector_get_cells(h->data);
     size_t i = vector_get_size(h->data) - 1;
 
+    void_cmp_t cmp = vector_get_comparator(h->data);
     while (i != ROOT_IDX)
     {
-        if (generic_compare(a[i], a[PARENT_IDX(i)], h->cmp) < 0)
+        if (generic_compare(a[i], a[PARENT_IDX(i)], cmp) < 0)
         {
             vector_swap(h->data, i, PARENT_IDX(i));
             i = PARENT_IDX(i);
@@ -84,17 +84,18 @@ generic_t heap_pop(heap_t *h)
         vector_set_at(h->data, 0, e1);
         generic_t *a = vector_get_cells(h->data);
 
+        void_cmp_t cmp = vector_get_comparator(h->data);
         while (l < n || r < n)
         {
             if (r < n)
             {
                 t = LCHILD_IDX(i);
-                if (generic_compare(a[l], a[r], h->cmp) > 0)
+                if (generic_compare(a[l], a[r], cmp) > 0)
                 {
                     t = RCHILD_IDX(i);
                 }
             }
-            if (generic_compare(a[i], a[t], h->cmp) > 0)
+            if (generic_compare(a[i], a[t], cmp) > 0)
             {
                 vector_swap(h->data, i, t);
                 i = t;
@@ -128,4 +129,52 @@ bool heap_is_empty(const heap_t *h)
 {
     ASSERT_INPUT(h);
     return (vector_get_size(h->data) == 0);
+}
+
+void heap_take_data_ownership(heap_t *h)
+{
+    ASSERT_INPUT(h);
+    vector_take_data_ownership(h->data);
+}
+
+void heap_drop_data_ownership(heap_t *h)
+{
+    ASSERT_INPUT(h);
+    vector_drop_data_ownership(h->data);
+}
+
+void heap_set_destroyer(heap_t *h, void_dtr_t dtr)
+{
+    ASSERT_INPUT(h);
+    vector_set_destroyer(h->data, dtr);
+}
+
+void heap_set_comparator(heap_t *h, void_cmp_t cmp)
+{
+    ASSERT_INPUT(h);
+    vector_set_comparator(h->data, cmp);
+}
+
+void heap_set_copier(heap_t *h, void_cpy_t cpy)
+{
+    ASSERT_INPUT(h);
+    vector_set_copier(h->data, cpy);
+}
+
+void_dtr_t heap_get_destroyer(const heap_t *h)
+{
+    ASSERT_INPUT(h);
+    return vector_get_destroyer(h->data);
+}
+
+void_cmp_t heap_get_comparator(const heap_t *h)
+{
+    ASSERT_INPUT(h);
+    return vector_get_comparator(h->data);
+}
+
+void_cpy_t heap_get_copier(const heap_t *h)
+{
+    ASSERT_INPUT(h);
+    return vector_get_copier(h->data);
 }

@@ -16,4 +16,13 @@ size_t heap_get_size(const heap_t *h);
 bool heap_is_empty(const heap_t *h);
 generic_t heap_peek(const heap_t *h);
 
+void heap_take_data_ownership(heap_t *h);
+void heap_drop_data_ownership(heap_t *h);
+void heap_set_destroyer(heap_t *h, void_dtr_t dtr);
+void heap_set_comparator(heap_t *h, void_cmp_t cmp);
+void heap_set_copier(heap_t *h, void_cpy_t cpy);
+void_dtr_t heap_get_destroyer(const heap_t *h);
+void_cmp_t heap_get_comparator(const heap_t *h);
+void_cpy_t heap_get_copier(const heap_t *h);
+
 #endif

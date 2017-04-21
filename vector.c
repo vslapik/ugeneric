@@ -149,6 +149,24 @@ void vector_set_copier(vector_t *v, void_cpy_t cpy)
     v->cpy = cpy;
 }
 
+void_dtr_t vector_get_destroyer(const vector_t *v)
+{
+    ASSERT_INPUT(v);
+    return v->dtr;
+}
+
+void_cmp_t vector_get_comparator(const vector_t *v)
+{
+    ASSERT_INPUT(v);
+    return v->cmp;
+}
+
+void_cpy_t vector_get_copier(const vector_t *v)
+{
+    ASSERT_INPUT(v);
+    return v->cpy;
+}
+
 void vector_destroy(vector_t *v)
 {
     if (v)

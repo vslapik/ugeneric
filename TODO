@@ -27,3 +27,4 @@
 - xxx_set_destroyer,xxx_set_comparator and xxx_set_copier should return the old handler for being able to restore it
 - queue_is_full
 - overwrite mode for queue
+- implement missing methods for void* data management for all containers (only vector contains all as for now)
