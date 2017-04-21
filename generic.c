@@ -448,7 +448,7 @@ static generic_t _parse_vector(const char **str)
 static generic_t _parse_dict(const char **str)
 {
     generic_t k, v, g;
-    dict_t *d = dict_create(DICT_BACKEND_DEFAULT);
+    dict_t *d = dict_create();
 
     (*str)++;
 

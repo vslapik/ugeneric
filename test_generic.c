@@ -19,7 +19,7 @@ void test_types(void)
     generic_t g_true = G_TRUE;
     generic_t g_false = G_FALSE;
     generic_t g_vector = G_VECTOR(vector_create());
-    generic_t g_dict = G_DICT(dict_create(DICT_BACKEND_DEFAULT));
+    generic_t g_dict = G_DICT(dict_create());
 
     ASSERT(G_IS_INT(g_integer));
     ASSERT(G_IS_REAL(g_real));
@@ -154,7 +154,7 @@ void test_parse(void)
     };
 
     // We need to have the dict to be sorted
-    libgnrc_dict_set_default_backend(DICT_BACKEND_BST_RB);
+    libugeneric_dict_set_default_backend(DICT_BACKEND_BST_RB);
 
     tcase_t *t = tc;
     while (t->in)
@@ -210,8 +210,8 @@ void test_large_parse(void)
 
 void test_serialize(void)
 {
-    dict_t *d = dict_create(DICT_BACKEND_DEFAULT);
-    dict_t *dempty = dict_create(DICT_BACKEND_DEFAULT);
+    dict_t *d = dict_create();
+    dict_t *dempty = dict_create();
     vector_t *v = vector_create();
     vector_t *vempty = vector_create();
     vector_append(v, G_NULL);

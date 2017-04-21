@@ -1,6 +1,6 @@
 lib = libugeneric.a
 #CC = gcc
-CC = clang
+#CC = clang
 PFALGS = -fprofile-arcs -ftest-coverage
 CFLAGS_COMMON=-I. -g -std=c99 -Wall -Wextra -Winline -pedantic -Wno-missing-field-initializers -Wno-missing-braces
 CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_ASSERT_INPUT

@@ -56,21 +56,26 @@ static const dict_iterator_vtable_t _bst_iterator_vtable = {
 
 static dict_backend_t _default_backend = DICT_BACKEND_HTBL;
 
-void libgnrc_dict_set_default_backend(dict_backend_t backend)
+void libugeneric_dict_set_default_backend(dict_backend_t backend)
 {
     ASSERT_INPUT(backend > DICT_BACKEND_DEFAULT);
     ASSERT_INPUT(backend < DICT_BACKENDS_COUNT);
-
     _default_backend = backend;
 }
 
-dict_backend_t libgnrc_dict_get_default_backend(void)
+dict_backend_t libugeneric_dict_get_default_backend(void)
 {
     return _default_backend;
 }
 
-dict_t *dict_create(dict_backend_t backend)
+dict_t *dict_create(void)
 {
+    return dict_create_with_backend(DICT_BACKEND_DEFAULT);
+}
+
+dict_t *dict_create_with_backend(dict_backend_t backend)
+{
+    ASSERT_INPUT(backend >= DICT_BACKEND_DEFAULT);
     ASSERT_INPUT(backend < DICT_BACKENDS_COUNT);
 
     dict_t *d = umalloc(sizeof(*d));

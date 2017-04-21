@@ -12,7 +12,7 @@
 
 void test_dict_pop(dict_backend_t backend)
 {
-    dict_t *d = dict_create(backend);
+    dict_t *d = dict_create_with_backend(backend);
     ASSERT(dict_is_empty(d));
     dict_put(d, G_STR(string_dup("k1")), G_STR(string_dup("v1")));
     dict_put(d, G_STR(string_dup("k2")), G_STR(string_dup("v2")));
@@ -51,7 +51,7 @@ void test_dict_pop(dict_backend_t backend)
 
 void test_dict_const_str(dict_backend_t backend)
 {
-    dict_t *d = dict_create(backend);
+    dict_t *d = dict_create_with_backend(backend);
     dict_put(d, G_CSTR("k1"), G_CSTR("v1"));
     dict_put(d, G_CSTR("k2"), G_CSTR("v2"));
     dict_put(d, G_CSTR("k3"), G_CSTR("v3"));
@@ -66,7 +66,7 @@ void test_dict_const_str(dict_backend_t backend)
 
 void test_dict_api(dict_backend_t backend)
 {
-    dict_t *d = dict_create(backend);
+    dict_t *d = dict_create_with_backend(backend);
 
     const char *key = "key";
     const char *val = "value";
@@ -100,7 +100,7 @@ void test_dict_api(dict_backend_t backend)
 
 void test_large_dict(dict_backend_t backend)
 {
-    dict_t *d = dict_create(backend);
+    dict_t *d = dict_create_with_backend(backend);
     const char *path = "utdata/dict_data.txt";
     generic_t g = file_read_lines(path);
     ASSERT_NO_ERROR(g);
@@ -124,7 +124,7 @@ void test_dict_serialize(dict_backend_t backend)
 {
     generic_t t;
     char *ds;
-    dict_t *d = dict_create(backend);
+    dict_t *d = dict_create_with_backend(backend);
 
     ds = dict_as_str(d);
     ASSERT_STR_EQ(ds, "{}");
@@ -165,7 +165,7 @@ void test_cfg(dict_backend_t backend)
 
 void test_singe(dict_backend_t backend)
 {
-    dict_t *d = dict_create(backend);
+    dict_t *d = dict_create_with_backend(backend);
     ASSERT_INT_EQ(dict_get_size(d), 0);
     generic_t out;
     dict_put(d, G_STR(string_dup("key")), G_STR(string_dup("value")));
@@ -190,7 +190,7 @@ void test_dict_iterator(dict_backend_t backend)
     generic_kv_t out;
 
     // An empty dict.
-    d = dict_create(backend);
+    d = dict_create_with_backend(backend);
     di = dict_iterator_create(d);
     ASSERT(!dict_iterator_has_next(di));
     dict_iterator_reset(di);
@@ -199,7 +199,7 @@ void test_dict_iterator(dict_backend_t backend)
     dict_destroy(d);
 
     // Single element.
-    d = dict_create(backend);
+    d = dict_create_with_backend(backend);
     dict_put(d, G_CSTR("single"), G_CSTR("element"));
     di = dict_iterator_create(d);
     ASSERT(dict_iterator_has_next(di));
@@ -211,7 +211,7 @@ void test_dict_iterator(dict_backend_t backend)
     dict_destroy(d);
 
     // More elements ...
-    d = dict_create(DICT_BACKEND_HTBL);
+    d = dict_create_with_backend(DICT_BACKEND_HTBL);
     dict_put(d, G_INT(1), G_NULL);
     dict_put(d, G_INT(2), G_NULL);
     dict_put(d, G_INT(3), G_NULL);

@@ -12,8 +12,8 @@ typedef enum {
     DICT_BACKENDS_COUNT, // keep it last
 } dict_backend_t;
 
-void libgnrc_dict_set_default_backend(dict_backend_t backend);
-dict_backend_t libgnrc_dict_get_default_backend(void);
+void libugeneric_dict_set_default_backend(dict_backend_t backend);
+dict_backend_t libugeneric_dict_get_default_backend(void);
 
 typedef void         (*f_dict_set_destroyer)(void *d, void_dtr_t dtr);
 typedef void         (*f_dict_set_comparator)(void *d, void_cmp_t cmp);
@@ -73,7 +73,8 @@ typedef struct {
     const dict_iterator_vtable_t *vtable;
 } dict_iterator_t;
 
-dict_t *dict_create(dict_backend_t backend);
+dict_t *dict_create(void);
+dict_t *dict_create_with_backend(dict_backend_t backend);
 static inline void dict_set_destroyer(dict_t *d, void_dtr_t dtr) {d->vtable->set_destroyer(d->vobj, dtr);}
 static inline void dict_set_comparator(dict_t *d, void_cmp_t cmp) {d->vtable->set_comparator(d->vobj, cmp);}
 static inline void dict_take_data_ownership(dict_t *d) {d->vtable->take_data_ownership(d->vobj);}
