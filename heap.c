@@ -56,7 +56,7 @@ void heap_push(heap_t *h, generic_t e)
     {
         if (generic_compare(a[i], a[PARENT_IDX(i)], cmp) < 0)
         {
-            vector_swap(h->data, i, PARENT_IDX(i));
+            generic_swap(&a[i], &a[PARENT_IDX(i)]);
             i = PARENT_IDX(i);
         }
         else
@@ -71,8 +71,9 @@ generic_t heap_pop(heap_t *h)
     ASSERT_INPUT(h);
     ASSERT_INPUT(!vector_is_empty(h->data));
 
-    generic_t e = vector_get_at(h->data, 0);
-    generic_t e1 = vector_pop_back(h->data);
+    generic_t *a = vector_get_cells(h->data);
+    generic_t e = a[0]; // take the root
+    generic_t e1 = vector_pop_back(h->data); // take the last element
     size_t n = vector_get_size(h->data);
 
     if (n)
@@ -81,11 +82,10 @@ generic_t heap_pop(heap_t *h)
         size_t t = 0;
         size_t l = LCHILD_IDX(i);
         size_t r = RCHILD_IDX(i);
-        vector_set_at(h->data, 0, e1);
-        generic_t *a = vector_get_cells(h->data);
+        a[0] = e1; // copy the last element to the root
 
         void_cmp_t cmp = vector_get_comparator(h->data);
-        while (l < n || r < n)
+        while (l < n || r < n) // percolate the root to the right position
         {
             if (r < n)
             {
@@ -97,7 +97,7 @@ generic_t heap_pop(heap_t *h)
             }
             if (generic_compare(a[i], a[t], cmp) > 0)
             {
-                vector_swap(h->data, i, t);
+                generic_swap(&a[i], &a[t]);
                 i = t;
                 l = LCHILD_IDX(i);
                 r = RCHILD_IDX(i);
