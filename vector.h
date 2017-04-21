@@ -7,11 +7,11 @@
 
 typedef struct vector_opaq vector_t;
 
-vector_t *vector_create(size_t size, generic_t value);
+vector_t *vector_create(void);
+vector_t *vector_create_with_size(size_t size, generic_t value);
 vector_t *vector_create_from_array(void *array, size_t array_len,
                                    size_t array_element_size,
                                    generic_type_e vector_element_type);
-vector_t *vector_create_empty(void);
 void vector_destroy(vector_t *v);
 void vector_clear(vector_t *v);
 

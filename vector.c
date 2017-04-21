@@ -18,7 +18,7 @@ struct vector_opaq {
 
 static vector_t *_vcpy(const vector_t *v, bool deep)
 {
-    vector_t *copy = vector_create_empty();
+    vector_t *copy = vector_create();
     memcpy(copy, v, sizeof(*v));
     copy->cells = umalloc(v->size * sizeof(copy->cells[0]));
 
@@ -75,7 +75,7 @@ int vector_compare(const vector_t *v1, const vector_t *v2, void_cmp_t cmp)
     return diff;
 }
 
-vector_t *vector_create(size_t size, generic_t value)
+vector_t *vector_create_with_size(size_t size, generic_t value)
 {
     vector_t *v = _allocate_vector();
     if (size)
@@ -91,7 +91,7 @@ vector_t *vector_create(size_t size, generic_t value)
     return v;
 }
 
-vector_t *vector_create_empty(void)
+vector_t *vector_create(void)
 {
     return _allocate_vector();
 }

@@ -18,7 +18,7 @@ vector_t *string_split(const char *str, const char *sep)
     char *s = strstr(str, sep);
     size_t off = 0;
     size_t sep_len = strlen(sep);
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
 
     while (s)
     {

@@ -227,7 +227,7 @@ void test_dict_iterator(dict_backend_t backend)
     dict_put(d, G_INT(0), G_NULL);
 
     di = dict_iterator_create(d);
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
     while (dict_iterator_has_next(di))
     {
         vector_append(v, (dict_iterator_get_next(di).k));

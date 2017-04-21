@@ -34,7 +34,7 @@ void test_vector_copy(bool verbose)
 {
     (void)verbose;
 
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
     vector_set_destroyer(v, free_nage_t);
     vector_set_copier(v, copy_nage_t);
 
@@ -53,7 +53,7 @@ void test_vector_copy(bool verbose)
 
 void test_vector_bsearch(void)
 {
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
     vector_append(v, G_INT(1));
     vector_append(v, G_INT(2));
     vector_append(v, G_INT(3));
@@ -105,7 +105,7 @@ void test_vector_bsearch(void)
 
 void test_vector_next_permutation(bool verbose)
 {
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
     vector_append(v, G_INT(4));
     vector_append(v, G_INT(3));
     vector_append(v, G_INT(1));
@@ -122,7 +122,7 @@ void test_vector_next_permutation(bool verbose)
 void test_vector_serialization(bool verbose)
 {
     char *vs;
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
 
     vs = vector_as_str(v);
     ASSERT_STR_EQ(vs, "[]");
@@ -148,14 +148,14 @@ void test_vector_serialization(bool verbose)
 
 void test_vector_api()
 {
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
     vector_append(v, G_INT(0));
     ASSERT(vector_get_capacity(v) >= VECTOR_INITIAL_CAPACITY);
     vector_reserve_capacity(v, 1000);
     ASSERT_INT_EQ(vector_get_capacity(v), 1000);
     vector_destroy(v);
 
-    v = vector_create(3, G_NULL);
+    v = vector_create_with_size(3, G_NULL);
     ASSERT_INT_EQ(vector_get_size(v), 3);
 
     vector_append(v, G_INT(11));
@@ -185,7 +185,7 @@ void test_vector_api()
     ASSERT_INT_EQ(G_AS_INT(a[0]), 2222);
     vector_destroy(v);
 
-    v = vector_create_empty();
+    v = vector_create();
     ASSERT_INT_EQ(vector_get_size(v), 0);
     ASSERT(vector_is_empty(v));
     vector_append(v, G_INT(11));
@@ -216,7 +216,7 @@ void test_vector_api()
     ASSERT_INT_EQ(vector_get_size(v), 1000);
     vector_destroy(v);
 
-    v = vector_create_empty();
+    v = vector_create();
     vector_append(v, G_STR(string_dup("1")));
     vector_append(v, G_STR(string_dup("2")));
     vector_append(v, G_STR(string_dup("3")));
@@ -228,13 +228,13 @@ void test_vector_api()
     ASSERT_INT_EQ(vector_get_size(v), 1);
     vector_destroy(v);
 
-    v = vector_create_empty();
+    v = vector_create();
     vector_append(v, G_STR(string_dup("string")));
     vector_set_at(v, 0, G_STR(string_dup("string2")));
     vector_destroy(v);
 
-    vector_t *v1 = vector_create_empty();
-    vector_t *v2 = vector_create_empty();
+    vector_t *v1 = vector_create();
+    vector_t *v2 = vector_create();
     vector_append(v1, G_STR(string_dup("s1")));
     vector_append(v2, G_STR(string_dup("s1")));
     ASSERT(vector_compare(v1, v2, NULL) == 0);
@@ -245,7 +245,7 @@ void test_vector_api()
     vector_destroy(v1);
     vector_destroy(v2);
 
-    v = vector_create_empty();
+    v = vector_create();
     vector_append(v, G_INT(123));
     ASSERT_INT_EQ(G_AS_INT(vector_get_at(v, 0)), 123);
     ASSERT_INT_EQ(G_AS_INT(vector_get_back(v)), 123);
@@ -254,7 +254,7 @@ void test_vector_api()
     vector_destroy(v);
     vector_destroy(vcopy);
 
-    v = vector_create_empty();
+    v = vector_create();
     vector_reserve_capacity(v, 1024);
     vector_shrink_to_size(v);
     vector_destroy(v);
@@ -276,7 +276,7 @@ void test_vector_api()
     ASSERT_ABORTS(vector_get_at(v, 1));
     ASSERT_ABORTS(vector_set_at(v, 1, G_INT(0)));
 
-    v = vector_create_empty(0);
+    v = vector_create(0);
     ASSERT_ABORTS(vector_get_at(v, 1));
     ASSERT_ABORTS(vector_set_at(v, 1, G_INT(0)));
 

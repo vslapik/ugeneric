@@ -136,16 +136,16 @@ void test_traverse(void)
     ASSERT_INT_EQ(G_AS_INT(bst_get_min(b)), -3113);
     ASSERT_INT_EQ(G_AS_INT(bst_get_max(b)), -4004);
 
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
     vector_append(v, G_INT(1));
     vector_append(v, G_INT(11));
     vector_append(v, G_INT(111));
     vector_append(v, G_INT(1111));
     bst_put(b, G_INT(123), G_VECTOR(v));
 
-    vector_t *kv = vector_create_empty();
-    vector_t *keys = vector_create_empty();
-    vector_t *values = vector_create_empty();
+    vector_t *kv = vector_create();
+    vector_t *keys = vector_create();
+    vector_t *values = vector_create();
     vector_drop_data_ownership(values);
     vector_drop_data_ownership(keys);
     vector_append(kv, G_VECTOR(keys));

@@ -17,7 +17,7 @@ struct graph_opaq {
 graph_t *graph_create(size_t n, graph_type_t type)
 {
     graph_t *g = umalloc(sizeof(*g));
-    g->nodes = vector_create(n, G_PTR(NULL));
+    g->nodes = vector_create_with_size(n, G_PTR(NULL));
     vector_set_destroyer(g->nodes, (void_dtr_t)list_destroy);
     g->n = n;
     g->m = 0;
@@ -96,7 +96,7 @@ vector_t *graph_get_edges(const graph_t *g)
 {
     ASSERT_INPUT(g);
 
-    vector_t *v = vector_create(g->m, G_NULL);
+    vector_t *v = vector_create_with_size(g->m, G_NULL);
     vector_set_destroyer(v, ufree);
     size_t j = 0;
     for (size_t i = 0; i < g->n; i++)
@@ -139,7 +139,7 @@ static vector_t *_min_cut(const graph_t *g)
     }
     vector_destroy(edgestmp);
 
-    vector_t *mincut = vector_create_empty();
+    vector_t *mincut = vector_create();
     vector_set_destroyer(mincut, free);
     for (size_t i = 0; i < edges_count; i++)
     {

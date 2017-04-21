@@ -18,7 +18,7 @@ void test_types(void)
     generic_t g_null = G_NULL;
     generic_t g_true = G_TRUE;
     generic_t g_false = G_FALSE;
-    generic_t g_vector = G_VECTOR(vector_create_empty());
+    generic_t g_vector = G_VECTOR(vector_create());
     generic_t g_dict = G_DICT(dict_create(DICT_BACKEND_DEFAULT));
 
     ASSERT(G_IS_INT(g_integer));
@@ -212,8 +212,8 @@ void test_serialize(void)
 {
     dict_t *d = dict_create(DICT_BACKEND_DEFAULT);
     dict_t *dempty = dict_create(DICT_BACKEND_DEFAULT);
-    vector_t *v = vector_create_empty();
-    vector_t *vempty = vector_create_empty();
+    vector_t *v = vector_create();
+    vector_t *vempty = vector_create();
     vector_append(v, G_NULL);
     vector_append(v, G_TRUE);
     vector_append(v, G_FALSE);

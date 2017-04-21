@@ -405,7 +405,7 @@ static generic_t _parse_number(const char **str)
 static generic_t _parse_vector(const char **str)
 {
     generic_t g;
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
 
     (*str)++;
 

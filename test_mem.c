@@ -15,8 +15,9 @@ bool oom(void *data)
     fprintf(stderr, "tryint to clean up things out ...\n");
     vector_clear(v);
 
-    //return true; // true mean retry allocation again
-    return false; // true mean retry allocation again
+    // true means retry allocation again
+    //return true;
+    return false;
 }
 
 int main(void)
@@ -26,7 +27,7 @@ int main(void)
     // Assuming it is too high to be allocated.
     size_t size = 32LL << 32;
 
-    vector_t *v = vector_create_empty();
+    vector_t *v = vector_create();
     vector_set_destroyer(v, ufree);
 
     libugeneric_set_oom_handler(oom, v);

@@ -13,7 +13,7 @@ struct stack_opaq {
 stack_t *stack_create()
 {
     stack_t *s = umalloc(sizeof(*s));
-    s->data = vector_create_empty();
+    s->data = vector_create();
     vector_reserve_capacity(s->data, STACK_INITIAL_CAPACITY);
 
     return s;

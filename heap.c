@@ -23,7 +23,7 @@ heap_t *heap_create_with_capacity(size_t capacity)
 {
     heap_t *h = umalloc(sizeof(*h));
     h->data = NULL;
-    h->data = vector_create_empty();
+    h->data = vector_create();
     vector_reserve_capacity(h->data, capacity);
 
     return h;
