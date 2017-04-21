@@ -209,6 +209,19 @@ bool file_reader_has_next(const file_reader_t *fr)
     return fr->read_offset < fr->file_size;
 }
 
+generic_t file_reader_reset(file_reader_t *fr)
+{
+    ASSERT_INPUT(fr);
+
+    if (fseek(fr->file, 0, SEEK_SET) == -1)
+    {
+        return G_ERROR_IO;
+    }
+    fr->read_offset = 0;
+
+    return G_NULL;
+}
+
 generic_t file_reader_destroy(file_reader_t *fr)
 {
     generic_t g = G_NULL;
@@ -260,10 +273,10 @@ generic_t file_writer_write_next(file_writer_t *fw, memchunk_t mchunk)
     return G_NULL;
 }
 
-generic_t file_writer_get_size(file_writer_t *fw)
+size_t file_writer_get_size(file_writer_t *fw)
 {
     ASSERT_INPUT(fw);
-    return G_SIZE(fw->write_offset);
+    return fw->write_offset;
 }
 
 generic_t file_writer_destroy(file_writer_t *fw)

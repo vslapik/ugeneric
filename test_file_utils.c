@@ -26,8 +26,42 @@ size_t execute_read(const char *path, size_t buffer_size)
 void test_file_reader(void)
 {
     generic_t g;
+    memchunk_t m;
+    char *data;
     file_reader_t *fr;
 
+    ASSERT_NO_ERROR(g = file_reader_create("utdata/100", 3));
+    fr = G_AS_PTR(g);
+
+    ASSERT_NO_ERROR(g = file_reader_read_next(fr));
+    m = G_AS_MCHUNK(g);
+    data = memchunk_as_str(m);
+    ASSERT_STR_EQ(data, "313233");
+    ufree(data);
+
+    ASSERT_NO_ERROR(g = file_reader_read_next(fr));
+    m = G_AS_MCHUNK(g);
+    data = memchunk_as_str(m);
+    ASSERT_STR_EQ(data, "343536");
+    ufree(data);
+
+    ASSERT_NO_ERROR(g = file_reader_read_next(fr));
+    m = G_AS_MCHUNK(g);
+    data = memchunk_as_str(m);
+    ASSERT_STR_EQ(data, "373839");
+    ufree(data);
+
+    ASSERT_NO_ERROR(file_reader_reset(fr));
+
+    ASSERT_NO_ERROR(g = file_reader_read_next(fr));
+    m = G_AS_MCHUNK(g);
+    data = memchunk_as_str(m);
+    ASSERT_STR_EQ(data, "313233");
+    ufree(data);
+
+    file_reader_destroy(fr);
+
+    //
     ASSERT_INT_EQ(execute_read("utdata/100", 1), 100);
     ASSERT_INT_EQ(execute_read("utdata/100", 11), 10);
     ASSERT_INT_EQ(execute_read("utdata/100", 1), 100);
@@ -45,6 +79,7 @@ void test_file_reader(void)
     g = file_reader_get_size(fr);
     ASSERT_INT_EQ(G_AS_SIZE(g), 100);
     file_reader_destroy(fr);
+
 }
 
 void test_file_writer(size_t buffer_size)
