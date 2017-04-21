@@ -61,9 +61,9 @@ typedef struct {
 } generic_kv_t;
 
 typedef enum {
-    RES_OK,
-    RES_FAIL,
-} result_t;
+    EC_OOM = 17,
+    EC_IO = 18,
+} exit_code_t;
 
 static inline generic_type_e generic_get_type(generic_t g)
 {
@@ -155,7 +155,7 @@ size_t generic_bsearch(generic_t *base, size_t nmembs, generic_t e,
 
 int random_from_range(int start, int stop);
 
-// MAX and MIN are Not side-effect free, be cautious.
+// MAX and MIN are not side-effect free, be cautious.
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 

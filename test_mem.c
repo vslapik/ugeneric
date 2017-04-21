@@ -29,7 +29,7 @@ int main(void)
     vector_t *v = vector_create_empty();
     vector_set_destroyer(v, ufree);
 
-    libgnrc_set_oom_handler(oom, v);
+    libugeneric_set_oom_handler(oom, v);
 
     while (true)
     {

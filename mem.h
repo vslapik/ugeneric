@@ -5,7 +5,7 @@
 #define MEM_H__
 
 typedef bool (*oom_handler_t)(void *data);
-void libgnrc_set_oom_handler(oom_handler_t handler, void *data);
+void libugeneric_set_oom_handler(oom_handler_t handler, void *data);
 
 void *umalloc(size_t size);
 void *ucalloc(size_t nmemb, size_t size);
