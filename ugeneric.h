@@ -9,5 +9,6 @@
 #include "heap.h"
 #include "queue.h"
 #include "mem.h"
+#include "bitmap.h"
 #include "string_utils.h"
 #include "file_utils.h"

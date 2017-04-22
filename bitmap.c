@@ -5,11 +5,6 @@
 #include "mem.h"
 #include "bitmap.h"
 
-#define GET_BIT(ba, num) !!(ba->data[(num) / 8] &   (0x80 >> ((num) % 8)))
-#define SET_BIT(ba, num)   (ba->data[(num) / 8] |=  (0x80 >> ((num) % 8)))
-#define CLR_BIT(ba, num)   (ba->data[(num) / 8] &= ~(0x80 >> ((num) % 8)))
-#define FLIP_BIT(ba, num)  (ba->data[(num) / 8] ^=  (0x80 >> ((num) % 8)))
-
 struct bitmap_opaq {
     uint8_t *data;
     size_t size;     // size is in bits
@@ -20,7 +15,7 @@ static void _flip_range(bitmap_t *b, size_t l, size_t r)
 {
     while ((l <= r) && (l % 8))
     {
-        FLIP_BIT(b, l);
+        FLIP_BIT(b->data, l);
         l++;
     }
     while ((l <= r) && ((r - l) >= 8))
@@ -30,7 +25,7 @@ static void _flip_range(bitmap_t *b, size_t l, size_t r)
     }
     while (l <= r)
     {
-        FLIP_BIT(b, l);
+        FLIP_BIT(b->data, l);
         l++;
     }
 }
@@ -66,21 +61,21 @@ void bitmap_set_bit(bitmap_t *b, size_t i)
 {
     ASSERT_INPUT(b);
     ASSERT_INPUT(i < b->size);
-    SET_BIT(b, i);
+    SET_BIT(b->data, i);
 }
 
 bool bitmap_get_bit(const bitmap_t *b, size_t i)
 {
     ASSERT_INPUT(b);
     ASSERT_INPUT(i < b->size);
-    return GET_BIT(b, i);
+    return GET_BIT(b->data, i);
 }
 
 void bitmap_clear_bit(bitmap_t *b, size_t i)
 {
     ASSERT_INPUT(b);
     ASSERT_INPUT(i < b->size);
-    CLR_BIT(b, i);
+    CLR_BIT(b->data, i);
 }
 
 void bitmap_flip_range(bitmap_t *b, size_t l, size_t r)
@@ -110,7 +105,7 @@ char *bitmap_range_as_str(const bitmap_t *b, size_t l, size_t r)
 
     while ((l <= r) && (l % 8))
     {
-        buffer_append_byte(&buf, GET_BIT(b, l) + '0');
+        buffer_append_byte(&buf, GET_BIT(b->data, l) + '0');
         l++;
     }
 
@@ -132,7 +127,7 @@ char *bitmap_range_as_str(const bitmap_t *b, size_t l, size_t r)
 
     while (l <= r)
     {
-        buffer_append_byte(&buf, GET_BIT(b, l) + '0');
+        buffer_append_byte(&buf, GET_BIT(b->data, l) + '0');
         l++;
     }
 

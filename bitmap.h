@@ -4,6 +4,12 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdint.h>
+
+static inline bool GET_BIT(const void *a, size_t num) { return ((uint8_t *)a)[(num) / 8] &   (0x80 >> ((num) % 8)); }
+static inline void SET_BIT(void *a, size_t num)       {        ((uint8_t *)a)[(num) / 8] |=  (0x80 >> ((num) % 8)); }
+static inline void CLR_BIT(void *a, size_t num)       {        ((uint8_t *)a)[(num) / 8] &= ~(0x80 >> ((num) % 8)); }
+static inline void FLIP_BIT(void *a, size_t num)      {        ((uint8_t *)a)[(num) / 8] ^=  (0x80 >> ((num) % 8)); }
 
 typedef struct bitmap_opaq bitmap_t;
 
