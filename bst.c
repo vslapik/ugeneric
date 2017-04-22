@@ -888,7 +888,7 @@ bool _dump2dot(bst_node_t *node, void *data)
     fprintf(d->out, "    %s -> %s;\n", str, lstr);
     fprintf(d->out, "    %s -> %s;\n", str, rstr);
 
-    ufree(str);  ufree(kstr);  ufree(vstr); ufree(lstr); ufree(rstr);
+    ufree(str); ufree(kstr); ufree(vstr); ufree(lstr); ufree(rstr);
 
     return false;
 }
