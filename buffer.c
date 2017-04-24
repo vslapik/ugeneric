@@ -92,6 +92,7 @@ int memchunk_print(memchunk_t m)
 void memchunk_serialize(memchunk_t m, buffer_t *buf)
 {
     ASSERT_INPUT(buf);
+    ASSERT_INPUT(m.data);
     ASSERT_INPUT(m.size < SIZE_MAX / 2);
 
     const char *hex = "0123456789abcdef";

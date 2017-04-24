@@ -17,7 +17,6 @@ typedef enum {
 
 heap_t *heap_create(void);
 heap_t *heap_create_ext(size_t capacity, heap_type_t);
-void register_comparator(heap_t *h, void_cmp_t *cmp);
 void heap_destroy(heap_t *h);
 void heap_clear(heap_t *h);
 void heap_push(heap_t *h, generic_t e);
@@ -28,6 +27,7 @@ generic_t heap_peek(const heap_t *h);
 
 size_t heap_get_capacity(const heap_t *h);
 void heap_reserve_capacity(heap_t *h, size_t new_capacity);
+generic_t *heap_get_cells(const heap_t *h);
 
 void heap_take_data_ownership(heap_t *h);
 void heap_drop_data_ownership(heap_t *h);

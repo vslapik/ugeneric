@@ -28,3 +28,4 @@
 - queue_is_full
 - overwrite mode for queue
 - implement missing methods for void* data management for all containers (only vector contains all as for now)
+- generic_serialize for void*

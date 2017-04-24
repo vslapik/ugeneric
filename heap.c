@@ -201,6 +201,12 @@ void_cpy_t heap_get_copier(const heap_t *h)
     return vector_get_copier(h->data);
 }
 
+generic_t *heap_get_cells(const heap_t *h)
+{
+    ASSERT_INPUT(h);
+    return vector_get_cells(h->data);
+}
+
 void heap_dump_to_dot(const heap_t *h, const char *name, FILE *out)
 {
     ASSERT_INPUT(h);
