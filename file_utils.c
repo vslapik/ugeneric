@@ -15,7 +15,6 @@ struct file_reader_opaq {
 
 struct file_writer_opaq {
     FILE *file;
-    size_t write_offset;
 };
 
 static generic_t _get_position(FILE *f)
@@ -27,6 +26,15 @@ static generic_t _get_position(FILE *f)
     }
 
     return G_SIZE(pos);
+}
+
+static generic_t _set_position(FILE *f, size_t position)
+{
+    if (fseek(f, position, SEEK_SET) == -1)
+    {
+        return G_ERROR_IO;
+    }
+    return G_NULL;
 }
 
 static generic_t _get_file_size(FILE *f, bool save_pos)
@@ -57,7 +65,7 @@ static generic_t _get_file_size(FILE *f, bool save_pos)
 
     if (save_pos)
     {
-        if (fseek(f, saved_pos, SEEK_SET) == -1)
+        if (G_IS_ERROR(g = _set_position(f, saved_pos)))
         {
             return G_ERROR_IO;
         }
@@ -266,6 +274,12 @@ generic_t file_reader_get_position(const file_reader_t *fr)
     return _get_position(fr->file);
 }
 
+generic_t file_reader_set_position(file_reader_t *fr, size_t position)
+{
+    ASSERT_INPUT(fr);
+    return _set_position(fr->file, position);
+}
+
 FILE *file_reader_get_file(const file_reader_t *fr)
 {
     return fr->file;
@@ -295,7 +309,6 @@ generic_t file_writer_create(const char *path)
     }
     file_writer_t *fw = umalloc(sizeof(*fw));
     fw->file = G_AS_PTR(g);
-    fw->write_offset = 0;
 
     return G_PTR(fw);
 }
@@ -305,7 +318,6 @@ generic_t file_writer_write(file_writer_t *fw, memchunk_t mchunk)
     ASSERT_INPUT(fw);
 
     size_t size = fwrite(mchunk.data, 1, mchunk.size, fw->file);
-    fw->write_offset += size;
 
     // Short write, either EOF reached or I/O error.
     if (size < mchunk.size)
@@ -316,16 +328,22 @@ generic_t file_writer_write(file_writer_t *fw, memchunk_t mchunk)
     return G_NULL;
 }
 
-size_t file_writer_get_file_size(file_writer_t *fw)
+generic_t file_writer_get_file_size(file_writer_t *fw)
 {
     ASSERT_INPUT(fw);
-    return fw->write_offset;
+    return _get_file_size(fw->file, true);
 }
 
 generic_t file_writer_get_position(const file_writer_t *fw)
 {
     ASSERT_INPUT(fw);
     return _get_position(fw->file);
+}
+
+generic_t file_writer_set_position(file_writer_t *fw, size_t position)
+{
+    ASSERT_INPUT(fw);
+    return _set_position(fw->file, position);
 }
 
 FILE *file_writer_get_file(const file_writer_t *fw)
