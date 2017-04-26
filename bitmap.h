@@ -6,31 +6,29 @@
 #include <stdio.h>
 #include <stdint.h>
 
-static inline bool GET_BIT(const void *a, size_t num) { return ((uint8_t *)a)[(num) / 8] &   (0x80 >> ((num) % 8)); }
-static inline void SET_BIT(void *a, size_t num)       {        ((uint8_t *)a)[(num) / 8] |=  (0x80 >> ((num) % 8)); }
-static inline void CLR_BIT(void *a, size_t num)       {        ((uint8_t *)a)[(num) / 8] &= ~(0x80 >> ((num) % 8)); }
-static inline void FLIP_BIT(void *a, size_t num)      {        ((uint8_t *)a)[(num) / 8] ^=  (0x80 >> ((num) % 8)); }
+#include "mem.h"
 
-typedef struct bitmap_opaq bitmap_t;
+static inline void *ubitmap_allocate(size_t len)               { return ucalloc(len / 8 + (bool)(len % 8), 1);               }
+static inline bool  ubitmap_get_bit(const void *a, size_t num) { return ((uint8_t *)a)[(num) / 8] &   (0x80 >> ((num) % 8)); }
+static inline void  ubitmap_set_bit(void *a, size_t num)       {        ((uint8_t *)a)[(num) / 8] |=  (0x80 >> ((num) % 8)); }
+static inline void  ubitmap_clear_bit(void *a, size_t num)     {        ((uint8_t *)a)[(num) / 8] &= ~(0x80 >> ((num) % 8)); }
+static inline void  ubitmap_flip_bit(void *a, size_t num)      {        ((uint8_t *)a)[(num) / 8] ^=  (0x80 >> ((num) % 8)); }
 
-bitmap_t *bitmap_create(size_t size);
-void bitmap_destroy(bitmap_t *b);
-size_t bitmap_get_size(const bitmap_t *b);
-void bitmap_set_bit(bitmap_t *b, size_t i);
-bool bitmap_get_bit(const bitmap_t *b, size_t i);
-void bitmap_clear_bit(bitmap_t *b, size_t i);
-void bitmap_set_range(bitmap_t *b, size_t l, size_t r);
-void bitmap_swap_bits(bitmap_t *b, size_t i1, size_t i2);
-void bitmap_swap_ranges(bitmap_t *b, size_t l1, size_t r1,
+void ubitmap_set_range(void *a, size_t l, size_t r);
+void ubitmap_flip_all(void *b, size_t len);
+void ubitmap_flip_range(void *b, size_t l, size_t r);
+
+char *ubitmap_range_as_str(const void *b, size_t l, size_t r);
+char *ubitmap_as_str(const void *a, size_t len);
+int ubitmap_fprint_range(const void *a, size_t l, size_t r, FILE *f);
+int ubitmap_fprint(const void *a, size_t len, FILE *f);
+
+/*
+void ubitmap_swap_bits(void *a, size_t i1, size_t i2);
+void ubitmap_swap_ranges(bitmap_t *b, size_t l1, size_t r1,
                         size_t l2, size_t r2);
-void bitmap_reverse_range(bitmap_t *b, size_t l, size_t r);
-void bitmap_reverse(bitmap_t *b);
-void bitmap_flip_all(bitmap_t *b);
-void bitmap_flip_range(bitmap_t *b, size_t l, size_t r);
-
-char *bitmap_range_as_str(const bitmap_t *b, size_t l, size_t r);
-char *bitmap_as_str(const bitmap_t *b);
-int bitmap_fprint_range(const bitmap_t *b, size_t l, size_t r, FILE *f);
-int bitmap_fprint(const bitmap_t *b, FILE *f);
+void ubitmap_reverse_range(bitmap_t *b, size_t l, size_t r);
+void ubitmap_reverse(bitmap_t *b);
+*/
 
 #endif
