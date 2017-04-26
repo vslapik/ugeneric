@@ -19,7 +19,7 @@ typedef struct {
 } memchunk_t;
 
 void buffer_append_data(buffer_t *buf, const void *data, size_t size);
-void buffer_append_chunk(buffer_t *buf, const memchunk_t *data);
+void buffer_append_memchunk(buffer_t *buf, const memchunk_t *data);
 void buffer_append_buffer(buffer_t *buf, const buffer_t *data);
 void buffer_append_byte(buffer_t *buf, char byte);
 void buffer_append_string(buffer_t *buf, const char *str);

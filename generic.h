@@ -23,11 +23,11 @@ typedef enum {
     G_DICT_T   = 10,    // Associative array of generics.
 
     /*
-     * G_MCHUNK_T should be the last in the list, values greater than
-     * G_MCHUNK_T represent size of mchunk. Value of G_MCHUNK_T
+     * G_MEMCHUNK_T should be the last in the list, values greater than
+     * G_MEMCHUNK_T represent size of mchunk. Value of G_MEMCHUNK_T
      * essentially represents memory chunk of exactly 0 size.
      */
-    G_MCHUNK_T = 11,    // Reference to a chunk of memory.
+    G_MEMCHUNK_T = 11,  // Reference to a chunk of memory.
 } generic_type_e;
 
 /*
@@ -67,7 +67,7 @@ typedef enum {
 
 static inline generic_type_e generic_get_type(generic_t g)
 {
-    return (g.type.type >= G_MCHUNK_T) ? G_MCHUNK_T : g.type.type;
+    return (g.type.type >= G_MEMCHUNK_T) ? G_MEMCHUNK_T : g.type.type;
 }
 
 #define G_NULL         ((generic_t){.type.type = G_NULL_T})
@@ -91,8 +91,8 @@ static inline generic_type_e generic_get_type(generic_t g)
 #define G_DICT(v)      ((generic_t){.value = {.ptr = (v)},             \
                                     .type.type = G_DICT_T})
 
-#define G_MCHUNK(p, s) ((generic_t){.value = {.ptr = (p)},             \
-                                    .type.size = s + G_MCHUNK_T})
+#define G_MEMCHUNK(p, s) ((generic_t){.value = {.ptr = (p)},           \
+                                    .type.size = s + G_MEMCHUNK_T})
 #define G_TRUE         ((generic_t){.type.type = G_BOOL_T,             \
                                     .value = {.boolean = true}})
 #define G_FALSE        ((generic_t){.type.type = G_BOOL_T,             \
@@ -105,10 +105,10 @@ static inline generic_type_e generic_get_type(generic_t g)
 #define G_AS_STR(g)    ((g).value.str)
 #define G_AS_BOOL(g)   ((g).value.boolean)
 
-#define G_AS_MCHUNK_DATA(g) ((g).value.ptr)
-#define G_AS_MCHUNK_SIZE(g) ((g).type.size - G_MCHUNK_T)
-#define G_AS_MCHUNK(g) ((memchunk_t){.data = G_AS_MCHUNK_DATA(g),      \
-                                     .size = G_AS_MCHUNK_SIZE(g)})
+#define G_AS_MEMCHUNK_DATA(g) ((g).value.ptr)
+#define G_AS_MEMCHUNK_SIZE(g) ((g).type.size - G_MEMCHUNK_T)
+#define G_AS_MEMCHUNK(g) ((memchunk_t){.data = G_AS_MEMCHUNK_DATA(g),      \
+                                     .size = G_AS_MEMCHUNK_SIZE(g)})
 
 static inline bool G_IS_ERROR(generic_t g) {return g.type.type == G_ERROR_T;}
 static inline bool G_IS_NULL(generic_t g)  {return g.type.type == G_NULL_T;}
@@ -124,7 +124,7 @@ static inline bool G_IS_TRUE(generic_t g)  {return (g.type.type == G_BOOL_T) && 
 static inline bool G_IS_FALSE(generic_t g) {return (g.type.type == G_BOOL_T) && !G_AS_BOOL(g);}
 static inline bool G_IS_VECTOR(generic_t g){return g.type.type == G_VECTOR_T;}
 static inline bool G_IS_DICT(generic_t g)  {return g.type.type == G_DICT_T;}
-static inline bool G_IS_MCHUNK(generic_t g){return g.type.type > G_MCHUNK_T;}
+static inline bool G_IS_MEMCHUNK(generic_t g){return g.type.type > G_MEMCHUNK_T;}
 
 typedef int (*void_cmp_t)(const void *ptr1, const void *ptr2);
 typedef void *(*void_cpy_t)(const void *ptr);

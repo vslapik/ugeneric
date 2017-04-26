@@ -72,11 +72,11 @@ void test_dict_api(dict_backend_t backend)
     const char *val = "value";
 
     generic_t gk, gv;
-    gk = G_MCHUNK(string_dup(key), strlen(key) + 1);
-    gv = G_MCHUNK(string_dup(val), strlen(val) + 1);
+    gk = G_MEMCHUNK(string_dup(key), strlen(key) + 1);
+    gv = G_MEMCHUNK(string_dup(val), strlen(val) + 1);
     dict_put(d, gk, gv);
     generic_t out = dict_get(d, gk, G_NULL);
-    memchunk_t mout = G_AS_MCHUNK(out);
+    memchunk_t mout = G_AS_MEMCHUNK(out);
     ASSERT_STR_EQ(mout.data, "value");
 
     dict_put(d, G_STR(string_dup("k111")), G_STR(string_dup("v2k111")));

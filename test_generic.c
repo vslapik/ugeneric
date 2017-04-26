@@ -34,10 +34,10 @@ void test_types(void)
     ASSERT(G_IS_VECTOR(g_vector));
     ASSERT(G_IS_DICT(g_dict));
 
-    generic_t g = G_MCHUNK(&g, sizeof(g));
-    ASSERT(G_IS_MCHUNK(g));
-    ASSERT(G_AS_MCHUNK_DATA(g) == &g);
-    ASSERT(G_AS_MCHUNK_SIZE(g) == sizeof(g));
+    generic_t g = G_MEMCHUNK(&g, sizeof(g));
+    ASSERT(G_IS_MEMCHUNK(g));
+    ASSERT(G_AS_MEMCHUNK_DATA(g) == &g);
+    ASSERT(G_AS_MEMCHUNK_SIZE(g) == sizeof(g));
     memchunk_t t = {.size = 5, .data = "1234\xff"};
     char *str = memchunk_as_str(t);
     ASSERT_STR_EQ("31323334ff", str);

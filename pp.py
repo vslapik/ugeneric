@@ -11,7 +11,7 @@ class GenericsPrettyPrinter:
 #        print(str(v))
 
         if t['type'] >= 11: # magic constant comes from generic.h
-            return "G_MCHUNK{.data = %s, .size = %s}" % (v['ptr'], t['size'] - 11)
+            return "G_MEMCHUNK{.data = %s, .size = %s}" % (v['ptr'], t['size'] - 11)
         else:
             return str(t['type'])[:-2] + "{" + {
                 "G_ERROR_T": str(v['err']),

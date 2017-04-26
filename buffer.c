@@ -27,7 +27,7 @@ void buffer_append_data(buffer_t *buf, const void *data, size_t size)
     buf->data_size += size;
 }
 
-void buffer_append_chunk(buffer_t *buf, const memchunk_t *chunk)
+void buffer_append_memchunk(buffer_t *buf, const memchunk_t *chunk)
 {
     ASSERT_INPUT(buf);
     ASSERT_INPUT(chunk);

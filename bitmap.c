@@ -68,7 +68,7 @@ char *ubitmap_range_as_str(const void *a, size_t l, size_t r)
         };
         m.data = &byte_str;
         m.size = sizeof(byte_str);
-        buffer_append_chunk(&buf, &m);
+        buffer_append_memchunk(&buf, &m);
         l += 8;
     }
 

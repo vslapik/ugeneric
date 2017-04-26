@@ -73,10 +73,10 @@ int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
                 ASSERT(0); // not yet implemented
                 break;
 
-            case G_MCHUNK_T:
-                ASSERT(G_AS_MCHUNK_SIZE(g1) == G_AS_MCHUNK_SIZE(g2));
-                ret = memcmp(G_AS_MCHUNK_DATA(g1), G_AS_MCHUNK_DATA(g2),
-                             G_AS_MCHUNK_SIZE(g1));
+            case G_MEMCHUNK_T:
+                ASSERT(G_AS_MEMCHUNK_SIZE(g1) == G_AS_MEMCHUNK_SIZE(g2));
+                ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
+                             G_AS_MEMCHUNK_SIZE(g1));
                 break;
 
             case G_STR_T:
@@ -118,8 +118,8 @@ void generic_destroy(generic_t g, void_dtr_t dtr)
             dict_destroy(G_AS_PTR(g));
             break;
 
-        case G_MCHUNK_T:
-            ufree(G_AS_MCHUNK_DATA(g));
+        case G_MEMCHUNK_T:
+            ufree(G_AS_MEMCHUNK_DATA(g));
             break;
 
         case G_STR_T:
@@ -182,11 +182,11 @@ generic_t generic_copy(generic_t g, void_cpy_t cpy)
             ret = G_DICT(dict_deep_copy(G_AS_PTR(g)));
             break;
 
-        case G_MCHUNK_T:
-            size = G_AS_MCHUNK_SIZE(g);
+        case G_MEMCHUNK_T:
+            size = G_AS_MEMCHUNK_SIZE(g);
             p = umalloc(size);
-            memcpy(p, G_AS_MCHUNK_DATA(g), size);
-            ret = G_MCHUNK(p, size);
+            memcpy(p, G_AS_MEMCHUNK_DATA(g), size);
+            ret = G_MEMCHUNK(p, size);
             break;
 
         case G_STR_T:
@@ -247,7 +247,7 @@ void generic_serialize(generic_t g, buffer_t *buf)
         case G_PTR_T:
             snprintf(tmp, sizeof(tmp), "&%p", G_AS_PTR(g));
             m.data = tmp, m.size = strlen(tmp);
-            buffer_append_chunk(buf, &m);
+            buffer_append_memchunk(buf, &m);
             break;
 
         case G_STR_T:
@@ -269,19 +269,19 @@ void generic_serialize(generic_t g, buffer_t *buf)
         case G_INT_T:
             snprintf(tmp, sizeof(tmp), "%ld", G_AS_INT(g));
             m.data = tmp, m.size = strlen(tmp);
-            buffer_append_chunk(buf, &m);
+            buffer_append_memchunk(buf, &m);
             break;
 
         case G_REAL_T:
             snprintf(tmp, sizeof(tmp), "%g", G_AS_REAL(g));
             m.data = tmp, m.size = strlen(tmp);
-            buffer_append_chunk(buf, &m);
+            buffer_append_memchunk(buf, &m);
             break;
 
         case G_SIZE_T:
             snprintf(tmp, sizeof(tmp), "%zu", G_AS_SIZE(g));
             m.data = tmp, m.size = strlen(tmp);
-            buffer_append_chunk(buf, &m);
+            buffer_append_memchunk(buf, &m);
             break;
 
         case G_VECTOR_T:
@@ -292,8 +292,8 @@ void generic_serialize(generic_t g, buffer_t *buf)
             dict_serialize(G_AS_PTR(g), buf);
             break;
 
-        case G_MCHUNK_T:
-            memchunk_serialize(G_AS_MCHUNK(g), buf);
+        case G_MEMCHUNK_T:
+            memchunk_serialize(G_AS_MEMCHUNK(g), buf);
             break;
 
         case G_BOOL_T:
@@ -721,9 +721,9 @@ size_t generic_hash(generic_t g, void_hasher_t hasher)
         case G_SIZE_T:
             return G_AS_SIZE(g);
 
-        case G_MCHUNK_T:
-            data = G_AS_MCHUNK_DATA(g);
-            size = G_AS_MCHUNK_SIZE(g);
+        case G_MEMCHUNK_T:
+            data = G_AS_MEMCHUNK_DATA(g);
+            size = G_AS_MEMCHUNK_SIZE(g);
             break;
 
         case G_BOOL_T:

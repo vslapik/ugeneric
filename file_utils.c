@@ -214,7 +214,7 @@ generic_t file_reader_read(file_reader_t *fr, size_t size)
         }
     }
 
-    return G_MCHUNK(fr->buffer, r);
+    return G_MEMCHUNK(fr->buffer, r);
 }
 
 bool file_reader_has_next(const file_reader_t *fr)

@@ -34,19 +34,19 @@ void test_file_reader(void)
     fr = G_AS_PTR(g);
 
     ASSERT_NO_ERROR(g = file_reader_read_full_buffer(fr));
-    m = G_AS_MCHUNK(g);
+    m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "313233");
     ufree(data);
 
     ASSERT_NO_ERROR(g = file_reader_read_full_buffer(fr));
-    m = G_AS_MCHUNK(g);
+    m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "343536");
     ufree(data);
 
     ASSERT_NO_ERROR(g = file_reader_read_full_buffer(fr));
-    m = G_AS_MCHUNK(g);
+    m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "373839");
     ufree(data);
@@ -54,7 +54,7 @@ void test_file_reader(void)
     ASSERT_NO_ERROR(file_reader_reset(fr));
 
     ASSERT_NO_ERROR(g = file_reader_read_full_buffer(fr));
-    m = G_AS_MCHUNK(g);
+    m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "313233");
     ufree(data);
@@ -84,7 +84,7 @@ void test_file_reader(void)
     ASSERT_NO_ERROR(g = file_reader_create("utdata/100", 1));
     fr = G_AS_PTR(g);
     ASSERT_NO_ERROR(g = file_reader_read(fr, 5));
-    m = G_AS_MCHUNK(g);
+    m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "3132333435");
     ufree(data);
@@ -107,7 +107,7 @@ void test_file_writer(size_t buffer_size)
     {
         g = file_reader_read_full_buffer(fr);
         ASSERT_NO_ERROR(g);
-        g = file_writer_write(fw, G_AS_MCHUNK(g));
+        g = file_writer_write(fw, G_AS_MEMCHUNK(g));
         ASSERT_NO_ERROR(g);
     }
 
