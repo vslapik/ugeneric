@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "vector.h"
-#include "mem.h"
+#include "buffer.h"
 #include "asserts.h"
 #include "string_utils.h"
 
@@ -68,17 +68,12 @@ char *string_ndup(const char *str, size_t n)
     return p;
 }
 
-/*
- * Something similar to glibc asprintf.
- */
-char *string_fmt(const char *fmt, ...)
+static memchunk_t _vstr_fmt(const char *fmt, va_list ap)
 {
-    ASSERT_INPUT(fmt);
-
     int size = 0;
     char *str = NULL;
-    va_list ap, ap_copy;
-    va_start(ap, fmt);
+    memchunk_t mem;
+    va_list ap_copy;
     va_copy(ap_copy, ap);
 
     size = vsnprintf(str, size, fmt, ap_copy);
@@ -89,9 +84,46 @@ char *string_fmt(const char *fmt, ...)
         ASSERT(vsnprintf(str, size, fmt, ap) > 0);
     }
     va_end(ap_copy);
-    va_end(ap);
+
+    mem.data = str;
+    mem.size = size - 1;
+    return mem;
+}
+
+/*
+ * Something similar to glibc asprintf.
+ */
+char *string_fmt(const char *fmt, ...)
+{
+    ASSERT_INPUT(fmt);
+
+    va_list ap, ap_copy;
+    memchunk_t mem;
+    char *str = NULL;
+
+    va_start(ap, fmt);
+    va_copy(ap_copy, ap);
+    mem = _vstr_fmt(fmt, ap_copy);
+    va_end(ap_copy);
+    str = mem.data;
+    str[mem.size] = 0; // room for 0 is assured by _vstr_fmt
 
     return str;
+}
+
+memchunk_t string_fmt_to_memchunk(const char *fmt, ...)
+{
+    ASSERT_INPUT(fmt);
+
+    va_list ap, ap_copy;
+    memchunk_t mem;
+
+    va_start(ap, fmt);
+    va_copy(ap_copy, ap);
+    mem = _vstr_fmt(fmt, ap_copy);
+    va_end(ap_copy);
+
+    return mem;
 }
 
 bool string_starts_with(const char *str, const char *prefix)

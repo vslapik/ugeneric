@@ -205,33 +205,33 @@ generic_t generic_copy(generic_t g, void_cpy_t cpy)
     return ret;
 }
 
-int generic_fprint(generic_t g, FILE *out)
+int generic_fprint(generic_t g, void_s8r_t void_serializer, FILE *out)
 {
     ASSERT_INPUT(out);
 
-    char *str = generic_as_str(g);
+    char *str = generic_as_str(g, void_serializer);
     int ret = fprintf(out, "%s\n", str);
     ufree(str);
 
     return ret;
 }
 
-int generic_print(generic_t g)
+int generic_print(generic_t g, void_s8r_t void_serializer)
 {
-    return generic_fprint(g, stdout);
+    return generic_fprint(g, void_serializer, stdout);
 }
 
-char *generic_as_str(generic_t g)
+char *generic_as_str(generic_t g, void_s8r_t void_serializer)
 {
     buffer_t buf = {0};
 
-    generic_serialize(g, &buf);
+    generic_serialize(g, &buf, void_serializer);
     buffer_null_terminate(&buf);
 
     return buf.data;
 }
 
-void generic_serialize(generic_t g, buffer_t *buf)
+void generic_serialize(generic_t g, buffer_t *buf, void_s8r_t void_serializer)
 {
     ASSERT_INPUT(buf);
 
@@ -245,9 +245,18 @@ void generic_serialize(generic_t g, buffer_t *buf)
             break;
 
         case G_PTR_T:
-            snprintf(tmp, sizeof(tmp), "&%p", G_AS_PTR(g));
-            m.data = tmp, m.size = strlen(tmp);
-            buffer_append_memchunk(buf, &m);
+            if (void_serializer)
+            {
+                m = void_serializer(G_AS_PTR(g));
+                buffer_append_memchunk(buf, &m);
+                ufree(m.data);
+            }
+            else
+            {
+                snprintf(tmp, sizeof(tmp), "&%p", G_AS_PTR(g));
+                m.data = tmp, m.size = strlen(tmp);
+                buffer_append_memchunk(buf, &m);
+            }
             break;
 
         case G_STR_T:

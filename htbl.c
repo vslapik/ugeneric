@@ -280,9 +280,9 @@ void htbl_serialize(const htbl_t *h, buffer_t *buf)
     while (htbl_iterator_has_next(hi))
     {
         generic_kv_t kv = htbl_iterator_get_next(hi);
-        generic_serialize(kv.k, buf);
+        generic_serialize(kv.k, buf, NULL);
         buffer_append_data(buf, ": ", 2);
-        generic_serialize(kv.v, buf);
+        generic_serialize(kv.v, buf, NULL);
         if (htbl_iterator_has_next(hi))
         {
             buffer_append_data(buf, ", ", 2);
@@ -348,8 +348,8 @@ void htbl_dump_to_dot(const htbl_t *h, FILE *out)
             fprintf(out, "\n");
             while (hr)
             {
-                char *k = generic_as_str(hr->k);
-                char *v = generic_as_str(hr->v);
+                char *k = generic_as_str(hr->k, NULL);
+                char *v = generic_as_str(hr->v, NULL);
                 fprintf(out, "    node%zu [label = \"{ <data> '%s':'%s' | <ref> }\"];\n",
                         j++, k, v);
                 hr = hr->next;

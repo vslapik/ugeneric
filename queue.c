@@ -137,7 +137,7 @@ void queue_serialize(const queue_t *q, buffer_t *buf)
     buffer_append_byte(buf, '[');
     for (size_t i = 0; i < q->size; i++)
     {
-        generic_serialize(q->data[(q->h + i) % q->capacity], buf);
+        generic_serialize(q->data[(q->h + i) % q->capacity], buf, NULL);
         if (i < q->size - 1)
         {
             buffer_append_data(buf, ", ", 2);

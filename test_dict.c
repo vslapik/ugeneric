@@ -233,7 +233,7 @@ void test_dict_iterator(dict_backend_t backend)
         vector_append(v, (dict_iterator_get_next(di).k));
     }
     vector_sort(v);
-    char *str = generic_as_str(G_VECTOR(v));
+    char *str = generic_as_str(G_VECTOR(v), NULL);
     ASSERT_STR_EQ("[-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6]", str);
 
     dict_iterator_destroy(di);

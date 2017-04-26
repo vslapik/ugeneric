@@ -49,9 +49,11 @@ void vector_drop_data_ownership(vector_t *v);
 void vector_set_destroyer(vector_t *v, void_dtr_t dtr);
 void vector_set_comparator(vector_t *v, void_cmp_t cmp);
 void vector_set_copier(vector_t *v, void_cpy_t cpy);
+void vector_set_void_serializer(vector_t *v, void_s8r_t serializer);
 void_dtr_t vector_get_destroyer(const vector_t *v);
 void_cmp_t vector_get_comparator(const vector_t *v);
 void_cpy_t vector_get_copier(const vector_t *v);
+void_s8r_t vector_get_void_serializer(const vector_t *v);
 
 char *vector_as_str(const vector_t *v);
 void vector_serialize(const vector_t *v, buffer_t *buf);

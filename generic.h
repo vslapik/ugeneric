@@ -129,7 +129,8 @@ static inline bool G_IS_MEMCHUNK(generic_t g){return g.type.type > G_MEMCHUNK_T;
 typedef int (*void_cmp_t)(const void *ptr1, const void *ptr2);
 typedef void *(*void_cpy_t)(const void *ptr);
 typedef void (*void_dtr_t)(void *ptr);
-typedef size_t (*void_hasher_t)(const void *data);
+typedef memchunk_t (*void_s8r_t)(const void *ptr);
+typedef size_t (*void_hasher_t)(const void *ptr);
 typedef bool (*generic_kv_iter_t)(generic_t k, generic_t v, void *data);
 
 generic_t generic_copy(generic_t g, void_cpy_t cpy);
@@ -141,10 +142,10 @@ size_t generic_hash(generic_t g, void_hasher_t hasher);
 void generic_error_destroy(generic_t g);
 void generic_error_print(generic_t g);
 
-char *generic_as_str(generic_t g);
-void generic_serialize(generic_t g, buffer_t *buf);
-int generic_fprint(generic_t g, FILE *out);
-int generic_print(generic_t g);
+char *generic_as_str(generic_t g, void_s8r_t serializer);
+void generic_serialize(generic_t g, buffer_t *buf, void_s8r_t void_serializer);
+int generic_fprint(generic_t g, void_s8r_t void_serializer, FILE *out);
+int generic_print(generic_t g, void_s8r_t void_serializer);
 
 generic_t generic_parse(const char *str);
 

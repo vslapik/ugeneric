@@ -17,6 +17,7 @@ struct list_opaq {
     void_cpy_t cpy;
     void_cmp_t cmp;
     void_dtr_t dtr;
+    void_s8r_t void_serializer;
 };
 
 struct list_iterator_opaq {
@@ -345,7 +346,7 @@ void list_serialize(const list_t *l, buffer_t *buf)
     buffer_append_byte(buf, '[');
     while (li)
     {
-        generic_serialize(li->data, buf);
+        generic_serialize(li->data, buf, l->void_serializer);
         li = li->next;
         if (i++ < l->size - 1)
         {

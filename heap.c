@@ -222,7 +222,7 @@ void heap_dump_to_dot(const heap_t *h, const char *name, FILE *out)
         char *str =  string_fmt("\"%08" PRIxPTR "\"", &a[i]);
         char *lstr = LCHILD_IDX(i) < size ? string_fmt("\"%08" PRIxPTR "\"", &a[LCHILD_IDX(i)]) : NULL;
         char *rstr = RCHILD_IDX(i) < size ? string_fmt("\"%08" PRIxPTR "\"", &a[RCHILD_IDX(i)]) : NULL;
-        char *vstr = generic_as_str(a[i]);
+        char *vstr = generic_as_str(a[i], NULL);
 
         fprintf(out, "    %s [style = filled, fillcolor = %s, fontcolor = %s, label = %s];\n",
                 str,

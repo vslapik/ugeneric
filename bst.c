@@ -712,9 +712,9 @@ bool _serialize(bst_node_t *node, void *data)
     _serialize_data_t *d = data;
 
     d->nodes_left -= 1;
-    generic_serialize(node->k, d->buf);
+    generic_serialize(node->k, d->buf, NULL);
     buffer_append_data(d->buf, ": ", 2);
-    generic_serialize(node->v, d->buf);
+    generic_serialize(node->v, d->buf, NULL);
     if (d->nodes_left)
     {
         buffer_append_data(d->buf, ", ", 2);
@@ -852,8 +852,8 @@ bool _dump2dot(bst_node_t *node, void *data)
 {
     _dump2dot_data_t *d = data;
 
-    char *kstr = generic_as_str(node->k);
-    char *vstr = d->dump_values ? generic_as_str(node->v) : NULL;
+    char *kstr = generic_as_str(node->k, NULL);
+    char *vstr = d->dump_values ? generic_as_str(node->v, NULL) : NULL;
     char *str = string_fmt("\"%08" PRIxPTR "\"", node);
 
     char *lstr;

@@ -52,7 +52,7 @@ void test_generic(void)
 {
     //printf("%zu\n", sizeof(generic_t));
 
-    char *str = generic_as_str(G_STR("generic"));
+    char *str = generic_as_str(G_STR("generic"), NULL);
     ASSERT(strcmp(str, "\"generic\"") == 0) ;
     ufree(str);
 }
@@ -168,7 +168,7 @@ void test_parse(void)
                 generic_error_destroy(g);
                 ABORT("test failed");
             }
-            char *out = generic_as_str(g);
+            char *out = generic_as_str(g, NULL);
             ASSERT_STR_EQ(out, t->out);
             ufree(out);
             //generic_print(g);
@@ -227,7 +227,7 @@ void test_serialize(void)
     vector_set_destroyer(v, ufree);
     dict_put(d, G_CSTR("key"), G_VECTOR(v));
 
-    char *str = generic_as_str(G_DICT(d));
+    char *str = generic_as_str(G_DICT(d), NULL);
     ASSERT_STR_EQ(str, "{\"key\": [null, true, false, [], {}, -1, 2, 3.4, 1888888888888881, &(nil)]}");
     ufree(str);
     dict_destroy(d);
@@ -252,7 +252,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            generic_print(res);
+            generic_print(res, NULL);
         }
     }
 

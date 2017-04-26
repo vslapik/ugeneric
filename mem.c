@@ -33,6 +33,7 @@ void *umalloc(size_t size)
     if (!p)
     {
         fprintf(stderr, "out of memory error\n");
+        print_trace();
         exit(EC_OOM);
     }
 
@@ -54,6 +55,7 @@ void *ucalloc(size_t nmemb, size_t size)
     if (!p)
     {
         fprintf(stderr, "out of memory error\n");
+        print_trace();
         exit(EC_OOM);
     }
 
@@ -75,6 +77,7 @@ void *urealloc(void *ptr, size_t size)
     if (!p)
     {
         fprintf(stderr, "out of memory error\n");
+        print_trace();
         exit(EC_OOM);
     }
 

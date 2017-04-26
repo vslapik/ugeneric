@@ -30,7 +30,7 @@ bool _tree_keys_to_str(generic_t k, generic_t v, void *data)
 {
     (void)v;
     buffer_t *buf = data;
-    generic_serialize(k, buf);
+    generic_serialize(k, buf, NULL);
 
     return false;
 }

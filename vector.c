@@ -14,6 +14,7 @@ struct vector_opaq {
     void_cpy_t cpy;
     void_cmp_t cmp;
     void_dtr_t dtr;
+    void_s8r_t void_serializer;
 };
 
 static vector_t *_vcpy(const vector_t *v, bool deep)
@@ -52,6 +53,7 @@ static vector_t *_allocate_vector(void)
     v->cpy = NULL;
     v->cmp = NULL;
     v->dtr = NULL;
+    v->void_serializer = NULL;
 
     return v;
 }
@@ -165,6 +167,18 @@ void_cpy_t vector_get_copier(const vector_t *v)
 {
     ASSERT_INPUT(v);
     return v->cpy;
+}
+
+void_s8r_t vector_get_void_serializer(const vector_t *v)
+{
+    ASSERT_INPUT(v);
+    return v->void_serializer;
+}
+
+void vector_set_void_serializer(vector_t *v, void_s8r_t serializer)
+{
+    ASSERT_INPUT(v);
+    v->void_serializer = serializer;
 }
 
 void vector_destroy(vector_t *v)
@@ -397,7 +411,7 @@ void vector_serialize(const vector_t *v, buffer_t *buf)
     buffer_append_byte(buf, '[');
     for (size_t i = 0; i < v->size; i++)
     {
-        generic_serialize(v->cells[i], buf);
+        generic_serialize(v->cells[i], buf, v->void_serializer);
         if (i < v->size - 1)
         {
             buffer_append_data(buf, ", ", 2);
