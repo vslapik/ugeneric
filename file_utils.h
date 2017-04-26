@@ -23,14 +23,18 @@ generic_t file_reader_create(const char *path, size_t buffer_size);
 generic_t file_reader_read(file_reader_t *fr, size_t size);
 generic_t file_reader_read_full_buffer(file_reader_t *fr);
 generic_t file_reader_get_file_size(file_reader_t *fr);
-generic_t file_reader_destroy(file_reader_t *fr);
+generic_t file_reader_get_position(const file_reader_t *fr);
 generic_t file_reader_reset(file_reader_t *fr);
 size_t file_reader_get_buffer_size(const file_reader_t *fr);
 bool file_reader_has_next(const file_reader_t *fr);
+FILE *file_reader_get_file(const file_reader_t *fr);
+generic_t file_reader_destroy(file_reader_t *fr);
 
 generic_t file_writer_create(const char *path);
 generic_t file_writer_write(file_writer_t *fw, memchunk_t mchunk);
 size_t file_writer_get_file_size(file_writer_t *fw);
+generic_t file_writer_get_position(const file_writer_t *fw);
+FILE *file_writer_get_file(const file_writer_t *fw);
 generic_t file_writer_destroy(file_writer_t *fw);
 
 #endif

@@ -9,10 +9,13 @@ size_t execute_read(const char *path, size_t buffer_size)
     ASSERT_NO_ERROR(g);
 
     file_reader_t *fr = G_AS_PTR(g);
+    size_t offset = 0;
     while (file_reader_has_next(fr))
     {
-        g = file_reader_read_full_buffer(fr);
-        ASSERT_NO_ERROR(g);
+        g = file_reader_get_position(fr); ASSERT_NO_ERROR(g);
+        ASSERT_INT_EQ(offset, G_AS_SIZE(g));
+        g = file_reader_read_full_buffer(fr); ASSERT_NO_ERROR(g);
+        offset += buffer_size;
 
 //        generic_print(g);
         read_count++;

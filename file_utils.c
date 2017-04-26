@@ -18,17 +18,30 @@ struct file_writer_opaq {
     size_t write_offset;
 };
 
-generic_t _get_file_size(FILE *f, bool save_pos)
+static generic_t _get_position(FILE *f)
+{
+    long pos = ftell(f);
+    if (pos == -1)
+    {
+        return G_ERROR_IO;
+    }
+
+    return G_SIZE(pos);
+}
+
+static generic_t _get_file_size(FILE *f, bool save_pos)
 {
     long saved_pos;
+    long fsize;
+    generic_t g;
 
     if (save_pos)
     {
-        saved_pos = ftell(f);
-        if (saved_pos == -1)
+        if (G_IS_ERROR(g = _get_position(f)))
         {
-            return G_ERROR_IO;
+            return g;
         }
+        saved_pos = G_AS_SIZE(g);
     }
 
     if (fseek(f, 0, SEEK_END) == -1)
@@ -36,11 +49,11 @@ generic_t _get_file_size(FILE *f, bool save_pos)
         return G_ERROR_IO;
     }
 
-    long fsize = ftell(f);
-    if (fsize == -1)
+    if (G_IS_ERROR(g = _get_position(f)))
     {
-        return G_ERROR_IO;
+        return g;
     }
+    fsize = G_AS_SIZE(g);
 
     if (save_pos)
     {
@@ -235,6 +248,29 @@ generic_t file_reader_reset(file_reader_t *fr)
     return G_NULL;
 }
 
+generic_t file_reader_get_file_size(file_reader_t *fr)
+{
+    ASSERT_INPUT(fr);
+    return _get_file_size(fr->file, true);
+}
+
+size_t file_reader_get_buffer_size(const file_reader_t *fr)
+{
+    ASSERT_INPUT(fr);
+    return fr->buffer_size;
+}
+
+generic_t file_reader_get_position(const file_reader_t *fr)
+{
+    ASSERT_INPUT(fr);
+    return _get_position(fr->file);
+}
+
+FILE *file_reader_get_file(const file_reader_t *fr)
+{
+    return fr->file;
+}
+
 generic_t file_reader_destroy(file_reader_t *fr)
 {
     generic_t g = G_NULL;
@@ -246,17 +282,6 @@ generic_t file_reader_destroy(file_reader_t *fr)
     }
 
     return g;
-}
-
-generic_t file_reader_get_file_size(file_reader_t *fr)
-{
-    ASSERT_INPUT(fr);
-    return _get_file_size(fr->file, true);
-}
-
-size_t file_reader_get_buffer_size(const file_reader_t *fr)
-{
-    return fr->buffer_size;
 }
 
 generic_t file_writer_create(const char *path)
@@ -295,6 +320,17 @@ size_t file_writer_get_file_size(file_writer_t *fw)
 {
     ASSERT_INPUT(fw);
     return fw->write_offset;
+}
+
+generic_t file_writer_get_position(const file_writer_t *fw)
+{
+    ASSERT_INPUT(fw);
+    return _get_position(fw->file);
+}
+
+FILE *file_writer_get_file(const file_writer_t *fw)
+{
+    return fw->file;
 }
 
 generic_t file_writer_destroy(file_writer_t *fw)
