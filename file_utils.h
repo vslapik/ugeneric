@@ -20,7 +20,7 @@ generic_t file_read_to_string(const char *path);
 generic_t file_read_lines(const char *path);
 
 generic_t file_reader_create(const char *path, size_t buffer_size);
-generic_t file_reader_read(file_reader_t *fr, size_t size, memchunk_t *chun);
+generic_t file_reader_read(file_reader_t *fr, size_t size, void *buffer);
 generic_t file_reader_get_file_size(file_reader_t *fr);
 generic_t file_reader_get_position(const file_reader_t *fr);
 generic_t file_reader_set_position(file_reader_t *fr, size_t position);

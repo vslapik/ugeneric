@@ -207,15 +207,15 @@ generic_t file_reader_create(const char *path, size_t buffer_size)
 }
 
 /*
- * Read to memory provided by caller or to internal buffer if chunk is NULL.
+ * Read to memory provided by caller or to internal buffer if passed buffer is NULL.
  */
-generic_t file_reader_read(file_reader_t *fr, size_t size, memchunk_t *chunk)
+generic_t file_reader_read(file_reader_t *fr, size_t size, void *buffer)
 {
     ASSERT_INPUT(fr);
 
-    if (!chunk)
+    if (!buffer)
     {
-        // Expand buffer if it is not sufficient.
+        // Expand internal buffer if it is not sufficient.
         if (fr->buffer_size < size)
         {
             ufree(fr->buffer);
@@ -224,8 +224,8 @@ generic_t file_reader_read(file_reader_t *fr, size_t size, memchunk_t *chunk)
         }
     }
 
-    void *buffer = chunk ? chunk->data : fr->buffer;
-    size_t r = fread(buffer, 1, size, fr->file);
+    void *dst = buffer ? buffer : fr->buffer;
+    size_t r = fread(dst, 1, size, fr->file);
 
     // Short read, either EOF reached or I/O error.
     if (r < size)
@@ -235,9 +235,9 @@ generic_t file_reader_read(file_reader_t *fr, size_t size, memchunk_t *chunk)
             return G_ERROR_IO;
         }
     }
-    fr->read_offset += r;
+    fr->read_offset += size;
 
-    return chunk ? G_MEMCHUNK(chunk->data, chunk->size) : G_MEMCHUNK(fr->buffer, r);
+    return buffer ? G_MEMCHUNK(buffer, size) : G_MEMCHUNK(fr->buffer, r);
 }
 
 bool file_reader_has_next(const file_reader_t *fr)
