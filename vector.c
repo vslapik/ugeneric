@@ -62,19 +62,17 @@ int vector_compare(const vector_t *v1, const vector_t *v2, void_cmp_t cmp)
 {
     ASSERT_INPUT(v1);
     ASSERT_INPUT(v2);
-    ASSERT_INPUT(v1->size == v2->size);
 
-    int diff = 0;
-    for (size_t i = 0; i < v1->size; i++)
+    size_t size = MIN(v1->size, v2->size);
+    for (size_t i = 0; i < size; i++)
     {
-        diff = generic_compare(v1->cells[i], v2->cells[i], cmp);
+        int diff = generic_compare(v1->cells[i], v2->cells[i], cmp);
         if (diff)
         {
-            break;
+            return diff;
         }
     }
-
-    return diff;
+    return v1->size - v2->size;
 }
 
 vector_t *vector_create_with_size(size_t size, generic_t value)

@@ -127,6 +127,13 @@ void test_list_api(void)
     list_append(l2, G_INT(4));
     ASSERT_INT_EQ(list_compare(l1, l2, NULL), 1);
     ASSERT_INT_EQ(list_compare(l2, l1, NULL), -1);
+
+    list_pop_back(l1);
+    ASSERT_INT_EQ(list_compare(l1, l2, NULL), -1);
+    list_pop_back(l2);
+    list_pop_back(l2);
+    ASSERT_INT_EQ(list_compare(l1, l2, NULL), 1);
+
     list_destroy(l1);
     list_destroy(l2);
 }

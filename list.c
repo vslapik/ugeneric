@@ -284,26 +284,24 @@ int list_compare(const list_t *l1, const list_t *l2, void_cmp_t cmp)
 {
     ASSERT_INPUT(l1);
     ASSERT_INPUT(l2);
-    ASSERT_INPUT(l1->size == l2->size);
 
-    int ret = 0;
     list_item_t *l = l1->head;
     list_item_t *r = l2->head;
 
-    while (l)
+    while (l && r)
     {
-        ret = generic_compare(l->data, r->data, cmp);
-        if (ret == 0)
+        int diff = generic_compare(l->data, r->data, cmp);
+        if (diff == 0)
         {
             l = l->next;
             r = r->next;
         }
         else
         {
-            break;
+            return diff;
         }
     }
-    return ret;
+    return l1->size - l2->size;
 }
 
 list_t *list_copy(const list_t *l)

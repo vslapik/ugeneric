@@ -233,18 +233,6 @@ void test_vector_api()
     vector_set_at(v, 0, G_STR(string_dup("string2")));
     vector_destroy(v);
 
-    vector_t *v1 = vector_create();
-    vector_t *v2 = vector_create();
-    vector_append(v1, G_STR(string_dup("s1")));
-    vector_append(v2, G_STR(string_dup("s1")));
-    ASSERT(vector_compare(v1, v2, NULL) == 0);
-    vector_set_at(v1, 0, G_STR(string_dup("s3")));
-    ASSERT(vector_compare(v1, v2, NULL) != 0);
-    vector_set_at(v2, 0, G_STR(string_dup("s4")));
-    ASSERT(vector_compare(v1, v2, NULL) < 0);
-    vector_destroy(v1);
-    vector_destroy(v2);
-
     v = vector_create();
     vector_append(v, G_INT(123));
     ASSERT_INT_EQ(G_AS_INT(vector_get_at(v, 0)), 123);
@@ -289,6 +277,42 @@ void test_vector_api()
     */
 }
 
+int cmp(const char *s1, const char *s2)
+{
+    generic_t gv1 = generic_parse(s1);
+    generic_t gv2 = generic_parse(s2);
+    ASSERT_NO_ERROR(gv1);
+    ASSERT_NO_ERROR(gv2);
+    vector_t *v1 = G_AS_PTR(gv1);
+    vector_t *v2 = G_AS_PTR(gv2);
+    int diff = vector_compare(v1, v2, NULL);
+    vector_destroy(v1);
+    vector_destroy(v2);
+    return diff;
+}
+
+void test_vector_compare(void)
+{
+    vector_t *v1 = vector_create();
+    vector_t *v2 = vector_create();
+    vector_append(v1, G_STR(string_dup("s1")));
+    vector_append(v2, G_STR(string_dup("s1")));
+    ASSERT(vector_compare(v1, v2, NULL) == 0);
+    vector_set_at(v1, 0, G_STR(string_dup("s3")));
+    ASSERT(vector_compare(v1, v2, NULL) != 0);
+    vector_set_at(v2, 0, G_STR(string_dup("s4")));
+    ASSERT(vector_compare(v1, v2, NULL) < 0);
+    vector_destroy(v1);
+    vector_destroy(v2);
+
+    ASSERT(cmp("[]", "[]") == 0);
+    ASSERT(cmp("[1]", "[1]") == 0);
+    ASSERT(cmp("[1, 2, 3]", "[1, 2, 3]") == 0);
+    ASSERT(cmp("[1, 2]", "[1, 2, 3]") < 0);
+    ASSERT(cmp("[1, 2, 3]", "[1, 2]") > 0);
+    ASSERT(cmp("[3, 2, 3]", "[1, 2, 3]") > 0);
+}
+
 int main(int argc, char **argv)
 {
     (void)argv;
@@ -297,6 +321,7 @@ int main(int argc, char **argv)
     test_vector_next_permutation(argc > 1);
     test_vector_copy(argc > 1);
     test_vector_bsearch();
+    test_vector_compare();
 
     return EXIT_SUCCESS;
 }
