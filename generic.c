@@ -39,6 +39,7 @@ int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
 
     // Generics of different types are always not equal.
     int ret = (generic_get_type(g1) - generic_get_type(g2));
+    double f1, f2;
 
     if (ret == 0)
     {
@@ -58,7 +59,20 @@ int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
                 break;
 
             case G_REAL_T:
-                ret = G_AS_REAL(g1) - G_AS_REAL(g2);
+                f1 = G_AS_REAL(g1);
+                f2 = G_AS_REAL(g2);
+                if (f1 == f2)
+                {
+                    ret = 0;
+                }
+                else if (f1 > f2)
+                {
+                    ret = 1;
+                }
+                else
+                {
+                    ret = -1;
+                }
                 break;
 
             case G_SIZE_T:

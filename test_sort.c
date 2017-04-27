@@ -20,7 +20,8 @@ void test_sort(sort_func sort)
     long int d[] = {1, 3, 4, 10, 15, 16, 100, 32, 11, 2, 63, 3, 4};
     long int e[] = {1, 1, 1, 2, 2};
     long int f[] = {3, 2, 1, 0, -1};
-    long int z[] = {-1};
+    long int g[] = {-1};
+    double h[] = {-0.7, 0.9, 0.3, -0.1};
 
     const char *va = "[2, 4]";
     const char *vb = "[1, 2, 4]";
@@ -28,11 +29,12 @@ void test_sort(sort_func sort)
     const char *vd = "[1, 2, 3, 3, 4, 4, 10, 11, 15, 16, 32, 63, 100]";
     const char *ve = "[1, 1, 1, 2, 2]";
     const char *vf = "[-1, 0, 1, 2, 3]";
-    const char *vz = "[-1]";
+    const char *vg = "[-1]";
+    const char *vh = "[-0.7, -0.1, 0.3, 0.9]";
 
-    #define check_on_array(arr, sort) {                                 \
+    #define check_on_array(arr, sort, type) {                          \
         /*puts("sorting "#arr); */                                      \
-        vector_t *v = vector_create_from_array(arr, ARR_LEN(arr), sizeof(arr[0]), G_INT_T); \
+        vector_t *v = vector_create_from_array(arr, ARR_LEN(arr), sizeof(arr[0]), type); \
         sort(vector_get_cells(v), ARR_LEN(arr), NULL);                  \
         char *str = vector_as_str(v);                                   \
         ASSERT_STR_EQ(str, v##arr);                                     \
@@ -40,13 +42,14 @@ void test_sort(sort_func sort)
         ufree(str);                                                     \
     }
 
-    check_on_array(a, sort);
-    check_on_array(b, sort);
-    check_on_array(c, sort);
-    check_on_array(d, sort);
-    check_on_array(e, sort);
-    check_on_array(f, sort);
-    check_on_array(z, sort);
+    check_on_array(a, sort, G_INT_T);
+    check_on_array(b, sort, G_INT_T);
+    check_on_array(c, sort, G_INT_T);
+    check_on_array(d, sort, G_INT_T);
+    check_on_array(e, sort, G_INT_T);
+    check_on_array(f, sort, G_INT_T);
+    check_on_array(g, sort, G_INT_T);
+    check_on_array(h, sort, G_REAL_T);
 }
 
 void test_count_iversions()
