@@ -14,7 +14,7 @@ size_t execute_read(const char *path, size_t buffer_size)
     {
         g = file_reader_get_position(fr); ASSERT_NO_ERROR(g);
         ASSERT_INT_EQ(offset, G_AS_SIZE(g));
-        g = file_reader_read_full_buffer(fr); ASSERT_NO_ERROR(g);
+        g = file_reader_read(fr, buffer_size, NULL); ASSERT_NO_ERROR(g);
         offset += buffer_size;
 
 //        generic_print(g);
@@ -33,22 +33,23 @@ void test_file_reader(void)
     char *data;
     file_reader_t *fr;
 
-    ASSERT_NO_ERROR(g = file_reader_create("utdata/100", 3));
+    size_t buffer_size = 3;
+    ASSERT_NO_ERROR(g = file_reader_create("utdata/100", buffer_size));
     fr = G_AS_PTR(g);
 
-    ASSERT_NO_ERROR(g = file_reader_read_full_buffer(fr));
+    ASSERT_NO_ERROR(g = file_reader_read(fr, buffer_size, NULL));
     m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "313233");
     ufree(data);
 
-    ASSERT_NO_ERROR(g = file_reader_read_full_buffer(fr));
+    ASSERT_NO_ERROR(g = file_reader_read(fr, buffer_size, NULL));
     m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "343536");
     ufree(data);
 
-    ASSERT_NO_ERROR(g = file_reader_read_full_buffer(fr));
+    ASSERT_NO_ERROR(g = file_reader_read(fr, buffer_size, NULL));
     m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "373839");
@@ -56,7 +57,7 @@ void test_file_reader(void)
 
     ASSERT_NO_ERROR(file_reader_reset(fr));
 
-    ASSERT_NO_ERROR(g = file_reader_read_full_buffer(fr));
+    ASSERT_NO_ERROR(g = file_reader_read(fr, buffer_size, NULL));
     m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "313233");
@@ -86,7 +87,7 @@ void test_file_reader(void)
     // Buffer grows
     ASSERT_NO_ERROR(g = file_reader_create("utdata/100", 1));
     fr = G_AS_PTR(g);
-    ASSERT_NO_ERROR(g = file_reader_read(fr, 5));
+    ASSERT_NO_ERROR(g = file_reader_read(fr, 5, NULL));
     m = G_AS_MEMCHUNK(g);
     data = memchunk_as_str(m);
     ASSERT_STR_EQ(data, "3132333435");
@@ -108,7 +109,7 @@ void test_file_writer(size_t buffer_size)
     file_writer_t *fw = G_AS_PTR(gw);
     while (file_reader_has_next(fr))
     {
-        g = file_reader_read_full_buffer(fr);
+        g = file_reader_read(fr, buffer_size, NULL);
         ASSERT_NO_ERROR(g);
         g = file_writer_write(fw, G_AS_MEMCHUNK(g));
         ASSERT_NO_ERROR(g);

@@ -206,25 +206,26 @@ generic_t file_reader_create(const char *path, size_t buffer_size)
     return G_PTR(fr);
 }
 
-generic_t file_reader_read_full_buffer(file_reader_t *fr)
-{
-    return file_reader_read(fr, fr->buffer_size);
-}
-
-generic_t file_reader_read(file_reader_t *fr, size_t size)
+/*
+ * Read to memory provided by caller or to internal buffer if chunk is NULL.
+ */
+generic_t file_reader_read(file_reader_t *fr, size_t size, memchunk_t *chunk)
 {
     ASSERT_INPUT(fr);
 
-    // Expand buffer if it is not sufficient.
-    if (fr->buffer_size < size)
+    if (!chunk)
     {
-        ufree(fr->buffer);
-        fr->buffer = umalloc(size);
-        fr->buffer_size = size;
+        // Expand buffer if it is not sufficient.
+        if (fr->buffer_size < size)
+        {
+            ufree(fr->buffer);
+            fr->buffer = umalloc(size);
+            fr->buffer_size = size;
+        }
     }
 
-    size_t r = fread(fr->buffer, 1, size, fr->file);
-    fr->read_offset += r;
+    void *buffer = chunk ? chunk->data : fr->buffer;
+    size_t r = fread(buffer, 1, size, fr->file);
 
     // Short read, either EOF reached or I/O error.
     if (r < size)
@@ -234,8 +235,9 @@ generic_t file_reader_read(file_reader_t *fr, size_t size)
             return G_ERROR_IO;
         }
     }
+    fr->read_offset += r;
 
-    return G_MEMCHUNK(fr->buffer, r);
+    return chunk ? G_MEMCHUNK(chunk->data, chunk->size) : G_MEMCHUNK(fr->buffer, r);
 }
 
 bool file_reader_has_next(const file_reader_t *fr)
