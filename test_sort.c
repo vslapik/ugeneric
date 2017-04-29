@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 #include "mem.h"
 #include "sort.h"
 #include "vector.h"
@@ -32,7 +33,7 @@ void test_sort(sort_func sort)
     const char *vg = "[-1]";
     const char *vh = "[-0.7, -0.1, 0.3, 0.9]";
 
-    #define check_on_array(arr, sort, type) {                          \
+    #define check_on_array(arr, sort, type) {                           \
         /*puts("sorting "#arr); */                                      \
         vector_t *v = vector_create_from_array(arr, ARR_LEN(arr), sizeof(arr[0]), type); \
         sort(vector_get_cells(v), ARR_LEN(arr), NULL);                  \

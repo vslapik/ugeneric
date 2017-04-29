@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <errno.h>
+#include <math.h>
 #include "generic.h"
 #include "mem.h"
 #include "vector.h"
@@ -61,17 +62,21 @@ int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
             case G_REAL_T:
                 f1 = G_AS_REAL(g1);
                 f2 = G_AS_REAL(g2);
-                if (f1 == f2)
+                if ((f1 != f1) || (f2 != f2))
                 {
-                    ret = 0;
+                    ABORT("NAN in comparison");
                 }
-                else if (f1 > f2)
+                if (f1 > f2)
                 {
                     ret = 1;
                 }
-                else
+                else if (f1 < f2)
                 {
                     ret = -1;
+                }
+                else
+                {
+                    ret = 0;
                 }
                 break;
 
@@ -108,6 +113,8 @@ int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
 
 void generic_destroy(generic_t g, void_dtr_t dtr)
 {
+    double d;
+
     switch (generic_get_type(g))
     {
         case G_PTR_T:
@@ -117,11 +124,18 @@ void generic_destroy(generic_t g, void_dtr_t dtr)
 
         case G_NULL_T:
         case G_INT_T:
-        case G_REAL_T:
         case G_SIZE_T:
         case G_BOOL_T:
         case G_CSTR_T:
             // nothing to be done there
+            break;
+
+        case G_REAL_T:
+            d = G_AS_REAL(g);
+            if (d != d)
+            {
+                ABORT("destroying NAN");
+            }
             break;
 
         case G_VECTOR_T:
@@ -173,6 +187,7 @@ generic_t generic_copy(generic_t g, void_cpy_t cpy)
     generic_t ret;
     size_t size;
     void *p;
+    double d;
 
     switch (generic_get_type(g))
     {
@@ -183,9 +198,16 @@ generic_t generic_copy(generic_t g, void_cpy_t cpy)
 
         case G_NULL_T:
         case G_INT_T:
-        case G_REAL_T:
         case G_SIZE_T:
             ret = g;
+            break;
+
+        case G_REAL_T:
+            d = G_AS_REAL(g);
+            if (d != d)
+            {
+                ABORT("copying NAN");
+            }
             break;
 
         case G_VECTOR_T:
