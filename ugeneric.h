@@ -10,5 +10,5 @@
 #include "queue.h"
 #include "mem.h"
 #include "bitmap.h"
-#include "string_utils.h"
-#include "file_utils.h"
+#include "ustring_utils.h"
+#include "ufile_utils.h"

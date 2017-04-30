@@ -1,12 +1,12 @@
-#ifndef HEAP_H__
-#define HEAP_H__
+#ifndef UHEAP_H__
+#define UHEAP_H__
 
 #include "generic.h"
 
 typedef struct heap_opaq heap_t;
 
 // For custom void * data you can use either one by
-// providing appropriate comparator but for generic_t
+// providing appropriate comparator but for ugeneric_t
 // native types the default comparator always corresponds
 // to MIN_HEAP. So there is function which allows to
 // explicitely set heap type.
@@ -19,15 +19,15 @@ heap_t *heap_create(void);
 heap_t *heap_create_ext(size_t capacity, heap_type_t);
 void heap_destroy(heap_t *h);
 void heap_clear(heap_t *h);
-void heap_push(heap_t *h, generic_t e);
-generic_t heap_pop(heap_t *h);
+void heap_push(heap_t *h, ugeneric_t e);
+ugeneric_t heap_pop(heap_t *h);
 size_t heap_get_size(const heap_t *h);
 bool heap_is_empty(const heap_t *h);
-generic_t heap_peek(const heap_t *h);
+ugeneric_t heap_peek(const heap_t *h);
 
 size_t heap_get_capacity(const heap_t *h);
 void heap_reserve_capacity(heap_t *h, size_t new_capacity);
-generic_t *heap_get_cells(const heap_t *h);
+ugeneric_t *heap_get_cells(const heap_t *h);
 
 void heap_take_data_ownership(heap_t *h);
 void heap_drop_data_ownership(heap_t *h);

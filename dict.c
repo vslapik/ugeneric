@@ -6,165 +6,165 @@
 #include "htbl.h"
 #include "bst.h"
 
-static const dict_vtable_t _htbl_vtable = {
-    .set_destroyer       = (f_dict_set_destroyer)htbl_set_destroyer,
-    .set_comparator      = (f_dict_set_comparator)htbl_set_comparator,
-    .take_data_ownership = (f_dict_take_data_ownership)htbl_take_data_ownership,
-    .drop_data_ownership = (f_dict_drop_data_ownership)htbl_drop_data_ownership,
-    .clear               = (f_dict_clear)htbl_clear,
-    .put                 = (f_dict_put)htbl_put,
-    .get                 = (f_dict_get)htbl_get,
-    .pop                 = (f_dict_pop)htbl_pop,
-    .has_key             = (f_dict_has_key)htbl_has_key,
-    .get_size            = (f_dict_get_size)htbl_get_size,
-    .is_empty            = (f_dict_is_empty)htbl_is_empty,
-    .serialize           = (f_dict_serialize)htbl_serialize,
-    .as_str              = (f_dict_as_str)htbl_as_str,
-    .print               = (f_dict_print)htbl_print,
-    .fprint              = (f_dict_fprint)htbl_fprint,
+static const udict_vtable_t _uhtbl_vtable = {
+    .set_destroyer       = (f_udict_set_destroyer)uhtbl_set_destroyer,
+    .set_comparator      = (f_udict_set_comparator)uhtbl_set_comparator,
+    .take_data_ownership = (f_udict_take_data_ownership)uhtbl_take_data_ownership,
+    .drop_data_ownership = (f_udict_drop_data_ownership)uhtbl_drop_data_ownership,
+    .clear               = (f_udict_clear)uhtbl_clear,
+    .put                 = (f_udict_put)uhtbl_put,
+    .get                 = (f_udict_get)uhtbl_get,
+    .pop                 = (f_udict_pop)uhtbl_pop,
+    .has_key             = (f_udict_has_key)uhtbl_has_key,
+    .get_size            = (f_udict_get_size)uhtbl_get_size,
+    .is_empty            = (f_udict_is_empty)uhtbl_is_empty,
+    .serialize           = (f_udict_serialize)uhtbl_serialize,
+    .as_str              = (f_udict_as_str)uhtbl_as_str,
+    .print               = (f_udict_print)uhtbl_print,
+    .fprint              = (f_udict_fprint)uhtbl_fprint,
 };
 
-static const dict_vtable_t _bst_vtable = {
-    .set_destroyer       = (f_dict_set_destroyer)bst_set_destroyer,
-    .set_comparator      = (f_dict_set_comparator)bst_set_comparator,
-    .take_data_ownership = (f_dict_take_data_ownership)bst_take_data_ownership,
-    .drop_data_ownership = (f_dict_drop_data_ownership)bst_drop_data_ownership,
-    .clear               = (f_dict_clear)bst_clear,
-    .put                 = (f_dict_put)bst_put,
-    .get                 = (f_dict_get)bst_get,
-    .pop                 = (f_dict_pop)bst_pop,
-    .has_key             = (f_dict_has_key)bst_has_key,
-    .get_size            = (f_dict_get_size)bst_get_size,
-    .is_empty            = (f_dict_is_empty)bst_is_empty,
-    .serialize           = (f_dict_serialize)bst_serialize,
-    .as_str              = (f_dict_as_str)bst_as_str,
-    .print               = (f_dict_print)bst_print,
-    .fprint              = (f_dict_fprint)bst_fprint,
+static const udict_vtable_t _ubst_vtable = {
+    .set_destroyer       = (f_udict_set_destroyer)ubst_set_destroyer,
+    .set_comparator      = (f_udict_set_comparator)ubst_set_comparator,
+    .take_data_ownership = (f_udict_take_data_ownership)ubst_take_data_ownership,
+    .drop_data_ownership = (f_udict_drop_data_ownership)ubst_drop_data_ownership,
+    .clear               = (f_udict_clear)ubst_clear,
+    .put                 = (f_udict_put)ubst_put,
+    .get                 = (f_udict_get)ubst_get,
+    .pop                 = (f_udict_pop)ubst_pop,
+    .has_key             = (f_udict_has_key)ubst_has_key,
+    .get_size            = (f_udict_get_size)ubst_get_size,
+    .is_empty            = (f_udict_is_empty)ubst_is_empty,
+    .serialize           = (f_udict_serialize)ubst_serialize,
+    .as_str              = (f_udict_as_str)ubst_as_str,
+    .print               = (f_udict_print)ubst_print,
+    .fprint              = (f_udict_fprint)ubst_fprint,
 };
 
-static const dict_iterator_vtable_t _htbl_iterator_vtable = {
-    .next                = (f_dict_iterator_get_next)htbl_iterator_get_next,
-    .has_next            = (f_dict_iterator_has_next)htbl_iterator_has_next,
-    .reset               = (f_dict_iterator_reset)htbl_iterator_reset,
+static const udict_iterator_vtable_t _uhtbl_iterator_vtable = {
+    .next                = (f_udict_iterator_get_next)uhtbl_iterator_get_next,
+    .has_next            = (f_udict_iterator_has_next)uhtbl_iterator_has_next,
+    .reset               = (f_udict_iterator_reset)uhtbl_iterator_reset,
 };
 
-static const dict_iterator_vtable_t _bst_iterator_vtable = {
-    .next                = (f_dict_iterator_get_next)bst_iterator_get_next,
-    .has_next            = (f_dict_iterator_has_next)bst_iterator_has_next,
-    .reset               = (f_dict_iterator_reset)bst_iterator_reset,
+static const udict_iterator_vtable_t _ubst_iterator_vtable = {
+    .next                = (f_udict_iterator_get_next)ubst_iterator_get_next,
+    .has_next            = (f_udict_iterator_has_next)ubst_iterator_has_next,
+    .reset               = (f_udict_iterator_reset)ubst_iterator_reset,
 };
 
-static dict_backend_t _default_backend = DICT_BACKEND_HTBL;
+static udict_backend_t _default_backend = UDICT_BACKEND_HTBL;
 
-void libugeneric_dict_set_default_backend(dict_backend_t backend)
+void libuugeneric_udict_set_default_backend(udict_backend_t backend)
 {
-    ASSERT_INPUT(backend > DICT_BACKEND_DEFAULT);
-    ASSERT_INPUT(backend < DICT_BACKENDS_COUNT);
+    UASSERT_INPUT(backend > UDICT_BACKEND_DEFAULT);
+    UASSERT_INPUT(backend < UDICT_BACKENDS_COUNT);
     _default_backend = backend;
 }
 
-dict_backend_t libugeneric_dict_get_default_backend(void)
+udict_backend_t libuugeneric_udict_get_default_backend(void)
 {
     return _default_backend;
 }
 
-dict_t *dict_create(void)
+udict_t *udict_create(void)
 {
-    return dict_create_with_backend(DICT_BACKEND_DEFAULT);
+    return udict_create_with_backend(UDICT_BACKEND_DEFAULT);
 }
 
-dict_t *dict_create_with_backend(dict_backend_t backend)
+udict_t *udict_create_with_backend(udict_backend_t backend)
 {
-    ASSERT_INPUT(backend >= DICT_BACKEND_DEFAULT);
-    ASSERT_INPUT(backend < DICT_BACKENDS_COUNT);
+    UASSERT_INPUT(backend >= UDICT_BACKEND_DEFAULT);
+    UASSERT_INPUT(backend < UDICT_BACKENDS_COUNT);
 
-    dict_t *d = umalloc(sizeof(*d));
-    d->backend = (backend == DICT_BACKEND_DEFAULT) ? _default_backend : backend;
+    udict_t *d = umalloc(sizeof(*d));
+    d->backend = (backend == UDICT_BACKEND_DEFAULT) ? _default_backend : backend;
     switch (d->backend)
     {
-        case DICT_BACKEND_HTBL:
-            d->vobj = htbl_create();
-            d->vtable = &_htbl_vtable;
+        case UDICT_BACKEND_HTBL:
+            d->vobj = uhtbl_create();
+            d->vtable = &_uhtbl_vtable;
             break;
-        case DICT_BACKEND_BST_PLAIN:
-            d->vobj = bst_create_ext(BST_NO_BALANCING);
-            d->vtable = &_bst_vtable;
+        case UDICT_BACKEND_UBST_PLAIN:
+            d->vobj = ubst_create_ext(UBST_NO_BALANCING);
+            d->vtable = &_ubst_vtable;
             break;
-        case DICT_BACKEND_BST_RB:
-            d->vobj = bst_create_ext(BST_RB_BALANCING);
-            d->vtable = &_bst_vtable;
+        case UDICT_BACKEND_UBST_RB:
+            d->vobj = ubst_create_ext(UBST_RB_BALANCING);
+            d->vtable = &_ubst_vtable;
             break;
         default:
-            ABORT("internal error");
+            UABORT("internal error");
     }
     return d;
 }
 
-void dict_destroy(dict_t *d)
+void udict_destroy(udict_t *d)
 {
-    ASSERT_INPUT(d);
+    UASSERT_INPUT(d);
 
     switch (d->backend)
     {
-        case DICT_BACKEND_HTBL:
-            htbl_destroy(d->vobj);
+        case UDICT_BACKEND_HTBL:
+            uhtbl_destroy(d->vobj);
             break;
-        case DICT_BACKEND_BST_PLAIN:
-        case DICT_BACKEND_BST_RB:
-            bst_destroy(d->vobj);
+        case UDICT_BACKEND_UBST_PLAIN:
+        case UDICT_BACKEND_UBST_RB:
+            ubst_destroy(d->vobj);
             break;
         default:
-            ABORT("internal error");
+            UABORT("internal error");
     }
     ufree(d);
 }
 
-dict_iterator_t *dict_iterator_create(const dict_t *d)
+udict_iterator_t *udict_iterator_create(const udict_t *d)
 {
-    ASSERT_INPUT(d);
+    UASSERT_INPUT(d);
 
-    dict_iterator_t *di = umalloc(sizeof(*di));
+    udict_iterator_t *di = umalloc(sizeof(*di));
     di->dict = d;
     switch (d->backend)
     {
-        case DICT_BACKEND_HTBL:
-            di->vobj = htbl_iterator_create(d->vobj);
-            di->vtable = &_htbl_iterator_vtable;
+        case UDICT_BACKEND_HTBL:
+            di->vobj = uhtbl_iterator_create(d->vobj);
+            di->vtable = &_uhtbl_iterator_vtable;
             break;
-        case DICT_BACKEND_BST_PLAIN:
-        case DICT_BACKEND_BST_RB:
-            di->vobj = bst_iterator_create(d->vobj);
-            di->vtable = &_bst_iterator_vtable;
+        case UDICT_BACKEND_UBST_PLAIN:
+        case UDICT_BACKEND_UBST_RB:
+            di->vobj = ubst_iterator_create(d->vobj);
+            di->vtable = &_ubst_iterator_vtable;
             break;
         default:
-            ABORT("internal error");
+            UABORT("internal error");
     }
 
     return di;
 }
 
-void dict_iterator_destroy(dict_iterator_t *di)
+void udict_iterator_destroy(udict_iterator_t *di)
 {
     if (di)
     {
         switch (di->dict->backend)
         {
-            case DICT_BACKEND_HTBL:
-                htbl_iterator_destroy(di->vobj);
+            case UDICT_BACKEND_HTBL:
+                uhtbl_iterator_destroy(di->vobj);
                 break;
-            case DICT_BACKEND_BST_PLAIN:
-            case DICT_BACKEND_BST_RB:
-                bst_iterator_destroy(di->vobj);
+            case UDICT_BACKEND_UBST_PLAIN:
+            case UDICT_BACKEND_UBST_RB:
+                ubst_iterator_destroy(di->vobj);
                 break;
             default:
-                ABORT("internal error");
+                UABORT("internal error");
         }
         ufree(di);
     }
 }
 
-dict_t *dict_deep_copy(const dict_t *d)
+udict_t *udict_deep_copy(const udict_t *d)
 {
     (void)d;
-    ABORT("not implemented");
+    UABORT("not implemented");
 }

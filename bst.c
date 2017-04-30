@@ -7,22 +7,22 @@
 #include "string_utils.h"
 
 typedef enum {
-    BST_NODE_BLACK,
-    BST_NODE_RED,
-} bst_color_t;
+    UBST_NODE_BLACK,
+    UBST_NODE_RED,
+} ubst_color_t;
 
-struct bst_node {
-    generic_t k;
-    generic_t v;
-    struct bst_node *left;
-    struct bst_node *right;
-    bst_color_t color;
+struct ubst_node {
+    ugeneric_t k;
+    ugeneric_t v;
+    struct ubst_node *left;
+    struct ubst_node *right;
+    ubst_color_t color;
 };
-typedef struct bst_node bst_node_t;
+typedef struct ubst_node ubst_node_t;
 
-struct bst_opaq {
-    bst_node_t *root;
-    bst_balancing_mode_t balancing_mode;
+struct ubst_opaq {
+    ubst_node_t *root;
+    ubst_balancing_mode_t balancing_mode;
     size_t size;
     bool is_data_owner;
     void_cpy_t cpy;
@@ -30,30 +30,30 @@ struct bst_opaq {
     void_dtr_t dtr;
 };
 
-struct bst_iterator_opaq {
-    const bst_t *bst;
-    stack_t *stack;
-    bst_node_t *node;
+struct ubst_iterator_opaq {
+    const ubst_t *bst;
+    ustack_t *stack;
+    ubst_node_t *node;
 };
 
-typedef bool (*bst_node_cb_t)(bst_node_t *node, void *data);
+typedef bool (*ubst_node_cb_t)(ubst_node_t *node, void *data);
 
-static bst_balancing_mode_t _default_balancing_mode = BST_NO_BALANCING;
+static ubst_balancing_mode_t _default_balancing_mode = UBST_NO_BALANCING;
 
-void bst_set_default_balancing_mode(bst_balancing_mode_t mode)
+void ubst_set_default_balancing_mode(ubst_balancing_mode_t mode)
 {
-    ASSERT_INPUT(mode > BST_DEFAULT_BALANCING);
-    ASSERT_INPUT(mode < BST_BALANCING_MODES_COUNT);
+    UASSERT_INPUT(mode > UBST_DEFAULT_BALANCING);
+    UASSERT_INPUT(mode < UBST_BALANCING_MODES_COUNT);
     _default_balancing_mode = mode;
 }
 
-bst_node_t **_lookup(bst_t *b, bst_node_t **root, generic_t k)
+ubst_node_t **_lookup(ubst_t *b, ubst_node_t **root, ugeneric_t k)
 {
-    bst_node_t **node = root;
+    ubst_node_t **node = root;
 
     while (*node)
     {
-        int cmp = generic_compare(k, (*node)->k, b->cmp);
+        int cmp = ugeneric_compare(k, (*node)->k, b->cmp);
         if (cmp < 0)
         {
             node = &(*node)->left;
@@ -71,9 +71,9 @@ bst_node_t **_lookup(bst_t *b, bst_node_t **root, generic_t k)
     return node;
 }
 
-static bst_node_t **_get_min(bst_node_t **root)
+static ubst_node_t **_get_min(ubst_node_t **root)
 {
-    bst_node_t **pos = root;
+    ubst_node_t **pos = root;
 
     while ((*pos)->left)
     {
@@ -83,9 +83,9 @@ static bst_node_t **_get_min(bst_node_t **root)
     return pos;
 }
 
-static bst_node_t **_get_max(bst_node_t **root)
+static ubst_node_t **_get_max(ubst_node_t **root)
 {
-    bst_node_t **pos = root;
+    ubst_node_t **pos = root;
 
     while ((*pos)->right)
     {
@@ -95,9 +95,9 @@ static bst_node_t **_get_max(bst_node_t **root)
     return pos;
 }
 
-static bst_node_t **_get_inorder_predecessor(bst_t *b, bst_node_t **node)
+static ubst_node_t **_get_inorder_predecessor(ubst_t *b, ubst_node_t **node)
 {
-    bst_node_t **predecessor = NULL;
+    ubst_node_t **predecessor = NULL;
 
     if ((*node)->left)
     {
@@ -105,11 +105,11 @@ static bst_node_t **_get_inorder_predecessor(bst_t *b, bst_node_t **node)
     }
     else
     {
-        generic_t k = (*node)->k;
-        bst_node_t **pos = &b->root;
+        ugeneric_t k = (*node)->k;
+        ubst_node_t **pos = &b->root;
         while (*pos)
         {
-            int cmp = generic_compare(k, (*pos)->k, b->cmp);
+            int cmp = ugeneric_compare(k, (*pos)->k, b->cmp);
             if (cmp < 0)
             {
                 pos = &(*pos)->left;
@@ -129,9 +129,9 @@ static bst_node_t **_get_inorder_predecessor(bst_t *b, bst_node_t **node)
     return predecessor;
 }
 
-static bst_node_t **_get_inorder_successor(bst_t *b, bst_node_t **node)
+static ubst_node_t **_get_inorder_successor(ubst_t *b, ubst_node_t **node)
 {
-    bst_node_t **successor = NULL;
+    ubst_node_t **successor = NULL;
 
     if ((*node)->right)
     {
@@ -139,11 +139,11 @@ static bst_node_t **_get_inorder_successor(bst_t *b, bst_node_t **node)
     }
     else
     {
-        generic_t k = (*node)->k;
-        bst_node_t **pos = &b->root;
+        ugeneric_t k = (*node)->k;
+        ubst_node_t **pos = &b->root;
         while (node)
         {
-            int cmp = generic_compare(k, (*pos)->k, b->cmp);
+            int cmp = ugeneric_compare(k, (*pos)->k, b->cmp);
             if (cmp < 0)
             {
                 successor = pos;
@@ -163,39 +163,39 @@ static bst_node_t **_get_inorder_successor(bst_t *b, bst_node_t **node)
     return successor;
 }
 
-void _bst_nodes_destroy(bst_t *b, bst_node_t *node)
+void _ubst_nodes_destroy(ubst_t *b, ubst_node_t *node)
 {
     if (node)
     {
-        _bst_nodes_destroy(b, node->left);
-        _bst_nodes_destroy(b, node->right);
+        _ubst_nodes_destroy(b, node->left);
+        _ubst_nodes_destroy(b, node->right);
         if (b->is_data_owner)
         {
-            generic_destroy(node->k, b->dtr);
-            generic_destroy(node->v, b->dtr);
+            ugeneric_destroy(node->k, b->dtr);
+            ugeneric_destroy(node->v, b->dtr);
         }
         ufree(node);
     }
 }
 
-void _iterate_kv(const bst_node_t *node, bst_traverse_mode_t mode,
-                 generic_kv_iter_t cb, void *data)
+void _iterate_kv(const ubst_node_t *node, ubst_traverse_mode_t mode,
+                 ugeneric_kv_iter_t cb, void *data)
 {
     if (node)
     {
-        if (mode == BST_PREORDER)
+        if (mode == UBST_PREORDER)
         {
             if (cb(node->k, node->v, data)) return;
             _iterate_kv(node->left, mode, cb, data);
             _iterate_kv(node->right, mode, cb, data);
         }
-        else if (mode == BST_POSTORDER)
+        else if (mode == UBST_POSTORDER)
         {
             _iterate_kv(node->left, mode, cb, data);
             _iterate_kv(node->right, mode, cb, data);
             if (cb(node->k, node->v, data)) return;
         }
-        else if (mode == BST_INORDER)
+        else if (mode == UBST_INORDER)
         {
             _iterate_kv(node->left, mode, cb, data);
             if (cb(node->k, node->v, data)) return;
@@ -204,24 +204,24 @@ void _iterate_kv(const bst_node_t *node, bst_traverse_mode_t mode,
     }
 }
 
-void _iterate_nodes(bst_node_t *node, bst_traverse_mode_t mode,
-                    bst_node_cb_t cb, void *data)
+void _iterate_nodes(ubst_node_t *node, ubst_traverse_mode_t mode,
+                    ubst_node_cb_t cb, void *data)
 {
     if (node)
     {
-        if (mode == BST_PREORDER)
+        if (mode == UBST_PREORDER)
         {
             if (cb(node, data)) return;
             _iterate_nodes(node->left, mode, cb, data);
             _iterate_nodes(node->right, mode, cb, data);
         }
-        else if (mode == BST_POSTORDER)
+        else if (mode == UBST_POSTORDER)
         {
             _iterate_nodes(node->left, mode, cb, data);
             _iterate_nodes(node->right, mode, cb, data);
             if (cb(node, data)) return;
         }
-        else if (mode == BST_INORDER)
+        else if (mode == UBST_INORDER)
         {
             _iterate_nodes(node->left, mode, cb, data);
             if (cb(node, data)) return;
@@ -230,29 +230,29 @@ void _iterate_nodes(bst_node_t *node, bst_traverse_mode_t mode,
     }
 }
 
-static inline bool _is_black(bst_node_t *node)
+static inline bool _is_black(ubst_node_t *node)
 {
-    return !node || (node->color == BST_NODE_BLACK);
+    return !node || (node->color == UBST_NODE_BLACK);
 }
 
-static inline bool _is_red(bst_node_t *node)
+static inline bool _is_red(ubst_node_t *node)
 {
-    return node && (node->color == BST_NODE_RED);
+    return node && (node->color == UBST_NODE_RED);
 }
 
-static inline void _set_red(bst_node_t *node)
+static inline void _set_red(ubst_node_t *node)
 {
-    node->color = BST_NODE_RED;
+    node->color = UBST_NODE_RED;
 }
 
-static inline void _set_black(bst_node_t *node)
+static inline void _set_black(ubst_node_t *node)
 {
-    node->color = BST_NODE_BLACK;
+    node->color = UBST_NODE_BLACK;
 }
 
-static bst_node_t *_rotate_left_once(bst_node_t *node)
+static ubst_node_t *_rotate_left_once(ubst_node_t *node)
 {
-    bst_node_t *t = node->right;
+    ubst_node_t *t = node->right;
 
     node->right = t->left;
     t->left = node;
@@ -262,9 +262,9 @@ static bst_node_t *_rotate_left_once(bst_node_t *node)
     return t;
 }
 
-static bst_node_t *_rotate_right_once(bst_node_t *node)
+static ubst_node_t *_rotate_right_once(ubst_node_t *node)
 {
-    bst_node_t *t = node->left;
+    ubst_node_t *t = node->left;
 
     node->left = t->right;
     t->right = node;
@@ -274,38 +274,38 @@ static bst_node_t *_rotate_right_once(bst_node_t *node)
     return t;
 }
 
-static bst_node_t *_rotate_left_twice(bst_node_t *node)
+static ubst_node_t *_rotate_left_twice(ubst_node_t *node)
 {
     node->right = _rotate_right_once(node->right);
     return _rotate_left_once(node);
 }
 
-static bst_node_t *_rotate_right_twice(bst_node_t *node)
+static ubst_node_t *_rotate_right_twice(ubst_node_t *node)
 {
     node->left = _rotate_left_once(node->left);
     return _rotate_right_once(node);
 }
 
-static bst_node_t *_make_new_node(generic_t k, generic_t v)
+static ubst_node_t *_make_new_node(ugeneric_t k, ugeneric_t v)
 {
-    bst_node_t *n = umalloc(sizeof(*n));
+    ubst_node_t *n = umalloc(sizeof(*n));
     n->k = k;
     n->v = v;
     n->left = NULL;
     n->right = NULL;
-    n->color = BST_NODE_RED;
+    n->color = UBST_NODE_RED;
 
     return n;
 }
 
-static void _put_not_balanced(bst_t *b, generic_t k, generic_t v)
+static void _put_not_balanced(ubst_t *b, ugeneric_t k, ugeneric_t v)
 {
-    bst_node_t **node = _lookup(b, &b->root, k);
+    ubst_node_t **node = _lookup(b, &b->root, k);
     if (*node)
     {
         /* Update case. */
-        generic_destroy((*node)->k, b->dtr);
-        generic_destroy((*node)->v, b->dtr);
+        ugeneric_destroy((*node)->k, b->dtr);
+        ugeneric_destroy((*node)->v, b->dtr);
         (*node)->k = k;
         (*node)->v = v;
     }
@@ -323,18 +323,18 @@ static void _put_not_balanced(bst_t *b, generic_t k, generic_t v)
  * (4th edition, ch. 12.2.2) and Julienne Walker's brilliant implementation
  * provided at http://www.eternallyconfuzzled.com
  */
-static void _put_red_black(bst_t *b, generic_t k, generic_t v)
+static void _put_red_black(ubst_t *b, ugeneric_t k, ugeneric_t v)
 {
     // If we rotate the whole tree around the root we need
     // to store the link to a new root somewhere (as old root gets
     // rotated). Right link of the of sentinel node below is this place.
-    bst_node_t sentinel_root = {.right = b->root};
+    ubst_node_t sentinel_root = {.right = b->root};
 
-    bst_node_t *x = b->root;           // current node
-    bst_node_t *p = NULL;              // current node parent
-    bst_node_t *g = NULL;              // current node grandpa
-    bst_node_t *gg = &sentinel_root;   // current node great-grandpa
-    bst_node_t **npos = &b->root;      // new node insertion position
+    ubst_node_t *x = b->root;           // current node
+    ubst_node_t *p = NULL;              // current node parent
+    ubst_node_t *g = NULL;              // current node grandpa
+    ubst_node_t *gg = &sentinel_root;   // current node great-grandpa
+    ubst_node_t **npos = &b->root;      // new node insertion position
     unsigned int path = 0;
     bool inserted = false;
 
@@ -359,7 +359,7 @@ static void _put_red_black(bst_t *b, generic_t k, generic_t v)
         {
             // Address of a link in great grand parent to be
             // updated for reattachment process after rotation.
-            bst_node_t **gg_link = (gg->right == g) ? &(gg->right) : &(gg->left);
+            ubst_node_t **gg_link = (gg->right == g) ? &(gg->right) : &(gg->left);
             switch (path & 0xff)
             {
                 case 0x00: *gg_link = _rotate_right_once(g);  break; // LL
@@ -384,7 +384,7 @@ static void _put_red_black(bst_t *b, generic_t k, generic_t v)
         }
         g = p;
         p = x;
-        int cmp = generic_compare(k, x->k, b->cmp);
+        int cmp = ugeneric_compare(k, x->k, b->cmp);
         if (cmp < 0)
         {
             npos = &x->left;
@@ -400,8 +400,8 @@ static void _put_red_black(bst_t *b, generic_t k, generic_t v)
         else
         {
             // Found the node to be updated, update and get out of here.
-            generic_destroy(p->k, b->dtr);
-            generic_destroy(p->v, b->dtr);
+            ugeneric_destroy(p->k, b->dtr);
+            ugeneric_destroy(p->v, b->dtr);
             p->k = k;
             p->v = v;
             break;
@@ -424,32 +424,32 @@ static void _put_red_black(bst_t *b, generic_t k, generic_t v)
     }
 }
 
-static generic_t _pop_red_black(bst_t *b, generic_t k, generic_t vdef)
+static ugeneric_t _pop_red_black(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 {
     (void)b;
     (void)k;
     (void)vdef;
-    ABORT("not implemented");
+    UABORT("not implemented");
 }
 
-static void _put_splay(bst_t *b, generic_t k, generic_t v)
+static void _put_splay(ubst_t *b, ugeneric_t k, ugeneric_t v)
 {
     (void)b;
     (void)k;
     (void)v;
-    ABORT("not implemented");
+    UABORT("not implemented");
 }
 
-static generic_t _pop_not_balanced(bst_t *b, generic_t k, generic_t vdef)
+static ugeneric_t _pop_not_balanced(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 {
-    bst_node_t **pos = &b->root;
-    bst_node_t **n = NULL;
-    generic_t ret = vdef;
+    ubst_node_t **pos = &b->root;
+    ubst_node_t **n = NULL;
+    ugeneric_t ret = vdef;
 
     while (*pos)
     {
         /* Look up for the node to be deleted */
-        int cmp = generic_compare(k, (*pos)->k, b->cmp);
+        int cmp = ugeneric_compare(k, (*pos)->k, b->cmp);
         if (cmp < 0)
         {
             pos = &(*pos)->left;
@@ -464,14 +464,14 @@ static generic_t _pop_not_balanced(bst_t *b, generic_t k, generic_t vdef)
             if ((*pos)->left && (*pos)->right)
             {
                 n = _get_inorder_predecessor(b, pos);
-                generic_swap(&(*n)->k, &(*pos)->k);
-                generic_swap(&(*n)->v, &(*pos)->v);
+                ugeneric_swap(&(*n)->k, &(*pos)->k);
+                ugeneric_swap(&(*n)->v, &(*pos)->v);
                 pos = n;
             }
             ret = (*pos)->v;
             if (b->is_data_owner)
             {
-                generic_destroy((*pos)->k, b->dtr);
+                ugeneric_destroy((*pos)->k, b->dtr);
             }
             b->size -= 1;
 
@@ -484,19 +484,19 @@ static generic_t _pop_not_balanced(bst_t *b, generic_t k, generic_t vdef)
             /* Case 3: one child */
             else if (!(*pos)->left)
             {
-                bst_node_t *t = *pos;
+                ubst_node_t *t = *pos;
                 *pos = (*pos)->right;
                 ufree(t);
             }
             else if (!(*pos)->right)
             {
-                bst_node_t *t = *pos;
+                ubst_node_t *t = *pos;
                 *pos = (*pos)->left;
                 ufree(t);
             }
             else
             {
-                ABORT("Internal error");
+                UABORT("Internal error");
             }
         }
     }
@@ -504,26 +504,26 @@ static generic_t _pop_not_balanced(bst_t *b, generic_t k, generic_t vdef)
     return ret;
 }
 
-static generic_t _pop_splay(bst_t *b, generic_t k, generic_t vdef)
+static ugeneric_t _pop_splay(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 {
     (void)b;
     (void)k;
     (void)vdef;
-    ABORT("not implemented");
+    UABORT("not implemented");
 }
 
-bst_t *bst_create_ext(bst_balancing_mode_t mode)
+ubst_t *ubst_create_ext(ubst_balancing_mode_t mode)
 {
-    ASSERT_INPUT(mode >= BST_DEFAULT_BALANCING);
-    ASSERT_INPUT(mode < BST_BALANCING_MODES_COUNT);
+    UASSERT_INPUT(mode >= UBST_DEFAULT_BALANCING);
+    UASSERT_INPUT(mode < UBST_BALANCING_MODES_COUNT);
 
-    bst_t *b = umalloc(sizeof(*b));
+    ubst_t *b = umalloc(sizeof(*b));
 
     b->root = NULL;
     b->size = 0;
     b->is_data_owner = true;
 
-    if (mode == BST_DEFAULT_BALANCING)
+    if (mode == UBST_DEFAULT_BALANCING)
     {
         b->balancing_mode = _default_balancing_mode;
     }
@@ -535,132 +535,132 @@ bst_t *bst_create_ext(bst_balancing_mode_t mode)
     return b;
 }
 
-bst_t *bst_create(void)
+ubst_t *ubst_create(void)
 {
-    return bst_create_ext(BST_DEFAULT_BALANCING);
+    return ubst_create_ext(UBST_DEFAULT_BALANCING);
 }
 
-void bst_take_data_ownership(bst_t *b)
+void ubst_take_data_ownership(ubst_t *b)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     b->is_data_owner = true;
 }
 
-void bst_drop_data_ownership(bst_t *b)
+void ubst_drop_data_ownership(ubst_t *b)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     b->is_data_owner = false;
 }
 
-void bst_put(bst_t *b, generic_t k, generic_t v)
+void ubst_put(ubst_t *b, ugeneric_t k, ugeneric_t v)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
 
     switch (b->balancing_mode)
     {
-        case BST_NO_BALANCING:
+        case UBST_NO_BALANCING:
             _put_not_balanced(b, k, v);
             break;
-        case BST_RB_BALANCING:
+        case UBST_RB_BALANCING:
             _put_red_black(b, k, v);
             break;
-        case BST_SPLAY_BALANCING:
+        case UBST_SPLAY_BALANCING:
             _put_splay(b, k, v);
         default:
-            ABORT("internal error");
+            UABORT("internal error");
     }
 }
 
-generic_t bst_pop(bst_t *b, generic_t k, generic_t vdef)
+ugeneric_t ubst_pop(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
 
-    generic_t ret;
+    ugeneric_t ret;
     switch (b->balancing_mode)
     {
-        case BST_NO_BALANCING:
+        case UBST_NO_BALANCING:
             ret = _pop_not_balanced(b, k, vdef);
             break;
-        case BST_RB_BALANCING:
+        case UBST_RB_BALANCING:
             ret = _pop_red_black(b, k, vdef);
             break;
-        case BST_SPLAY_BALANCING:
+        case UBST_SPLAY_BALANCING:
             ret = _pop_splay(b, k, vdef);
         default:
-            ABORT("internal error");
+            UABORT("internal error");
     }
 
     return ret;
 
 }
 
-generic_t bst_get(bst_t *b, generic_t k, generic_t vdef)
+ugeneric_t ubst_get(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 {
-    ASSERT_INPUT(b);
-    bst_node_t *node = *_lookup(b, &b->root, k);
+    UASSERT_INPUT(b);
+    ubst_node_t *node = *_lookup(b, &b->root, k);
     return node ? node->v : vdef;
 }
 
-bool bst_has_key(const bst_t *b, generic_t k)
+bool ubst_has_key(const ubst_t *b, ugeneric_t k)
 {
-    ASSERT_INPUT(b);
-    bst_t *t = (bst_t *)b; // cast away const qualifier
+    UASSERT_INPUT(b);
+    ubst_t *t = (ubst_t *)b; // cast away const qualifier
     return *_lookup(t, &t->root, k);
 }
 
-generic_t bst_get_min(bst_t *b)
+ugeneric_t ubst_get_min(ubst_t *b)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     return (*_get_min(&b->root))->v;
 }
 
-generic_t bst_get_max(bst_t *b)
+ugeneric_t ubst_get_max(ubst_t *b)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     return (*_get_max(&b->root))->v;
 }
 
-size_t bst_get_size(bst_t *b)
+size_t ubst_get_size(ubst_t *b)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     return b->size;
 }
 
-bool bst_is_empty(bst_t *b)
+bool ubst_is_empty(ubst_t *b)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     return b->size == 0;
 }
 
-void bst_destroy(bst_t *b)
+void ubst_destroy(ubst_t *b)
 {
     if (b)
     {
-        _bst_nodes_destroy(b, b->root);
+        _ubst_nodes_destroy(b, b->root);
         ufree(b);
     }
 }
 
-void bst_clear(bst_t *b)
+void ubst_clear(ubst_t *b)
 {
-    ASSERT_INPUT(b);
-    _bst_nodes_destroy(b, b->root);
+    UASSERT_INPUT(b);
+    _ubst_nodes_destroy(b, b->root);
     b->root = NULL;
     b->size = 0;
 }
 
-void bst_traverse(const bst_t *b, bst_traverse_mode_t mode,
-                  generic_kv_iter_t cb, void *data)
+void ubst_traverse(const ubst_t *b, ubst_traverse_mode_t mode,
+                  ugeneric_kv_iter_t cb, void *data)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     _iterate_kv(b->root, mode, cb, data);
 }
 
-generic_t bst_get_inorder_predecessor(bst_t *b, generic_t k, generic_t vdef)
+ugeneric_t ubst_get_inorder_predecessor(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
 
-    bst_node_t **node = _lookup(b, &b->root, k);
+    ubst_node_t **node = _lookup(b, &b->root, k);
     if (*node)
     {
         node = _get_inorder_predecessor(b, node);
@@ -673,11 +673,11 @@ generic_t bst_get_inorder_predecessor(bst_t *b, generic_t k, generic_t vdef)
     return vdef;
 }
 
-generic_t bst_get_inorder_successor(bst_t *b, generic_t k, generic_t vdef)
+ugeneric_t ubst_get_inorder_successor(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
 
-    bst_node_t **node = _lookup(b, &b->root, k);
+    ubst_node_t **node = _lookup(b, &b->root, k);
     if (*node)
     {
         node = _get_inorder_successor(b, node);
@@ -690,103 +690,103 @@ generic_t bst_get_inorder_successor(bst_t *b, generic_t k, generic_t vdef)
     return vdef;
 }
 
-void bst_set_destroyer(bst_t *b, void_dtr_t dtr)
+void ubst_set_destroyer(ubst_t *b, void_dtr_t dtr)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     b->dtr = dtr;
 }
 
-void bst_set_comparator(bst_t *b, void_cmp_t cmp)
+void ubst_set_comparator(ubst_t *b, void_cmp_t cmp)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
     b->cmp = cmp;
 }
 
 typedef struct {
     size_t nodes_left;
-    buffer_t *buf;
+    ubuffer_t *buf;
 } _serialize_data_t;
 
-bool _serialize(bst_node_t *node, void *data)
+bool _serialize(ubst_node_t *node, void *data)
 {
     _serialize_data_t *d = data;
 
     d->nodes_left -= 1;
-    generic_serialize(node->k, d->buf, NULL);
-    buffer_append_data(d->buf, ": ", 2);
-    generic_serialize(node->v, d->buf, NULL);
+    ugeneric_serialize(node->k, d->buf, NULL);
+    ubuffer_append_data(d->buf, ": ", 2);
+    ugeneric_serialize(node->v, d->buf, NULL);
     if (d->nodes_left)
     {
-        buffer_append_data(d->buf, ", ", 2);
+        ubuffer_append_data(d->buf, ", ", 2);
     }
 
     return false;
 }
 
-void bst_serialize(const bst_t *b, buffer_t *buf)
+void ubst_serialize(const ubst_t *b, ubuffer_t *buf)
 {
-    ASSERT_INPUT(b);
-    ASSERT_INPUT(buf);
+    UASSERT_INPUT(b);
+    UASSERT_INPUT(buf);
 
-    buffer_append_byte(buf, '{');
+    ubuffer_append_byte(buf, '{');
     _serialize_data_t d = {.nodes_left = b->size, .buf = buf};
-    _iterate_nodes(b->root, BST_INORDER, _serialize, &d);
-    buffer_append_byte(buf, '}');
+    _iterate_nodes(b->root, UBST_INORDER, _serialize, &d);
+    ubuffer_append_byte(buf, '}');
 }
 
-char *bst_as_str(const bst_t *b)
+char *ubst_as_str(const ubst_t *b)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
 
-    buffer_t buf = {0};
-    bst_serialize(b, &buf);
-    buffer_null_terminate(&buf);
+    ubuffer_t buf = {0};
+    ubst_serialize(b, &buf);
+    ubuffer_null_terminate(&buf);
 
     return buf.data;
 }
 
-int bst_print(const bst_t *b)
+int ubst_print(const ubst_t *b)
 {
-    ASSERT_INPUT(b);
-    return bst_fprint(b, stdout);
+    UASSERT_INPUT(b);
+    return ubst_fprint(b, stdout);
 }
 
-int bst_fprint(const bst_t *b, FILE *out)
+int ubst_fprint(const ubst_t *b, FILE *out)
 {
-    ASSERT_INPUT(b);
-    ASSERT_INPUT(out);
+    UASSERT_INPUT(b);
+    UASSERT_INPUT(out);
 
-    char *str = bst_as_str(b);
+    char *str = ubst_as_str(b);
     int ret = fprintf(out, "%s\n", str);
     ufree(str);
 
     return ret;
 }
 
-bst_iterator_t *bst_iterator_create(const bst_t *b)
+ubst_iterator_t *ubst_iterator_create(const ubst_t *b)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
 
-    bst_iterator_t *bi = umalloc(sizeof(*bi));
+    ubst_iterator_t *bi = umalloc(sizeof(*bi));
     bi->bst = b;
-    bi->stack = stack_create();
+    bi->stack = ustack_create();
     bi->node = b->root;
     return bi;
 }
 
-bool bst_is_balanced(const bst_t *b)
+bool ubst_is_balanced(const ubst_t *b)
 {
-    ASSERT_INPUT(b);
-    ABORT("not implemented");
+    UASSERT_INPUT(b);
+    UABORT("not implemented");
 }
 
-generic_kv_t bst_iterator_get_next(bst_iterator_t *bi)
+ugeneric_kv_t ubst_iterator_get_next(ubst_iterator_t *bi)
 {
-    ASSERT_INPUT(bi);
-    bst_node_t *n = bi->node;
+    UASSERT_INPUT(bi);
+    ubst_node_t *n = bi->node;
 
-    ASSERT_MSG(bi->bst->size, "container is empty");
-    ASSERT_MSG(bi->node || !stack_is_empty(bi->stack), "iteration is done");
+    UASSERT_MSG(bi->bst->size, "container is empty");
+    UASSERT_MSG(bi->node || !ustack_is_empty(bi->stack), "iteration is done");
 
     if (n)
     {
@@ -794,7 +794,7 @@ generic_kv_t bst_iterator_get_next(bst_iterator_t *bi)
         {
             while (n->left)
             {
-                stack_push(bi->stack, G_PTR(n));
+                ustack_push(bi->stack, G_PTR(n));
                 n = n->left;
             }
             bi->node = n->right;
@@ -808,36 +808,36 @@ generic_kv_t bst_iterator_get_next(bst_iterator_t *bi)
             bi->node = NULL;
         }
     }
-    else if (!stack_is_empty(bi->stack))
+    else if (!ustack_is_empty(bi->stack))
     {
-        n = G_AS_PTR(stack_pop(bi->stack));
+        n = G_AS_PTR(ustack_pop(bi->stack));
         bi->node = n->right;
     }
     else
     {
-        ABORT("internal error");
+        UABORT("internal error");
     }
 
-    return (generic_kv_t){.k = n->k, .v = n->v};
+    return (ugeneric_kv_t){.k = n->k, .v = n->v};
 }
 
-bool bst_iterator_has_next(const bst_iterator_t *bi)
+bool ubst_iterator_has_next(const ubst_iterator_t *bi)
 {
-    ASSERT_INPUT(bi);
-    return bi->node || !stack_is_empty(bi->stack);
+    UASSERT_INPUT(bi);
+    return bi->node || !ustack_is_empty(bi->stack);
 }
 
-void bst_iterator_reset(bst_iterator_t *bi)
+void ubst_iterator_reset(ubst_iterator_t *bi)
 {
     bi->node = bi->bst->root;
-    ASSERT(stack_is_empty(bi->stack));
+    UASSERT(ustack_is_empty(bi->stack));
 }
 
-void bst_iterator_destroy(bst_iterator_t *bi)
+void ubst_iterator_destroy(ubst_iterator_t *bi)
 {
     if (bi)
     {
-        stack_destroy(bi->stack);
+        ustack_destroy(bi->stack);
         ufree(bi);
     }
 }
@@ -848,34 +848,34 @@ typedef struct {
     bool dump_values;
 } _dump2dot_data_t;
 
-bool _dump2dot(bst_node_t *node, void *data)
+bool _dump2dot(ubst_node_t *node, void *data)
 {
     _dump2dot_data_t *d = data;
 
-    char *kstr = generic_as_str(node->k, NULL);
-    char *vstr = d->dump_values ? generic_as_str(node->v, NULL) : NULL;
-    char *str = string_fmt("\"%08" PRIxPTR "\"", node);
+    char *kstr = ugeneric_as_str(node->k, NULL);
+    char *vstr = d->dump_values ? ugeneric_as_str(node->v, NULL) : NULL;
+    char *str = ustring_fmt("\"%08" PRIxPTR "\"", node);
 
     char *lstr;
     if (node->left)
     {
-        lstr = string_fmt("\"%08" PRIxPTR "\"", (uintptr_t)node->left);
+        lstr = ustring_fmt("\"%08" PRIxPTR "\"", (uintptr_t)node->left);
     }
     else
     {
         fprintf(d->out, "    nullnode%zu [style = filled, fillcolor = black, label = null];\n", d->nullcnt);
-        lstr = string_fmt("nullnode%zu", d->nullcnt++);
+        lstr = ustring_fmt("nullnode%zu", d->nullcnt++);
     }
 
     char *rstr;
     if (node->right)
     {
-        rstr = string_fmt("\"%08" PRIxPTR "\"", (uintptr_t)node->right);
+        rstr = ustring_fmt("\"%08" PRIxPTR "\"", (uintptr_t)node->right);
     }
     else
     {
         fprintf(d->out, "    nullnode%zu [style = filled, fillcolor = black, label = null];\n", d->nullcnt);
-        rstr = string_fmt("nullnode%zu", d->nullcnt++);
+        rstr = ustring_fmt("nullnode%zu", d->nullcnt++);
     }
 
     fprintf(d->out, "    %s [style = filled, fillcolor = %s, fontcolor = %s, label = %s%s%s];\n",
@@ -892,24 +892,24 @@ bool _dump2dot(bst_node_t *node, void *data)
 
     return false;
 }
-void bst_dump_to_dot(const bst_t *b, const char *name, bool dump_values, FILE *out)
+void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values, FILE *out)
 {
-    ASSERT_INPUT(b);
+    UASSERT_INPUT(b);
 
     fprintf(out, "digraph %s {\n", name);
     fprintf(out, "    label=\"%s\";\n", name);
     fprintf(out, "    labelloc=top;\n");
 
     _dump2dot_data_t d = {.out = out, .nullcnt = 0, .dump_values = dump_values};
-    _iterate_nodes(b->root, BST_INORDER, _dump2dot, &d);
+    _iterate_nodes(b->root, UBST_INORDER, _dump2dot, &d);
     fprintf(out, "}\n");
 }
 
-void rotate_left(bst_t *b)
+void rotate_left(ubst_t *b)
 {
     b->root = _rotate_left_once(b->root);
 }
-void rotate_right(bst_t *b)
+void rotate_right(ubst_t *b)
 {
     b->root = _rotate_right_once(b->root);
 }

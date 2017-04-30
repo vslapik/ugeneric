@@ -1,5 +1,5 @@
-#ifndef FILE_UTIL_H__
-#define FILE_UTIL_H__
+#ifndef UFILE_UTIL_H__
+#define UFILE_UTIL_H__
 
 #include <string.h>
 #include <errno.h>
@@ -8,34 +8,34 @@
 #include "vector.h"
 
 #define IO_ERROR_MSG "I/O error at %s:%u:%s(): %s."
-#define G_ERROR_IO G_ERROR(string_fmt(IO_ERROR_MSG, __FILE__, __LINE__, __func__, strerror(errno)));
+#define G_ERROR_IO G_ERROR(ustring_fmt(IO_ERROR_MSG, __FILE__, __LINE__, __func__, strerror(errno)));
 
-typedef struct file_reader_opaq file_reader_t;
-typedef struct file_writer_opaq file_writer_t;
+typedef struct ufile_reader_opaq ufile_reader_t;
+typedef struct ufile_writer_opaq ufile_writer_t;
 
-generic_t file_open(const char *path, const char *mode);
-generic_t file_close(FILE *f);
-generic_t file_get_size(const char *path);
-generic_t file_read_to_string(const char *path);
-generic_t file_read_lines(const char *path);
+ugeneric_t ufile_open(const char *path, const char *mode);
+ugeneric_t ufile_close(FILE *f);
+ugeneric_t ufile_get_size(const char *path);
+ugeneric_t ufile_read_to_string(const char *path);
+ugeneric_t ufile_read_lines(const char *path);
 
-generic_t file_reader_create(const char *path, size_t buffer_size);
-generic_t file_reader_read(file_reader_t *fr, size_t size, void *buffer);
-generic_t file_reader_get_file_size(file_reader_t *fr);
-generic_t file_reader_get_position(const file_reader_t *fr);
-generic_t file_reader_set_position(file_reader_t *fr, size_t position);
-generic_t file_reader_reset(file_reader_t *fr);
-size_t file_reader_get_buffer_size(const file_reader_t *fr);
-bool file_reader_has_next(const file_reader_t *fr);
-FILE *file_reader_get_file(const file_reader_t *fr);
-generic_t file_reader_destroy(file_reader_t *fr);
+ugeneric_t ufile_reader_create(const char *path, size_t buffer_size);
+ugeneric_t ufile_reader_read(ufile_reader_t *fr, size_t size, void *buffer);
+ugeneric_t ufile_reader_get_file_size(ufile_reader_t *fr);
+ugeneric_t ufile_reader_get_position(const ufile_reader_t *fr);
+ugeneric_t ufile_reader_set_position(ufile_reader_t *fr, size_t position);
+ugeneric_t ufile_reader_reset(ufile_reader_t *fr);
+size_t ufile_reader_get_buffer_size(const ufile_reader_t *fr);
+bool ufile_reader_has_next(const ufile_reader_t *fr);
+FILE *ufile_reader_get_file(const ufile_reader_t *fr);
+ugeneric_t ufile_reader_destroy(ufile_reader_t *fr);
 
-generic_t file_writer_create(const char *path);
-generic_t file_writer_write(file_writer_t *fw, memchunk_t mchunk);
-generic_t file_writer_get_file_size(file_writer_t *fw);
-generic_t file_writer_get_position(const file_writer_t *fw);
-generic_t file_writer_set_position(file_writer_t *fw, size_t position);
-FILE *file_writer_get_file(const file_writer_t *fw);
-generic_t file_writer_destroy(file_writer_t *fw);
+ugeneric_t ufile_writer_create(const char *path);
+ugeneric_t ufile_writer_write(ufile_writer_t *fw, umemchunk_t mchunk);
+ugeneric_t ufile_writer_get_file_size(ufile_writer_t *fw);
+ugeneric_t ufile_writer_get_position(const ufile_writer_t *fw);
+ugeneric_t ufile_writer_set_position(ufile_writer_t *fw, size_t position);
+FILE *ufile_writer_get_file(const ufile_writer_t *fw);
+ugeneric_t ufile_writer_destroy(ufile_writer_t *fw);
 
 #endif

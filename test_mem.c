@@ -7,13 +7,13 @@
 
 bool oom(void *data)
 {
-    vector_t *v = data;
-    vector_destroy(v);
+    uvector_t *v = data;
+    uvector_destroy(v);
 
     exit(0);
 
     fprintf(stderr, "tryint to clean up things out ...\n");
-    vector_clear(v);
+    uvector_clear(v);
 
     // true means retry allocation again
     //return true;
@@ -27,15 +27,15 @@ int main(void)
     // Assuming it is too high to be allocated.
     size_t size = 32LL << 32;
 
-    vector_t *v = vector_create();
-    vector_set_destroyer(v, ufree);
+    uvector_t *v = uvector_create();
+    uvector_set_destroyer(v, ufree);
 
-    libugeneric_set_oom_handler(oom, v);
+    libuugeneric_set_oom_handler(oom, v);
 
     while (true)
     {
         char *p = umalloc(size);
-        vector_append(v, G_PTR(p));
+        uvector_append(v, G_PTR(p));
         for (size_t j = 0; j < size; j++)
         {
             p[j] = 1;

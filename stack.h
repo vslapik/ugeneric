@@ -1,18 +1,18 @@
-#ifndef STACK_H__
-#define STACK_H__
+#ifndef USTACK_H__
+#define USTACK_H__
 
 #include "generic.h"
 
-typedef struct stack_opaq stack_t;
+typedef struct ustack_opaq ustack_t;
 
-stack_t *stack_create(void);
-void stack_destroy(stack_t *s);
-generic_t stack_pop(stack_t *s);
-generic_t stack_peek(const stack_t *s);
-void stack_push(stack_t *s, generic_t e);
-size_t stack_get_size(const stack_t *s);
-bool stack_is_empty(const stack_t *s);
-void stack_reserve_capacity(stack_t *s, size_t capacity);
-size_t stack_get_capacity(const stack_t *s);
+ustack_t *ustack_create(void);
+void ustack_destroy(ustack_t *s);
+ugeneric_t ustack_pop(ustack_t *s);
+ugeneric_t ustack_peek(const ustack_t *s);
+void ustack_push(ustack_t *s, ugeneric_t e);
+size_t ustack_get_size(const ustack_t *s);
+bool ustack_is_empty(const ustack_t *s);
+void ustack_reserve_capacity(ustack_t *s, size_t capacity);
+size_t ustack_get_capacity(const ustack_t *s);
 
 #endif

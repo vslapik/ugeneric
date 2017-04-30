@@ -12,7 +12,7 @@ static bool _default_oom_handler(void *data)
 static oom_handler_t _oom_handler = _default_oom_handler;
 static void *_oom_data = NULL;
 
-void libugeneric_set_oom_handler(oom_handler_t handler, void *data)
+void libuugeneric_set_oom_handler(oom_handler_t handler, void *data)
 {
     _oom_handler = handler;
     _oom_data = data;
@@ -33,7 +33,7 @@ void *umalloc(size_t size)
     if (!p)
     {
         fprintf(stderr, "out of memory error\n");
-        print_trace();
+        utrace_print();
         exit(EC_OOM);
     }
 
@@ -55,7 +55,7 @@ void *ucalloc(size_t nmemb, size_t size)
     if (!p)
     {
         fprintf(stderr, "out of memory error\n");
-        print_trace();
+        utrace_print();
         exit(EC_OOM);
     }
 
@@ -77,7 +77,7 @@ void *urealloc(void *ptr, size_t size)
     if (!p)
     {
         fprintf(stderr, "out of memory error\n");
-        print_trace();
+        utrace_print();
         exit(EC_OOM);
     }
 

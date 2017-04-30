@@ -10,50 +10,50 @@
 
 void test_types(void)
 {
-    generic_t g_integer = G_INT(333);
-    generic_t g_real = G_REAL(33.33);
-    generic_t g_string = G_STR(string_dup("hello ugeneric"));
-    generic_t g_cstring = G_STR("hello constant ugeneric");
-    generic_t g_size = G_SIZE(123412341);
-    generic_t g_null = G_NULL;
-    generic_t g_true = G_TRUE;
-    generic_t g_false = G_FALSE;
-    generic_t g_vector = G_VECTOR(vector_create());
-    generic_t g_dict = G_DICT(dict_create());
+    ugeneric_t g_integer = G_INT(333);
+    ugeneric_t g_real = G_REAL(33.33);
+    ugeneric_t g_string = G_STR(ustring_dup("hello ugeneric"));
+    ugeneric_t g_cstring = G_STR("hello constant ugeneric");
+    ugeneric_t g_size = G_SIZE(123412341);
+    ugeneric_t g_null = G_NULL;
+    ugeneric_t g_true = G_TRUE;
+    ugeneric_t g_false = G_FALSE;
+    ugeneric_t g_vector = G_VECTOR(uvector_create());
+    ugeneric_t g_dict = G_DICT(udict_create());
 
-    ASSERT(G_IS_INT(g_integer));
-    ASSERT(G_IS_REAL(g_real));
-    ASSERT(G_IS_STR(g_string));
-    ASSERT(G_IS_CSTR(g_cstring));
-    ASSERT(G_IS_STRING(g_cstring));
-    ASSERT(G_IS_STRING(g_string));
-    ASSERT(G_IS_SIZE(g_size));
-    ASSERT(G_IS_NULL(g_null));
-    ASSERT(G_IS_TRUE(g_true));
-    ASSERT(G_IS_FALSE(g_false));
-    ASSERT(G_IS_VECTOR(g_vector));
-    ASSERT(G_IS_DICT(g_dict));
+    UASSERT(G_IS_INT(g_integer));
+    UASSERT(G_IS_REAL(g_real));
+    UASSERT(G_IS_STR(g_string));
+    UASSERT(G_IS_CSTR(g_cstring));
+    UASSERT(G_IS_STRING(g_cstring));
+    UASSERT(G_IS_STRING(g_string));
+    UASSERT(G_IS_SIZE(g_size));
+    UASSERT(G_IS_NULL(g_null));
+    UASSERT(G_IS_TRUE(g_true));
+    UASSERT(G_IS_FALSE(g_false));
+    UASSERT(G_IS_VECTOR(g_vector));
+    UASSERT(G_IS_DICT(g_dict));
 
-    generic_t g = G_MEMCHUNK(&g, sizeof(g));
-    ASSERT(G_IS_MEMCHUNK(g));
-    ASSERT(G_AS_MEMCHUNK_DATA(g) == &g);
-    ASSERT(G_AS_MEMCHUNK_SIZE(g) == sizeof(g));
-    memchunk_t t = {.size = 5, .data = "1234\xff"};
-    char *str = memchunk_as_str(t);
-    ASSERT_STR_EQ("31323334ff", str);
+    ugeneric_t g = G_MEMCHUNK(&g, sizeof(g));
+    UASSERT(G_IS_MEMCHUNK(g));
+    UASSERT(G_AS_MEMCHUNK_DATA(g) == &g);
+    UASSERT(G_AS_MEMCHUNK_SIZE(g) == sizeof(g));
+    umemchunk_t t = {.size = 5, .data = "1234\xff"};
+    char *str = umemchunk_as_str(t);
+    UASSERT_STR_EQ("31323334ff", str);
     ufree(str);
 
-    generic_destroy(g_vector, NULL);
-    generic_destroy(g_dict, NULL);
-    generic_destroy(g_string, NULL);
+    ugeneric_destroy(g_vector, NULL);
+    ugeneric_destroy(g_dict, NULL);
+    ugeneric_destroy(g_string, NULL);
 }
 
 void test_generic(void)
 {
-    //printf("%zu\n", sizeof(generic_t));
+    //printf("%zu\n", sizeof(ugeneric_t));
 
-    char *str = generic_as_str(G_STR("generic"), NULL);
-    ASSERT(strcmp(str, "\"generic\"") == 0) ;
+    char *str = ugeneric_as_str(G_STR("generic"), NULL);
+    UASSERT(strcmp(str, "\"generic\"") == 0) ;
     ufree(str);
 }
 
@@ -154,40 +154,40 @@ void test_parse(void)
     };
 
     // We need to have the dict to be sorted
-    libugeneric_dict_set_default_backend(DICT_BACKEND_BST_RB);
+    libuugeneric_udict_set_default_backend(UDICT_BACKEND_UBST_RB);
 
     tcase_t *t = tc;
     while (t->in)
     {
-        generic_t g = generic_parse(t->in);
+        ugeneric_t g = ugeneric_parse(t->in);
         if (t->out)
         {
             if (G_IS_ERROR(g))
             {
-                generic_error_print(g);
-                generic_error_destroy(g);
-                ABORT("test failed");
+                ugeneric_error_print(g);
+                ugeneric_error_destroy(g);
+                UABORT("test failed");
             }
-            char *out = generic_as_str(g, NULL);
-            ASSERT_STR_EQ(out, t->out);
+            char *out = ugeneric_as_str(g, NULL);
+            UASSERT_STR_EQ(out, t->out);
             ufree(out);
-            //generic_print(g);
-            generic_destroy(g, NULL);
+            //ugeneric_print(g);
+            ugeneric_destroy(g, NULL);
         }
         else
         {
             if (!G_IS_ERROR(g))
             {
-                //generic_print(g);
+                //ugeneric_print(g);
             }
-            ASSERT(G_IS_ERROR(g));
-            //generic_error_print(g);
-            if (!string_starts_with(G_AS_STR(g), t->err))
+            UASSERT(G_IS_ERROR(g));
+            //ugeneric_error_print(g);
+            if (!ustring_starts_with(G_AS_STR(g), t->err))
             {
                 fprintf(stdout, "'%s' != '%s'\n", G_AS_STR(g), t->err);
-                ABORT("test failed");
+                UABORT("test failed");
             }
-            generic_error_destroy(g);
+            ugeneric_error_destroy(g);
         }
         t++;
     }
@@ -196,48 +196,48 @@ void test_parse(void)
 void test_large_parse(void)
 {
     const char *path = "utdata/json.json";
-    generic_t g = file_read_to_string(path);
-    ASSERT_NO_ERROR(g);
+    ugeneric_t g = ufile_read_to_string(path);
+    UASSERT_NO_ERROR(g);
     char *json = G_AS_STR(g);
-    g = generic_parse(json);
-    ASSERT_NO_ERROR(g);
+    g = ugeneric_parse(json);
+    UASSERT_NO_ERROR(g);
     ufree(json);
 
-    //generic_print(g);
+    //ugeneric_print(g);
 
-    generic_destroy(g, NULL);
+    ugeneric_destroy(g, NULL);
 }
 
 void test_serialize(void)
 {
-    dict_t *d = dict_create();
-    dict_t *dempty = dict_create();
-    vector_t *v = vector_create();
-    vector_t *vempty = vector_create();
-    vector_append(v, G_NULL);
-    vector_append(v, G_TRUE);
-    vector_append(v, G_FALSE);
-    vector_append(v, G_VECTOR(vempty));
-    vector_append(v, G_DICT(dempty));
-    vector_append(v, G_INT(-1));
-    vector_append(v, G_INT(2));
-    vector_append(v, G_REAL(3.4));
-    vector_append(v, G_SIZE(1888888888888881));
-    vector_append(v, G_PTR(NULL));
-    vector_set_destroyer(v, ufree);
-    dict_put(d, G_CSTR("key"), G_VECTOR(v));
+    udict_t *d = udict_create();
+    udict_t *dempty = udict_create();
+    uvector_t *v = uvector_create();
+    uvector_t *vempty = uvector_create();
+    uvector_append(v, G_NULL);
+    uvector_append(v, G_TRUE);
+    uvector_append(v, G_FALSE);
+    uvector_append(v, G_VECTOR(vempty));
+    uvector_append(v, G_DICT(dempty));
+    uvector_append(v, G_INT(-1));
+    uvector_append(v, G_INT(2));
+    uvector_append(v, G_REAL(3.4));
+    uvector_append(v, G_SIZE(1888888888888881));
+    uvector_append(v, G_PTR(NULL));
+    uvector_set_destroyer(v, ufree);
+    udict_put(d, G_CSTR("key"), G_VECTOR(v));
 
-    char *str = generic_as_str(G_DICT(d), NULL);
-    ASSERT_STR_EQ(str, "{\"key\": [null, true, false, [], {}, -1, 2, 3.4, 1888888888888881, &(nil)]}");
+    char *str = ugeneric_as_str(G_DICT(d), NULL);
+    UASSERT_STR_EQ(str, "{\"key\": [null, true, false, [], {}, -1, 2, 3.4, 1888888888888881, &(nil)]}");
     ufree(str);
-    dict_destroy(d);
+    udict_destroy(d);
 }
 
 int main(int argc, char **argv)
 {
     if (argc > 1)
     {
-        generic_t g = file_read_to_string(argv[1]);
+        ugeneric_t g = ufile_read_to_string(argv[1]);
         if (G_IS_ERROR(g))
         {
             puts(G_AS_STR(g));
@@ -245,14 +245,14 @@ int main(int argc, char **argv)
         }
         char *str = G_AS_STR(g);
         puts(G_AS_STR(g));
-        generic_t res = generic_parse(str);
+        ugeneric_t res = ugeneric_parse(str);
         if (G_IS_ERROR(res))
         {
             puts(G_AS_STR(res));
         }
         else
         {
-            generic_print(res, NULL);
+            ugeneric_print(res, NULL);
         }
     }
 

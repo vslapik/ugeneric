@@ -8,7 +8,7 @@
 - stack on top of vector, deque and list
 - queue on top of deque or list or circullar buffer (current implementation)
 - queue/dequeue iterators
-- implement multiset (on BST)
+- implement multiset (on UBST)
 - implement vector iterator
 - improve MCHUNK functions (load/store from/to file)
 - improve parse/serialize compatibilities with JSON spec
@@ -25,7 +25,7 @@
 - dict compare (for all backends)
 - hide RB tree color inside one of the links
 - xxx_set_destroyer,xxx_set_comparator and xxx_set_copier should return the old handler for being able to restore it
-- queue_is_full
+- uqueue_is_full
 - overwrite mode for queue
 - implement missing methods for void* data management for all containers (only vector contains all as for now)
-- generic_serialize for void*
+- ugeneric_serialize for void*

@@ -7,26 +7,26 @@
 #include "list.h"
 #include "graph.h"
 
-struct graph_opaq {
-    vector_t *nodes; // adj lists
-    graph_type_t type;
+struct ugraph_opaq {
+    uvector_t *nodes; // adj lists
+    ugraph_type_t type;
     size_t m; // edges
     size_t n; // nodes
 };
 
-graph_t *graph_create(size_t n, graph_type_t type)
+ugraph_t *ugraph_create(size_t n, ugraph_type_t type)
 {
-    graph_t *g = umalloc(sizeof(*g));
-    g->nodes = vector_create_with_size(n, G_PTR(NULL));
-    vector_set_destroyer(g->nodes, (void_dtr_t)list_destroy);
+    ugraph_t *g = umalloc(sizeof(*g));
+    g->nodes = uvector_create_with_size(n, G_PTR(NULL));
+    uvector_set_destroyer(g->nodes, (void_dtr_t)ulist_destroy);
     g->n = n;
     g->m = 0;
     g->type = type;
 
     for (size_t i = 0; i < g->n; i++)
     {
-        list_t *l = list_create();
-        vector_set_at(g->nodes, i, G_PTR(l));
+        ulist_t *l = ulist_create();
+        uvector_set_at(g->nodes, i, G_PTR(l));
     }
 
     return g;
@@ -39,173 +39,173 @@ static inline void swap(size_t *x, size_t *y)
     *y = tmp;
 }
 
-bool graph_has_edge(const graph_t *g, size_t f, size_t t)
+bool ugraph_has_edge(const ugraph_t *g, size_t f, size_t t)
 {
-    ASSERT_INPUT(g);
-    ASSERT_INPUT(f < g->n);
-    ASSERT_INPUT(t < g->n);
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(f < g->n);
+    UASSERT_INPUT(t < g->n);
 
-    if ((g->type == GRAPH_UNDIRECTED) && (f > t))
+    if ((g->type == UGRAPH_UNDIRECTED) && (f > t))
     {
         swap(&f, &t);
     }
-    list_t *l = G_AS_PTR(vector_get_at(g->nodes, f));
+    ulist_t *l = G_AS_PTR(uvector_get_at(g->nodes, f));
 
-    return list_contains(l, G_SIZE(t));
+    return ulist_contains(l, G_SIZE(t));
 }
 
-void graph_add_edge(graph_t *g, size_t f, size_t t)
+void ugraph_add_edge(ugraph_t *g, size_t f, size_t t)
 {
-    ASSERT_INPUT(g);
-    ASSERT_INPUT(f < g->n);
-    ASSERT_INPUT(t < g->n);
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(f < g->n);
+    UASSERT_INPUT(t < g->n);
 
-    if ((g->type == GRAPH_UNDIRECTED) && (f > t))
+    if ((g->type == UGRAPH_UNDIRECTED) && (f > t))
     {
         swap(&f, &t);
     }
-    if (!graph_has_edge(g, f, t))
+    if (!ugraph_has_edge(g, f, t))
     {
-        list_append(G_AS_PTR(vector_get_at(g->nodes, f)), G_SIZE(t));
+        ulist_append(G_AS_PTR(uvector_get_at(g->nodes, f)), G_SIZE(t));
         g->m += 1;
     }
 }
 
-size_t graph_get_edge_count(const graph_t *g)
+size_t ugraph_get_edge_count(const ugraph_t *g)
 {
-    ASSERT_INPUT(g);
+    UASSERT_INPUT(g);
     return g->m;
 }
 
-size_t graph_get_vertex_count(const graph_t *g)
+size_t ugraph_get_vertex_count(const ugraph_t *g)
 {
-    ASSERT_INPUT(g);
+    UASSERT_INPUT(g);
     return g->n;
 }
 
-void graph_destroy(graph_t *g)
+void ugraph_destroy(ugraph_t *g)
 {
     if (g)
     {
-        vector_destroy(g->nodes);
+        uvector_destroy(g->nodes);
         ufree(g);
     }
 }
 
-vector_t *graph_get_edges(const graph_t *g)
+uvector_t *ugraph_get_edges(const ugraph_t *g)
 {
-    ASSERT_INPUT(g);
+    UASSERT_INPUT(g);
 
-    vector_t *v = vector_create_with_size(g->m, G_NULL);
-    vector_set_destroyer(v, ufree);
+    uvector_t *v = uvector_create_with_size(g->m, G_NULL);
+    uvector_set_destroyer(v, ufree);
     size_t j = 0;
     for (size_t i = 0; i < g->n; i++)
     {
-        list_t *l = G_AS_PTR(vector_get_at(g->nodes, i));
-        list_iterator_t *li = list_iterator_create(l);
-        while (list_iterator_has_next(li))
+        ulist_t *l = G_AS_PTR(uvector_get_at(g->nodes, i));
+        ulist_iterator_t *li = ulist_iterator_create(l);
+        while (ulist_iterator_has_next(li))
         {
-            graph_edge_t *edge = umalloc(sizeof(*edge));
-            generic_t e = list_iterator_get_next(li);
+            ugraph_edge_t *edge = umalloc(sizeof(*edge));
+            ugeneric_t e = ulist_iterator_get_next(li);
             edge->f = i;
             edge->t = G_AS_SIZE(e);
-            vector_set_at(v, j++, G_PTR(edge));
+            uvector_set_at(v, j++, G_PTR(edge));
         }
-        list_iterator_destroy(li);
+        ulist_iterator_destroy(li);
     }
 
     return v;
 }
 
-static vector_t *_min_cut(const graph_t *g)
+static uvector_t *_min_cut(const ugraph_t *g)
 {
-    vector_t *edges = graph_get_edges(g); // owner of data
-    vector_t *edgestmp = vector_copy(edges); // shallow copy
-    size_t edges_count = graph_get_edge_count(g);
-    size_t vertex_count = graph_get_vertex_count(g);
-    ASSERT(vector_get_size(edges) == edges_count);
+    uvector_t *edges = ugraph_get_edges(g); // owner of data
+    uvector_t *edgestmp = uvector_copy(edges); // shallow copy
+    size_t edges_count = ugraph_get_edge_count(g);
+    size_t vertex_count = ugraph_get_vertex_count(g);
+    UASSERT(uvector_get_size(edges) == edges_count);
 
-    dsu_t *d = dsu_create(vertex_count);
+    udsu_t *d = udsu_create(vertex_count);
     while (vertex_count > 2)
     {
-        size_t i = random_from_range(0, vector_get_size(edgestmp) - 1);
-        graph_edge_t *ge = G_AS_PTR(vector_get_at(edgestmp, i));
-        if (!dsu_is_united(d, ge->f, ge->t))
+        size_t i = random_from_range(0, uvector_get_size(edgestmp) - 1);
+        ugraph_edge_t *ge = G_AS_PTR(uvector_get_at(edgestmp, i));
+        if (!udsu_is_united(d, ge->f, ge->t))
         {
-            dsu_unite(d, ge->f, ge->t);
+            udsu_unite(d, ge->f, ge->t);
             vertex_count--;
         }
-        vector_remove_at(edgestmp, i);
+        uvector_remove_at(edgestmp, i);
     }
-    vector_destroy(edgestmp);
+    uvector_destroy(edgestmp);
 
-    vector_t *mincut = vector_create();
-    vector_set_destroyer(mincut, free);
+    uvector_t *mincut = uvector_create();
+    uvector_set_destroyer(mincut, free);
     for (size_t i = 0; i < edges_count; i++)
     {
-        graph_edge_t *e = G_AS_PTR(vector_get_at(edges, i));
-        if (!dsu_is_united(d, e->f, e->t))
+        ugraph_edge_t *e = G_AS_PTR(uvector_get_at(edges, i));
+        if (!udsu_is_united(d, e->f, e->t))
         {
-            graph_edge_t *mincut_edge = umalloc(sizeof(*mincut_edge));
+            ugraph_edge_t *mincut_edge = umalloc(sizeof(*mincut_edge));
             mincut_edge->f = e->f;
             mincut_edge->t = e->t;
-            vector_append(mincut, G_PTR(mincut_edge));
+            uvector_append(mincut, G_PTR(mincut_edge));
         }
     }
-    vector_destroy(edges);
-    dsu_destroy(d);
+    uvector_destroy(edges);
+    udsu_destroy(d);
 
     return mincut;
 }
 
-vector_t *graph_get_min_cut(const graph_t *g, size_t iterations)
+uvector_t *ugraph_get_min_cut(const ugraph_t *g, size_t iterations)
 {
-    vector_t *min_cut = NULL;
-    vector_t *cut = NULL;
+    uvector_t *min_cut = NULL;
+    uvector_t *cut = NULL;
     for (size_t i = 0; i < iterations; i++)
     {
         cut = _min_cut(g);
-        size_t cut_size = vector_get_size(cut);
-        size_t min_cut_size = min_cut ? vector_get_size(min_cut) : SIZE_MAX;
+        size_t cut_size = uvector_get_size(cut);
+        size_t min_cut_size = min_cut ? uvector_get_size(min_cut) : SIZE_MAX;
         if (cut_size < min_cut_size)
         {
             if (min_cut)
             {
-                vector_destroy(min_cut);
+                uvector_destroy(min_cut);
             }
             min_cut = cut;
         }
         else
         {
-            vector_destroy(cut);
+            uvector_destroy(cut);
         }
     }
 
     return min_cut;
 }
 
-void graph_dump_to_dot(const graph_t *g, const char *name, FILE *out)
+void ugraph_dump_to_dot(const ugraph_t *g, const char *name, FILE *out)
 {
-    ASSERT_INPUT(g);
-    ASSERT_INPUT(out);
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(out);
 
-    const char *arrow = (g->type == GRAPH_UNDIRECTED) ?  "--" : "->";
+    const char *arrow = (g->type == UGRAPH_UNDIRECTED) ?  "--" : "->";
     fprintf(out, "%s %s {\n",
-           (g->type == GRAPH_UNDIRECTED) ? "graph" : "digraph", name);
+           (g->type == UGRAPH_UNDIRECTED) ? "graph" : "digraph", name);
     for (size_t i = 0; i < g->n; i++)
     {
-        list_t *l = G_AS_PTR(vector_get_at(g->nodes, i));
-        if (!list_is_empty(l))
+        ulist_t *l = G_AS_PTR(uvector_get_at(g->nodes, i));
+        if (!ulist_is_empty(l))
         {
-            list_iterator_t *li = list_iterator_create(l);
+            ulist_iterator_t *li = ulist_iterator_create(l);
             fputs("   ", out);
-            while (list_iterator_has_next(li))
+            while (ulist_iterator_has_next(li))
             {
-                generic_t g = list_iterator_get_next(li);
+                ugeneric_t g = ulist_iterator_get_next(li);
                 fprintf(out, " %zu %s %zu;", i, arrow, G_AS_SIZE(g));
             }
             fputs("\n", out);
-            list_iterator_destroy(li);
+            ulist_iterator_destroy(li);
         }
     }
     fprintf(out, "}\n");

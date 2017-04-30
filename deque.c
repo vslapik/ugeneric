@@ -18,7 +18,7 @@ deque_t *deque_create_empty(void)
     return q;
 }
 
-deque_t *deque_create(size_t size, generic_t value)
+deque_t *deque_create(size_t size, ugeneric_t value)
 {
     (void)size;
     (void)value;

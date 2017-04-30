@@ -5,7 +5,7 @@
 
 #define CHECK_BITMAP(bmp, len, as_string) do {              \
     char *__s = ubitmap_as_str(bmp, len);                   \
-    ASSERT_STR_EQ(__s, as_string);                          \
+    UASSERT_STR_EQ(__s, as_string);                          \
     ufree(__s);                                             \
 } while (0)                                                 \
 
@@ -16,12 +16,12 @@ void test_bitmap()
     uint8_t b1 = 0;
     ubitmap_set_bit(&b1, 0);
     str = ubitmap_as_str(&b1, 1);
-    ASSERT_STR_EQ(str, "1");
+    UASSERT_STR_EQ(str, "1");
     ufree(str);
 
     ubitmap_clear_bit(&b1, 0);
     str = ubitmap_as_str(&b1, 1);
-    ASSERT_STR_EQ(str, "0"); ufree(str);
+    UASSERT_STR_EQ(str, "0"); ufree(str);
 
     uint16_t b11 = 0;
     ubitmap_set_bit(&b11, 1);
@@ -69,9 +69,9 @@ void test_bitmap()
     uint8_t *b33 = ubitmap_allocate(33);
     CHECK_BITMAP(b33, 33, "000000000000000000000000000000000");
     ubitmap_flip_bit(b33, 30);
-    ASSERT_INT_EQ(ubitmap_get_bit(b33, 29), 0);
-    ASSERT_INT_EQ(ubitmap_get_bit(b33, 30), 1);
-    ASSERT_INT_EQ(ubitmap_get_bit(b33, 31), 0);
+    UASSERT_INT_EQ(ubitmap_get_bit(b33, 29), 0);
+    UASSERT_INT_EQ(ubitmap_get_bit(b33, 30), 1);
+    UASSERT_INT_EQ(ubitmap_get_bit(b33, 31), 0);
     CHECK_BITMAP(b33, 33, "000000000000000000000000000000100");
 
     ufree(b33);

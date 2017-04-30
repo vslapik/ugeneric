@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include "deque.h"
 
-struct vector_opaq {
-    generic_t *data;
+struct uvector_opaq {
+    ugeneric_t *data;
     size_t size;
     bool is_data_owner;
     void_cpy_t cpy;

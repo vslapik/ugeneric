@@ -5,14 +5,14 @@
 
 /* head->[e{0}]->[e{1}]-> ... >[e{size-2}]->[e{size-1}]->NULL  */
 
-typedef struct list_item {
-    generic_t data;
-    struct list_item *next;
-} list_item_t;
+typedef struct ulist_item {
+    ugeneric_t data;
+    struct ulist_item *next;
+} ulist_item_t;
 
-struct list_opaq {
+struct ulist_opaq {
     size_t size;
-    list_item_t *head;
+    ulist_item_t *head;
     bool is_data_owner;
     void_cpy_t cpy;
     void_cmp_t cmp;
@@ -20,14 +20,14 @@ struct list_opaq {
     void_s8r_t void_serializer;
 };
 
-struct list_iterator_opaq {
-    const list_t *list;
-    list_item_t *next;
+struct ulist_iterator_opaq {
+    const ulist_t *list;
+    ulist_item_t *next;
 };
 
-static inline list_item_t **_rewind_to(list_t *l, size_t i)
+static inline ulist_item_t **_rewind_to(ulist_t *l, size_t i)
 {
-    list_item_t **t = &l->head;
+    ulist_item_t **t = &l->head;
     while (i--)
     {
         t = &(*t)->next;
@@ -36,13 +36,13 @@ static inline list_item_t **_rewind_to(list_t *l, size_t i)
     return t;
 }
 
-static list_t *_lcpy(const list_t *l, bool deep)
+static ulist_t *_lcpy(const ulist_t *l, bool deep)
 {
 
-    list_t *copy = list_create();
+    ulist_t *copy = ulist_create();
     memcpy(copy, l, sizeof(*l));
-    list_item_t *from = l->head;
-    list_item_t **to = &copy->head;
+    ulist_item_t *from = l->head;
+    ulist_item_t **to = &copy->head;
 
     if (deep)
     {
@@ -50,7 +50,7 @@ static list_t *_lcpy(const list_t *l, bool deep)
         while (from)
         {
             *to = umalloc(sizeof(**to));
-            (*to)->data = generic_copy(from->data, l->cpy);
+            (*to)->data = ugeneric_copy(from->data, l->cpy);
             (*to)->next = NULL;
             to = &(*to)->next;
             from = from->next;
@@ -75,9 +75,9 @@ static list_t *_lcpy(const list_t *l, bool deep)
     return copy;
 }
 
-list_t *list_create(void)
+ulist_t *ulist_create(void)
 {
-    list_t *l = umalloc(sizeof(*l));
+    ulist_t *l = umalloc(sizeof(*l));
 
     l->size = 0;
     l->is_data_owner = false;
@@ -87,22 +87,22 @@ list_t *list_create(void)
     return l;
 }
 
-void list_take_data_ownership(list_t *l)
+void ulist_take_data_ownership(ulist_t *l)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
     l->is_data_owner = true;
 }
 
-void list_drop_data_ownership(list_t *l)
+void ulist_drop_data_ownership(ulist_t *l)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
     l->is_data_owner = false;
 }
 
-void list_append(list_t *l, generic_t e)
+void ulist_append(ulist_t *l, ugeneric_t e)
 {
-    ASSERT_INPUT(l);
-    list_item_t *li = umalloc(sizeof(*li));
+    UASSERT_INPUT(l);
+    ulist_item_t *li = umalloc(sizeof(*li));
 
     li->data = e;
     li->next = NULL;
@@ -111,10 +111,10 @@ void list_append(list_t *l, generic_t e)
     l->size++;
 }
 
-void list_prepend(list_t *l, generic_t e)
+void ulist_prepend(ulist_t *l, ugeneric_t e)
 {
-    ASSERT_INPUT(l);
-    list_item_t *li = umalloc(sizeof(*li));
+    UASSERT_INPUT(l);
+    ulist_item_t *li = umalloc(sizeof(*li));
 
     li->next = l->head;
     li->data = e;
@@ -122,13 +122,13 @@ void list_prepend(list_t *l, generic_t e)
     l->size++;
 }
 
-generic_t list_pop_back(list_t *l)
+ugeneric_t ulist_pop_back(ulist_t *l)
 {
-    ASSERT_INPUT(l);
-    ASSERT_INPUT(l->size);
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(l->size);
 
-    list_item_t **t = _rewind_to(l, l->size - 1);
-    generic_t e = (*t)->data;
+    ulist_item_t **t = _rewind_to(l, l->size - 1);
+    ugeneric_t e = (*t)->data;
     ufree(*t);
     *t = NULL;
     l->size--;
@@ -136,13 +136,13 @@ generic_t list_pop_back(list_t *l)
     return e;
 }
 
-generic_t list_pop_front(list_t *l)
+ugeneric_t ulist_pop_front(ulist_t *l)
 {
-    ASSERT_INPUT(l);
-    ASSERT_INPUT(l->size);
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(l->size);
 
-    list_item_t *li = l->head;
-    generic_t e = li->data;
+    ulist_item_t *li = l->head;
+    ugeneric_t e = li->data;
     l->head = li->next;
     ufree(li);
     l->size--;
@@ -150,33 +150,33 @@ generic_t list_pop_front(list_t *l)
     return e;
 }
 
-void list_destroy(list_t *l)
+void ulist_destroy(ulist_t *l)
 {
     if (l)
     {
-        list_item_t *li = l->head;
-        generic_t g;
+        ulist_item_t *li = l->head;
+        ugeneric_t g;
 
         if (l->is_data_owner)
         {
             while (li)
             {
                 g = li->data;
-                generic_destroy(g, l->dtr);
+                ugeneric_destroy(g, l->dtr);
                 li = li->next;
             }
         }
-        list_clear(l);
+        ulist_clear(l);
         ufree(l);
     }
 }
 
-void list_clear(list_t *l)
+void ulist_clear(ulist_t *l)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
 
-    list_item_t *li = l->head;
-    list_item_t *t;
+    ulist_item_t *li = l->head;
+    ulist_item_t *t;
 
     while (li)
     {
@@ -187,59 +187,59 @@ void list_clear(list_t *l)
     l->head = NULL;
 }
 
-bool list_is_empty(const list_t *l)
+bool ulist_is_empty(const ulist_t *l)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
     return l->size == 0;
 }
 
-size_t list_get_size(const list_t *l)
+size_t ulist_get_size(const ulist_t *l)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
     return l->size;
 }
 
-generic_t list_get_at(const list_t *l, size_t i)
+ugeneric_t ulist_get_at(const ulist_t *l, size_t i)
 {
-    ASSERT_INPUT(l);
-    ASSERT_INPUT(i < l->size);
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(i < l->size);
 
-    list_item_t **t = _rewind_to((list_t*)l, i);
+    ulist_item_t **t = _rewind_to((ulist_t*)l, i);
 
     return (*t)->data;
 }
 
-void list_set_at(list_t *l, size_t i, generic_t e)
+void ulist_set_at(ulist_t *l, size_t i, ugeneric_t e)
 {
-    ASSERT_INPUT(l);
-    ASSERT_INPUT(i < l->size);
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(i < l->size);
 
-    list_item_t **t = _rewind_to(l, i);
+    ulist_item_t **t = _rewind_to(l, i);
     (*t)->data = e;
 }
 
-void list_insert_at(list_t *l, size_t i, generic_t e)
+void ulist_insert_at(ulist_t *l, size_t i, ugeneric_t e)
 {
-    ASSERT_INPUT(l);
-    ASSERT_INPUT(i < l->size);
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(i < l->size);
 
-    list_item_t *li = umalloc(sizeof(*li));
+    ulist_item_t *li = umalloc(sizeof(*li));
     li->data = e;
 
-    list_item_t **t = _rewind_to(l, i);
+    ulist_item_t **t = _rewind_to(l, i);
 
     li->next = *t;
     *t = li;
     l->size++;
 }
 
-void list_remove_at(list_t *l, size_t i)
+void ulist_remove_at(ulist_t *l, size_t i)
 {
-    ASSERT_INPUT(l);
-    ASSERT_INPUT(i < l->size);
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(i < l->size);
 
-    list_item_t **t = _rewind_to(l, i);
-    list_item_t *f = *t;
+    ulist_item_t **t = _rewind_to(l, i);
+    ulist_item_t *f = *t;
 
     *t = (*t)->next;
     ufree(f);
@@ -247,19 +247,19 @@ void list_remove_at(list_t *l, size_t i)
     l->size--;
 }
 
-bool list_contains(const list_t *l, generic_t e)
+bool ulist_contains(const ulist_t *l, ugeneric_t e)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
 
-    list_item_t *li = l->head;
-    list_item_t *t;
+    ulist_item_t *li = l->head;
+    ulist_item_t *t;
     bool ret = false;
 
     while (li)
     {
         t = li;
         li = li->next;
-        if (generic_compare(t->data, e, l->cmp) == 0)
+        if (ugeneric_compare(t->data, e, l->cmp) == 0)
         {
             ret = true;
             break;
@@ -269,28 +269,28 @@ bool list_contains(const list_t *l, generic_t e)
     return ret;
 }
 
-void list_reverse(list_t *l)
+void ulist_reverse(ulist_t *l)
 {
-    ASSERT_INPUT(l);
-    ABORT("not implemented");
-    list_item_t *li = l->head;
+    UASSERT_INPUT(l);
+    UABORT("not implemented");
+    ulist_item_t *li = l->head;
 
     while (li)
     {
     }
 }
 
-int list_compare(const list_t *l1, const list_t *l2, void_cmp_t cmp)
+int ulist_compare(const ulist_t *l1, const ulist_t *l2, void_cmp_t cmp)
 {
-    ASSERT_INPUT(l1);
-    ASSERT_INPUT(l2);
+    UASSERT_INPUT(l1);
+    UASSERT_INPUT(l2);
 
-    list_item_t *l = l1->head;
-    list_item_t *r = l2->head;
+    ulist_item_t *l = l1->head;
+    ulist_item_t *r = l2->head;
 
     while (l && r)
     {
-        int diff = generic_compare(l->data, r->data, cmp);
+        int diff = ugeneric_compare(l->data, r->data, cmp);
         if (diff == 0)
         {
             l = l->next;
@@ -304,71 +304,71 @@ int list_compare(const list_t *l1, const list_t *l2, void_cmp_t cmp)
     return l1->size - l2->size;
 }
 
-list_t *list_copy(const list_t *l)
+ulist_t *ulist_copy(const ulist_t *l)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
     return _lcpy(l, false);
 }
 
-list_t *list_deep_copy(const list_t *l)
+ulist_t *ulist_deep_copy(const ulist_t *l)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
     return _lcpy(l, true);
 }
 
-int list_print(const list_t *l)
+int ulist_print(const ulist_t *l)
 {
-    ASSERT_INPUT(l);
-    return list_fprint(l, stdout);
+    UASSERT_INPUT(l);
+    return ulist_fprint(l, stdout);
 }
 
-int list_fprint(const list_t *l, FILE *out)
+int ulist_fprint(const ulist_t *l, FILE *out)
 {
-    ASSERT_INPUT(l);
-    ASSERT_INPUT(out);
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(out);
 
-    char *str = list_as_str(l);
+    char *str = ulist_as_str(l);
     int ret = fprintf(out, "%s\n", str);
     ufree(str);
 
     return ret;
 }
 
-void list_serialize(const list_t *l, buffer_t *buf)
+void ulist_serialize(const ulist_t *l, ubuffer_t *buf)
 {
-    ASSERT_INPUT(l);
-    ASSERT_INPUT(buf);
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(buf);
 
     size_t i = 0;
-    list_item_t *li = l->head;
-    buffer_append_byte(buf, '[');
+    ulist_item_t *li = l->head;
+    ubuffer_append_byte(buf, '[');
     while (li)
     {
-        generic_serialize(li->data, buf, l->void_serializer);
+        ugeneric_serialize(li->data, buf, l->void_serializer);
         li = li->next;
         if (i++ < l->size - 1)
         {
-            buffer_append_data(buf, ", ", 2);
+            ubuffer_append_data(buf, ", ", 2);
         }
     }
-    buffer_append_byte(buf, ']');
+    ubuffer_append_byte(buf, ']');
 }
 
-char *list_as_str(const list_t *l)
+char *ulist_as_str(const ulist_t *l)
 {
-    ASSERT_INPUT(l);
+    UASSERT_INPUT(l);
 
-    buffer_t buf = {0};
-    list_serialize(l, &buf);
-    buffer_null_terminate(&buf);
+    ubuffer_t buf = {0};
+    ulist_serialize(l, &buf);
+    ubuffer_null_terminate(&buf);
 
     return buf.data;
 }
 
-list_iterator_t *list_iterator_create(const list_t *l)
+ulist_iterator_t *ulist_iterator_create(const ulist_t *l)
 {
-    ASSERT_INPUT(l);
-    list_iterator_t *li = umalloc(sizeof(*li));
+    UASSERT_INPUT(l);
+    ulist_iterator_t *li = umalloc(sizeof(*li));
 
     li->list = l;
     li->next = l->head;
@@ -376,24 +376,24 @@ list_iterator_t *list_iterator_create(const list_t *l)
     return li;
 }
 
-generic_t list_iterator_get_next(list_iterator_t *li)
+ugeneric_t ulist_iterator_get_next(ulist_iterator_t *li)
 {
-    ASSERT_INPUT(li);
-    ASSERT_MSG(li->list->size, "container is empty");
-    ASSERT_MSG(li->next, "iteration is done");
+    UASSERT_INPUT(li);
+    UASSERT_MSG(li->list->size, "container is empty");
+    UASSERT_MSG(li->next, "iteration is done");
 
-    generic_t g = li->next->data;
+    ugeneric_t g = li->next->data;
     li->next = li->next->next;
 
     return g;
 }
 
-bool list_iterator_has_next(const list_iterator_t *li)
+bool ulist_iterator_has_next(const ulist_iterator_t *li)
 {
     return li->next;
 }
 
-void list_iterator_destroy(list_iterator_t *li)
+void ulist_iterator_destroy(ulist_iterator_t *li)
 {
     if (li)
     {
@@ -401,7 +401,7 @@ void list_iterator_destroy(list_iterator_t *li)
     }
 }
 
-void list_iterator_reset(list_iterator_t *li)
+void ulist_iterator_reset(ulist_iterator_t *li)
 {
     li->next = li->list->head;
 }

@@ -1,26 +1,26 @@
-#ifndef QUEUE_H__
-#define QUEUE_H__
+#ifndef UQUEUE_H__
+#define UQUEUE_H__
 
 #include "generic.h"
 
 #define QUEUE_INITIAL_CAPACITY 16
 
-typedef struct queue_opaq queue_t;
+typedef struct uqueue_opaq uqueue_t;
 
-queue_t *queue_create(void);
-void queue_destroy(queue_t *q);
-void queue_reserve_capacity(queue_t *q, size_t new_capacity);
-void queue_clear(queue_t *q);
-void queue_enq(queue_t *q, generic_t element);
-generic_t queue_peek(const queue_t *q);
-generic_t queue_deq(queue_t *q);
-size_t queue_get_size(const queue_t *q);
-size_t queue_get_capacity(const queue_t *q);
-bool queue_is_empty(const queue_t *q);
+uqueue_t *uqueue_create(void);
+void uqueue_destroy(uqueue_t *q);
+void uqueue_reserve_capacity(uqueue_t *q, size_t new_capacity);
+void uqueue_clear(uqueue_t *q);
+void uqueue_enq(uqueue_t *q, ugeneric_t element);
+ugeneric_t uqueue_peek(const uqueue_t *q);
+ugeneric_t uqueue_deq(uqueue_t *q);
+size_t uqueue_get_size(const uqueue_t *q);
+size_t uqueue_get_capacity(const uqueue_t *q);
+bool uqueue_is_empty(const uqueue_t *q);
 
-char *queue_as_str(const queue_t *q);
-void queue_serialize(const queue_t *q, buffer_t *buf);
-int queue_fprint(const queue_t *q, FILE *out);
-int queue_print(const queue_t *q);
+char *uqueue_as_str(const uqueue_t *q);
+void uqueue_serialize(const uqueue_t *q, ubuffer_t *buf);
+int uqueue_fprint(const uqueue_t *q, FILE *out);
+int uqueue_print(const uqueue_t *q);
 
 #endif

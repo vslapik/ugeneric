@@ -10,34 +10,34 @@
  * Split string to a vector, makes copies of substrings,
  * vector is owner of these substrings.
  */
-vector_t *string_split(const char *str, const char *sep)
+uvector_t *ustring_split(const char *str, const char *sep)
 {
-    ASSERT_INPUT(str);
-    ASSERT_INPUT(sep);
+    UASSERT_INPUT(str);
+    UASSERT_INPUT(sep);
 
     char *s = strstr(str, sep);
     size_t off = 0;
     size_t sep_len = strlen(sep);
-    vector_t *v = vector_create();
+    uvector_t *v = uvector_create();
 
     while (s)
     {
         if (s == str)
         {
             // Separator found at the very beginning of the string.
-            vector_append(v, G_STR(string_dup("")));
+            uvector_append(v, G_STR(ustring_dup("")));
             off = sep_len;
         }
         else
         {
-            vector_append(v, G_STR(string_ndup(str + off, s - str - off)));
+            uvector_append(v, G_STR(ustring_ndup(str + off, s - str - off)));
             off = s - str + sep_len;
         }
         s = strstr(str + off, sep);
     }
     if (strlen(str) != (off - 1))
     {
-        vector_append(v, G_STR(string_dup(str + off)));
+        uvector_append(v, G_STR(ustring_dup(str + off)));
     }
 
     return v;
@@ -46,9 +46,9 @@ vector_t *string_split(const char *str, const char *sep)
 /*
  * Analog of POSIX strdup().
  */
-char *string_dup(const char *str)
+char *ustring_dup(const char *str)
 {
-    ASSERT_INPUT(str);
+    UASSERT_INPUT(str);
     char *p = umalloc(strlen(str) + 1);
     strcpy(p, str);
 
@@ -58,9 +58,9 @@ char *string_dup(const char *str)
 /*
  * Analog of POSIX strndup().
  */
-char *string_ndup(const char *str, size_t n)
+char *ustring_ndup(const char *str, size_t n)
 {
-    ASSERT_INPUT(str);
+    UASSERT_INPUT(str);
     char *p = umalloc(n + 1);
     strncpy(p, str, n);
     p[n] = '\0';
@@ -68,11 +68,11 @@ char *string_ndup(const char *str, size_t n)
     return p;
 }
 
-static memchunk_t _vstr_fmt(const char *fmt, va_list ap)
+static umemchunk_t _vstr_fmt(const char *fmt, va_list ap)
 {
     int size = 0;
     char *str = NULL;
-    memchunk_t mem;
+    umemchunk_t mem;
     va_list ap_copy;
     va_copy(ap_copy, ap);
 
@@ -81,7 +81,7 @@ static memchunk_t _vstr_fmt(const char *fmt, va_list ap)
     {
         size++; // '\0'
         str = umalloc(size);
-        ASSERT(vsnprintf(str, size, fmt, ap) > 0);
+        UASSERT(vsnprintf(str, size, fmt, ap) > 0);
     }
     va_end(ap_copy);
 
@@ -93,12 +93,12 @@ static memchunk_t _vstr_fmt(const char *fmt, va_list ap)
 /*
  * Something similar to glibc asprintf.
  */
-char *string_fmt(const char *fmt, ...)
+char *ustring_fmt(const char *fmt, ...)
 {
-    ASSERT_INPUT(fmt);
+    UASSERT_INPUT(fmt);
 
     va_list ap, ap_copy;
-    memchunk_t mem;
+    umemchunk_t mem;
     char *str = NULL;
 
     va_start(ap, fmt);
@@ -111,12 +111,12 @@ char *string_fmt(const char *fmt, ...)
     return str;
 }
 
-memchunk_t string_fmt_to_memchunk(const char *fmt, ...)
+umemchunk_t ustring_fmt_to_memchunk(const char *fmt, ...)
 {
-    ASSERT_INPUT(fmt);
+    UASSERT_INPUT(fmt);
 
     va_list ap, ap_copy;
-    memchunk_t mem;
+    umemchunk_t mem;
 
     va_start(ap, fmt);
     va_copy(ap_copy, ap);
@@ -126,10 +126,10 @@ memchunk_t string_fmt_to_memchunk(const char *fmt, ...)
     return mem;
 }
 
-bool string_starts_with(const char *str, const char *prefix)
+bool ustring_starts_with(const char *str, const char *prefix)
 {
-    ASSERT_INPUT(str);
-    ASSERT_INPUT(str);
+    UASSERT_INPUT(str);
+    UASSERT_INPUT(str);
 
     while (*prefix)
     {

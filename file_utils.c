@@ -5,7 +5,7 @@
 #include "buffer.h"
 #include "file_utils.h"
 
-struct file_reader_opaq {
+struct ufile_reader_opaq {
     FILE *file;
     size_t file_size;
     size_t read_offset;
@@ -13,11 +13,11 @@ struct file_reader_opaq {
     size_t buffer_size;
 };
 
-struct file_writer_opaq {
+struct ufile_writer_opaq {
     FILE *file;
 };
 
-static generic_t _get_position(FILE *f)
+static ugeneric_t _get_position(FILE *f)
 {
     long pos = ftell(f);
     if (pos == -1)
@@ -28,7 +28,7 @@ static generic_t _get_position(FILE *f)
     return G_SIZE(pos);
 }
 
-static generic_t _set_position(FILE *f, size_t position)
+static ugeneric_t _set_position(FILE *f, size_t position)
 {
     if (fseek(f, position, SEEK_SET) == -1)
     {
@@ -37,11 +37,11 @@ static generic_t _set_position(FILE *f, size_t position)
     return G_NULL;
 }
 
-static generic_t _get_file_size(FILE *f, bool save_pos)
+static ugeneric_t _get_file_size(FILE *f, bool save_pos)
 {
     long saved_pos;
     long fsize;
-    generic_t g;
+    ugeneric_t g;
 
     if (save_pos)
     {
@@ -74,11 +74,11 @@ static generic_t _get_file_size(FILE *f, bool save_pos)
     return G_SIZE(fsize);
 }
 
-generic_t file_get_size(const char *path)
+ugeneric_t ufile_get_size(const char *path)
 {
-    ASSERT_INPUT(path);
+    UASSERT_INPUT(path);
 
-    generic_t g = file_open(path, "r");
+    ugeneric_t g = ufile_open(path, "r");
     if (G_IS_ERROR(g))
     {
         return g;
@@ -95,18 +95,18 @@ generic_t file_get_size(const char *path)
     return g;
 }
 
-generic_t file_read_to_string(const char *path)
+ugeneric_t ufile_read_to_string(const char *path)
 {
-    ASSERT_INPUT(path);
+    UASSERT_INPUT(path);
 
-    generic_t g = file_get_size(path);
+    ugeneric_t g = ufile_get_size(path);
     if (G_IS_ERROR(g))
     {
         return g;
     }
     size_t fsize = G_AS_SIZE(g);
 
-    g = file_open(path, "r");
+    g = ufile_open(path, "r");
     if (G_IS_ERROR(g))
     {
         return g;
@@ -128,36 +128,36 @@ generic_t file_read_to_string(const char *path)
     return G_STR(t);
 }
 
-generic_t file_read_lines(const char *path)
+ugeneric_t ufile_read_lines(const char *path)
 {
-    ASSERT_INPUT(path);
+    UASSERT_INPUT(path);
 
-    generic_t g = file_read_to_string(path);
+    ugeneric_t g = ufile_read_to_string(path);
     if (G_IS_ERROR(g))
     {
         return g;
     }
 
     char *str = G_AS_STR(g);
-    vector_t *v = string_split(str, "\n");
+    uvector_t *v = ustring_split(str, "\n");
     ufree(str);
 
-    if (strlen(G_AS_STR(vector_get_back(v))) == 0)
+    if (strlen(G_AS_STR(uvector_get_back(v))) == 0)
     {
         /*  Remove an empty string from the end of the vector
          *  which appears after split when the last line ends
          *  with \n which is usually true.
          */
-        ufree(G_AS_STR(vector_pop_back(v)));
+        ufree(G_AS_STR(uvector_pop_back(v)));
     }
 
     return G_PTR(v);
 }
 
-generic_t file_open(const char *path, const char *mode)
+ugeneric_t ufile_open(const char *path, const char *mode)
 {
-    ASSERT_INPUT(path);
-    ASSERT_INPUT(mode);
+    UASSERT_INPUT(path);
+    UASSERT_INPUT(mode);
 
     FILE *file = fopen(path, mode);
     if (!file)
@@ -168,9 +168,9 @@ generic_t file_open(const char *path, const char *mode)
     return G_PTR(file);
 }
 
-generic_t file_close(FILE *f)
+ugeneric_t ufile_close(FILE *f)
 {
-    ASSERT_INPUT(f);
+    UASSERT_INPUT(f);
 
     if (0 != fclose(f))
     {
@@ -180,17 +180,17 @@ generic_t file_close(FILE *f)
     return G_NULL;
 }
 
-generic_t file_reader_create(const char *path, size_t buffer_size)
+ugeneric_t ufile_reader_create(const char *path, size_t buffer_size)
 {
-    ASSERT_INPUT(path);
-    ASSERT_INPUT(buffer_size);
+    UASSERT_INPUT(path);
+    UASSERT_INPUT(buffer_size);
 
-    generic_t g;
-    if (G_IS_ERROR(g = file_open(path, "r")))
+    ugeneric_t g;
+    if (G_IS_ERROR(g = ufile_open(path, "r")))
     {
         return g;
     }
-    file_reader_t *fr = umalloc(sizeof(*fr));
+    ufile_reader_t *fr = umalloc(sizeof(*fr));
     fr->buffer = umalloc(buffer_size);
     fr->buffer_size = buffer_size;
     fr->file = G_AS_PTR(g);
@@ -209,9 +209,9 @@ generic_t file_reader_create(const char *path, size_t buffer_size)
 /*
  * Read to memory provided by caller or to internal buffer if passed buffer is NULL.
  */
-generic_t file_reader_read(file_reader_t *fr, size_t size, void *buffer)
+ugeneric_t ufile_reader_read(ufile_reader_t *fr, size_t size, void *buffer)
 {
-    ASSERT_INPUT(fr);
+    UASSERT_INPUT(fr);
 
     if (!buffer)
     {
@@ -240,14 +240,14 @@ generic_t file_reader_read(file_reader_t *fr, size_t size, void *buffer)
     return buffer ? G_MEMCHUNK(buffer, size) : G_MEMCHUNK(fr->buffer, r);
 }
 
-bool file_reader_has_next(const file_reader_t *fr)
+bool ufile_reader_has_next(const ufile_reader_t *fr)
 {
     return fr->read_offset < fr->file_size;
 }
 
-generic_t file_reader_reset(file_reader_t *fr)
+ugeneric_t ufile_reader_reset(ufile_reader_t *fr)
 {
-    ASSERT_INPUT(fr);
+    UASSERT_INPUT(fr);
 
     if (fseek(fr->file, 0, SEEK_SET) == -1)
     {
@@ -258,41 +258,41 @@ generic_t file_reader_reset(file_reader_t *fr)
     return G_NULL;
 }
 
-generic_t file_reader_get_file_size(file_reader_t *fr)
+ugeneric_t ufile_reader_get_file_size(ufile_reader_t *fr)
 {
-    ASSERT_INPUT(fr);
+    UASSERT_INPUT(fr);
     return _get_file_size(fr->file, true);
 }
 
-size_t file_reader_get_buffer_size(const file_reader_t *fr)
+size_t ufile_reader_get_buffer_size(const ufile_reader_t *fr)
 {
-    ASSERT_INPUT(fr);
+    UASSERT_INPUT(fr);
     return fr->buffer_size;
 }
 
-generic_t file_reader_get_position(const file_reader_t *fr)
+ugeneric_t ufile_reader_get_position(const ufile_reader_t *fr)
 {
-    ASSERT_INPUT(fr);
+    UASSERT_INPUT(fr);
     return _get_position(fr->file);
 }
 
-generic_t file_reader_set_position(file_reader_t *fr, size_t position)
+ugeneric_t ufile_reader_set_position(ufile_reader_t *fr, size_t position)
 {
-    ASSERT_INPUT(fr);
+    UASSERT_INPUT(fr);
     return _set_position(fr->file, position);
 }
 
-FILE *file_reader_get_file(const file_reader_t *fr)
+FILE *ufile_reader_get_file(const ufile_reader_t *fr)
 {
     return fr->file;
 }
 
-generic_t file_reader_destroy(file_reader_t *fr)
+ugeneric_t ufile_reader_destroy(ufile_reader_t *fr)
 {
-    generic_t g = G_NULL;
+    ugeneric_t g = G_NULL;
     if (fr)
     {
-        g = file_close(fr->file);
+        g = ufile_close(fr->file);
         ufree(fr->buffer);
         ufree(fr);
     }
@@ -300,24 +300,24 @@ generic_t file_reader_destroy(file_reader_t *fr)
     return g;
 }
 
-generic_t file_writer_create(const char *path)
+ugeneric_t ufile_writer_create(const char *path)
 {
-    ASSERT_INPUT(path);
+    UASSERT_INPUT(path);
 
-    generic_t g;
-    if (G_IS_ERROR(g = file_open(path, "w")))
+    ugeneric_t g;
+    if (G_IS_ERROR(g = ufile_open(path, "w")))
     {
         return g;
     }
-    file_writer_t *fw = umalloc(sizeof(*fw));
+    ufile_writer_t *fw = umalloc(sizeof(*fw));
     fw->file = G_AS_PTR(g);
 
     return G_PTR(fw);
 }
 
-generic_t file_writer_write(file_writer_t *fw, memchunk_t mchunk)
+ugeneric_t ufile_writer_write(ufile_writer_t *fw, umemchunk_t mchunk)
 {
-    ASSERT_INPUT(fw);
+    UASSERT_INPUT(fw);
 
     size_t size = fwrite(mchunk.data, 1, mchunk.size, fw->file);
 
@@ -330,35 +330,35 @@ generic_t file_writer_write(file_writer_t *fw, memchunk_t mchunk)
     return G_NULL;
 }
 
-generic_t file_writer_get_file_size(file_writer_t *fw)
+ugeneric_t ufile_writer_get_file_size(ufile_writer_t *fw)
 {
-    ASSERT_INPUT(fw);
+    UASSERT_INPUT(fw);
     return _get_file_size(fw->file, true);
 }
 
-generic_t file_writer_get_position(const file_writer_t *fw)
+ugeneric_t ufile_writer_get_position(const ufile_writer_t *fw)
 {
-    ASSERT_INPUT(fw);
+    UASSERT_INPUT(fw);
     return _get_position(fw->file);
 }
 
-generic_t file_writer_set_position(file_writer_t *fw, size_t position)
+ugeneric_t ufile_writer_set_position(ufile_writer_t *fw, size_t position)
 {
-    ASSERT_INPUT(fw);
+    UASSERT_INPUT(fw);
     return _set_position(fw->file, position);
 }
 
-FILE *file_writer_get_file(const file_writer_t *fw)
+FILE *ufile_writer_get_file(const ufile_writer_t *fw)
 {
     return fw->file;
 }
 
-generic_t file_writer_destroy(file_writer_t *fw)
+ugeneric_t ufile_writer_destroy(ufile_writer_t *fw)
 {
-    generic_t g = G_NULL;
+    ugeneric_t g = G_NULL;
     if (fw)
     {
-        g = file_close(fw->file);
+        g = ufile_close(fw->file);
         ufree(fw);
     }
 

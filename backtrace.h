@@ -1,6 +1,6 @@
-#ifndef BACKTRACE_H__
-#define BACKTRACE_H__
+#ifndef UBACKTRACE_H__
+#define UBACKTRACE_H__
 
-void print_trace(void);
+void utrace_print(void);
 
 #endif

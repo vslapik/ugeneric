@@ -3,7 +3,7 @@
 
 #define DEPTH 128
 
-void print_trace(void)
+void utrace_print(void)
 {
 #ifdef __GNU_LIBRARY__
 #include <execinfo.h>

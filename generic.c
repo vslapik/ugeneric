@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include <limits.h>
 #include <errno.h>
-#include <math.h>
 #include "generic.h"
 #include "mem.h"
 #include "vector.h"
@@ -11,7 +10,7 @@
 #include "string_utils.h"
 #include "buffer.h"
 
-static generic_t _parse_item(const char **str);
+static ugeneric_t _parse_item(const char **str);
 
 static inline void _skip_whitespaces(const char **str)
 {
@@ -21,37 +20,37 @@ static inline void _skip_whitespaces(const char **str)
     }
 }
 
-void generic_swap(generic_t *g1, generic_t *g2)
+void ugeneric_swap(ugeneric_t *g1, ugeneric_t *g2)
 {
-    ASSERT_INPUT(g1);
-    ASSERT_INPUT(g2);
+    UASSERT_INPUT(g1);
+    UASSERT_INPUT(g2);
 
-    generic_t t = *g2;
+    ugeneric_t t = *g2;
     *g2 = *g1;
     *g1 = t;
 }
 
-int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
+int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
     if (G_IS_ERROR(g1) || G_IS_ERROR(g2))
     {
-        ABORT("attempt to compare G_ERROR object");
+        UABORT("attempt to compare G_ERROR object");
     }
 
     // Generics of different types are always not equal.
-    int ret = (generic_get_type(g1) - generic_get_type(g2));
+    int ret = (ugeneric_get_type(g1) - ugeneric_get_type(g2));
     double f1, f2;
 
     if (ret == 0)
     {
-        switch (generic_get_type(g1))
+        switch (ugeneric_get_type(g1))
         {
             case G_NULL_T:
                 ret = 0;
                 break;
 
             case G_PTR_T:
-                ASSERT_MSG(cmp, "don't know how to compare void pointers");
+                UASSERT_MSG(cmp, "don't know how to compare void pointers");
                 ret = cmp(G_AS_PTR(g1), G_AS_PTR(g2));
                 break;
 
@@ -64,7 +63,7 @@ int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
                 f2 = G_AS_REAL(g2);
                 if ((f1 != f1) || (f2 != f2))
                 {
-                    ABORT("NAN in comparison");
+                    UABORT("NAN in comparison");
                 }
                 if (f1 > f2)
                 {
@@ -85,15 +84,15 @@ int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
                 break;
 
             case G_VECTOR_T:
-                ret = vector_compare(G_AS_PTR(g1), G_AS_PTR(g2), cmp);
+                ret = uvector_compare(G_AS_PTR(g1), G_AS_PTR(g2), cmp);
                 break;
 
-            case G_DICT_T:
-                ASSERT(0); // not yet implemented
+            case G_UDICT_T:
+                UASSERT(0); // not yet implemented
                 break;
 
             case G_MEMCHUNK_T:
-                ASSERT(G_AS_MEMCHUNK_SIZE(g1) == G_AS_MEMCHUNK_SIZE(g2));
+                UASSERT(G_AS_MEMCHUNK_SIZE(g1) == G_AS_MEMCHUNK_SIZE(g2));
                 ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
                              G_AS_MEMCHUNK_SIZE(g1));
                 break;
@@ -104,21 +103,21 @@ int generic_compare(generic_t g1, generic_t g2, void_cmp_t cmp)
                 break;
 
             default:
-                ASSERT(0);
+                UASSERT(0);
         }
     }
 
     return ret;
 }
 
-void generic_destroy(generic_t g, void_dtr_t dtr)
+void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
 {
     double d;
 
-    switch (generic_get_type(g))
+    switch (ugeneric_get_type(g))
     {
         case G_PTR_T:
-            ASSERT_MSG(dtr, "don't know how to destroy void pointer");
+            UASSERT_MSG(dtr, "don't know how to destroy void pointer");
             dtr(G_AS_PTR(g));
             break;
 
@@ -134,16 +133,16 @@ void generic_destroy(generic_t g, void_dtr_t dtr)
             d = G_AS_REAL(g);
             if (d != d)
             {
-                ABORT("destroying NAN");
+                UABORT("destroying NAN");
             }
             break;
 
         case G_VECTOR_T:
-            vector_destroy(G_AS_PTR(g));
+            uvector_destroy(G_AS_PTR(g));
             break;
 
-        case G_DICT_T:
-            dict_destroy(G_AS_PTR(g));
+        case G_UDICT_T:
+            udict_destroy(G_AS_PTR(g));
             break;
 
         case G_MEMCHUNK_T:
@@ -155,17 +154,17 @@ void generic_destroy(generic_t g, void_dtr_t dtr)
             break;
 
         case G_ERROR_T:
-            ABORT("attempt to destroy G_ERROR object");
+            UABORT("attempt to destroy G_ERROR object");
             break;
 
         default:
-            ASSERT(0);
+            UASSERT(0);
     }
 }
 
-void generic_error_print(generic_t g)
+void ugeneric_error_print(ugeneric_t g)
 {
-    ASSERT_INPUT(generic_get_type(g) == G_ERROR_T);
+    UASSERT_INPUT(ugeneric_get_type(g) == G_ERROR_T);
     if (G_AS_STR(g))
     {
         puts(G_AS_STR(g));
@@ -176,23 +175,23 @@ void generic_error_print(generic_t g)
     }
 }
 
-void generic_error_destroy(generic_t g)
+void ugeneric_error_destroy(ugeneric_t g)
 {
-    ASSERT_INPUT(generic_get_type(g) == G_ERROR_T);
+    UASSERT_INPUT(ugeneric_get_type(g) == G_ERROR_T);
     ufree(G_AS_STR(g));
 }
 
-generic_t generic_copy(generic_t g, void_cpy_t cpy)
+ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
 {
-    generic_t ret;
+    ugeneric_t ret;
     size_t size;
     void *p;
     double d;
 
-    switch (generic_get_type(g))
+    switch (ugeneric_get_type(g))
     {
         case G_PTR_T:
-            ASSERT_MSG(cpy, "don't know how to copy void pointer");
+            UASSERT_MSG(cpy, "don't know how to copy void pointer");
             ret = G_PTR(cpy(G_AS_PTR(g)));
             break;
 
@@ -206,16 +205,16 @@ generic_t generic_copy(generic_t g, void_cpy_t cpy)
             d = G_AS_REAL(g);
             if (d != d)
             {
-                ABORT("copying NAN");
+                UABORT("copying NAN");
             }
             break;
 
         case G_VECTOR_T:
-            ret = G_VECTOR(vector_deep_copy(G_AS_PTR(g)));
+            ret = G_VECTOR(uvector_deep_copy(G_AS_PTR(g)));
             break;
 
-        case G_DICT_T:
-            ret = G_DICT(dict_deep_copy(G_AS_PTR(g)));
+        case G_UDICT_T:
+            ret = G_DICT(udict_deep_copy(G_AS_PTR(g)));
             break;
 
         case G_MEMCHUNK_T:
@@ -227,134 +226,134 @@ generic_t generic_copy(generic_t g, void_cpy_t cpy)
 
         case G_STR_T:
         case G_CSTR_T:
-            ret = G_STR(string_dup(G_AS_STR(g)));
+            ret = G_STR(ustring_dup(G_AS_STR(g)));
             break;
 
         case G_ERROR_T:
-            ABORT("attempt to copy G_ERROR object");
+            UABORT("attempt to copy G_ERROR object");
             break;
 
         default:
-            ASSERT(0);
+            UASSERT(0);
     }
 
     return ret;
 }
 
-int generic_fprint(generic_t g, void_s8r_t void_serializer, FILE *out)
+int ugeneric_fprint(ugeneric_t g, void_s8r_t void_serializer, FILE *out)
 {
-    ASSERT_INPUT(out);
+    UASSERT_INPUT(out);
 
-    char *str = generic_as_str(g, void_serializer);
+    char *str = ugeneric_as_str(g, void_serializer);
     int ret = fprintf(out, "%s\n", str);
     ufree(str);
 
     return ret;
 }
 
-int generic_print(generic_t g, void_s8r_t void_serializer)
+int ugeneric_print(ugeneric_t g, void_s8r_t void_serializer)
 {
-    return generic_fprint(g, void_serializer, stdout);
+    return ugeneric_fprint(g, void_serializer, stdout);
 }
 
-char *generic_as_str(generic_t g, void_s8r_t void_serializer)
+char *ugeneric_as_str(ugeneric_t g, void_s8r_t void_serializer)
 {
-    buffer_t buf = {0};
+    ubuffer_t buf = {0};
 
-    generic_serialize(g, &buf, void_serializer);
-    buffer_null_terminate(&buf);
+    ugeneric_serialize(g, &buf, void_serializer);
+    ubuffer_null_terminate(&buf);
 
     return buf.data;
 }
 
-void generic_serialize(generic_t g, buffer_t *buf, void_s8r_t void_serializer)
+void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer)
 {
-    ASSERT_INPUT(buf);
+    UASSERT_INPUT(buf);
 
     char tmp[32];
-    memchunk_t m;
+    umemchunk_t m;
 
-    switch (generic_get_type(g))
+    switch (ugeneric_get_type(g))
     {
         case G_NULL_T:
-            buffer_append_string(buf, "null");
+            ubuffer_append_string(buf, "null");
             break;
 
         case G_PTR_T:
             if (void_serializer)
             {
                 m = void_serializer(G_AS_PTR(g));
-                buffer_append_memchunk(buf, &m);
+                ubuffer_append_memchunk(buf, &m);
                 ufree(m.data);
             }
             else
             {
                 snprintf(tmp, sizeof(tmp), "&%p", G_AS_PTR(g));
                 m.data = tmp, m.size = strlen(tmp);
-                buffer_append_memchunk(buf, &m);
+                ubuffer_append_memchunk(buf, &m);
             }
             break;
 
         case G_STR_T:
         case G_CSTR_T:
-            buffer_append_byte(buf, '\"');
+            ubuffer_append_byte(buf, '\"');
             char *s = G_AS_STR(g);
             while (*s)
             {
                 if (*s == '"')
                 {
-                    buffer_append_byte(buf, '\\');
+                    ubuffer_append_byte(buf, '\\');
                 }
-                buffer_append_byte(buf, *s++);
+                ubuffer_append_byte(buf, *s++);
             }
-            buffer_append_byte(buf, '\"');
+            ubuffer_append_byte(buf, '\"');
             break;
 
 
         case G_INT_T:
             snprintf(tmp, sizeof(tmp), "%ld", G_AS_INT(g));
             m.data = tmp, m.size = strlen(tmp);
-            buffer_append_memchunk(buf, &m);
+            ubuffer_append_memchunk(buf, &m);
             break;
 
         case G_REAL_T:
             snprintf(tmp, sizeof(tmp), "%g", G_AS_REAL(g));
             m.data = tmp, m.size = strlen(tmp);
-            buffer_append_memchunk(buf, &m);
+            ubuffer_append_memchunk(buf, &m);
             break;
 
         case G_SIZE_T:
             snprintf(tmp, sizeof(tmp), "%zu", G_AS_SIZE(g));
             m.data = tmp, m.size = strlen(tmp);
-            buffer_append_memchunk(buf, &m);
+            ubuffer_append_memchunk(buf, &m);
             break;
 
         case G_VECTOR_T:
-            vector_serialize(G_AS_PTR(g), buf);
+            uvector_serialize(G_AS_PTR(g), buf);
             break;
 
-        case G_DICT_T:
-            dict_serialize(G_AS_PTR(g), buf);
+        case G_UDICT_T:
+            udict_serialize(G_AS_PTR(g), buf);
             break;
 
         case G_MEMCHUNK_T:
-            memchunk_serialize(G_AS_MEMCHUNK(g), buf);
+            umemchunk_serialize(G_AS_MEMCHUNK(g), buf);
             break;
 
         case G_BOOL_T:
-            buffer_append_string(buf, G_AS_BOOL(g) ? "true" : "false");
+            ubuffer_append_string(buf, G_AS_BOOL(g) ? "true" : "false");
             break;
 
         case G_ERROR_T:
-            ABORT("attempt to serialize G_ERROR object");
+            UABORT("attempt to serialize G_ERROR object");
             break;
 
         default:
-            ASSERT(0);
+            UASSERT(0);
     }
 }
 
-static generic_t _parse_string(const char **str)
+static ugeneric_t _parse_string(const char **str)
 {
     size_t len = 0;
     const char *q = *str + 1;
@@ -376,7 +375,7 @@ static generic_t _parse_string(const char **str)
 
     if (**str != delim)
     {
-        return G_ERROR(string_dup("unexpected end of string"));
+        return G_ERROR(ustring_dup("unexpected end of string"));
     }
     // Step over closing quote.
     *str += 1;
@@ -398,11 +397,11 @@ static generic_t _parse_string(const char **str)
     return G_STR(s);
 }
 
-static generic_t _parse_number(const char **str)
+static ugeneric_t _parse_number(const char **str)
 {
     const char *p = *str;
     bool is_real = false;
-    generic_t g;
+    ugeneric_t g;
 
     if (*p == '-')
     {
@@ -435,11 +434,11 @@ static generic_t _parse_number(const char **str)
     }
     if (errno == ERANGE)
     {
-        return G_ERROR(string_fmt("%s", strerror(errno)));
+        return G_ERROR(ustring_fmt("%s", strerror(errno)));
     }
     if (endptr == *str)
     {
-        return G_ERROR(string_fmt("cannot parse the numerical value"));
+        return G_ERROR(ustring_fmt("cannot parse the numerical value"));
     }
 
     *str += (endptr - *str);
@@ -447,10 +446,10 @@ static generic_t _parse_number(const char **str)
     return g;
 }
 
-static generic_t _parse_vector(const char **str)
+static ugeneric_t _parse_vector(const char **str)
 {
-    generic_t g;
-    vector_t *v = vector_create();
+    ugeneric_t g;
+    uvector_t *v = uvector_create();
 
     (*str)++;
 
@@ -463,10 +462,10 @@ static generic_t _parse_vector(const char **str)
         }
         if (G_IS_ERROR(g = _parse_item(str)))
         {
-            vector_destroy(v);
+            uvector_destroy(v);
             return g;
         }
-        vector_append(v, g);
+        uvector_append(v, g);
 
         if (**str == ',')
         {
@@ -480,20 +479,20 @@ static generic_t _parse_vector(const char **str)
 
     if (**str != ']')
     {
-        g = G_ERROR(string_dup("expected ']' was not found"));
-        vector_destroy(v);
+        g = G_ERROR(ustring_dup("expected ']' was not found"));
+        uvector_destroy(v);
         return g;
     }
     (*str)++;
 
-    vector_shrink_to_size(v);
+    uvector_shrink_to_size(v);
     return G_VECTOR(v);
 }
 
-static generic_t _parse_dict(const char **str)
+static ugeneric_t _parse_dict(const char **str)
 {
-    generic_t k, v, g;
-    dict_t *d = dict_create();
+    ugeneric_t k, v, g;
+    udict_t *d = udict_create();
 
     (*str)++;
 
@@ -507,15 +506,15 @@ static generic_t _parse_dict(const char **str)
 
         if (G_IS_ERROR(k = _parse_item(str)))
         {
-            dict_destroy(d);
+            udict_destroy(d);
             return k;
         }
 
         if (**str != ':')
         {
-            generic_destroy(k, NULL);
-            g = G_ERROR(string_dup("expected ':' was not found"));
-            dict_destroy(d);
+            ugeneric_destroy(k, NULL);
+            g = G_ERROR(ustring_dup("expected ':' was not found"));
+            udict_destroy(d);
             return g;
         }
 
@@ -523,12 +522,12 @@ static generic_t _parse_dict(const char **str)
 
         if (G_IS_ERROR(v = _parse_item(str)))
         {
-            generic_destroy(k, NULL);
-            dict_destroy(d);
+            ugeneric_destroy(k, NULL);
+            udict_destroy(d);
             return v;
         }
 
-        dict_put(d, k, v);
+        udict_put(d, k, v);
         if (**str == ',')
         {
             (*str)++;
@@ -537,8 +536,8 @@ static generic_t _parse_dict(const char **str)
 
     if (**str != '}')
     {
-        g = G_ERROR(string_dup("expected '}' was not found"));
-        dict_destroy(d);
+        g = G_ERROR(ustring_dup("expected '}' was not found"));
+        udict_destroy(d);
         return g;
     }
     (*str)++;
@@ -546,9 +545,9 @@ static generic_t _parse_dict(const char **str)
     return G_DICT(d);
 }
 
-static generic_t _parse_item(const char **str)
+static ugeneric_t _parse_item(const char **str)
 {
-    generic_t g;
+    ugeneric_t g;
 
     _skip_whitespaces(str);
 
@@ -585,7 +584,7 @@ static generic_t _parse_item(const char **str)
     }
     else
     {
-        return G_ERROR(string_dup("unexpected token"));
+        return G_ERROR(ustring_dup("unexpected token"));
     }
 
     _skip_whitespaces(str);
@@ -593,47 +592,47 @@ static generic_t _parse_item(const char **str)
     return g;
 }
 
-generic_t generic_parse(const char *str)
+ugeneric_t ugeneric_parse(const char *str)
 {
-    ASSERT_INPUT(str);
+    UASSERT_INPUT(str);
     const char *err_msg = "Parsing failed at offset %zu: %s.";
 
     const char *pos = str;
-    generic_t g = _parse_item(&pos);
+    ugeneric_t g = _parse_item(&pos);
     if (*pos != 0 && !G_IS_ERROR(g))
     {
-        generic_destroy(g, NULL);
-        g = G_ERROR(string_fmt(err_msg, pos - str, "unexpected end of text"));
+        ugeneric_destroy(g, NULL);
+        g = G_ERROR(ustring_fmt(err_msg, pos - str, "unexpected end of text"));
     }
     else if (G_IS_ERROR(g))
     {
-        generic_t t = G_ERROR(string_fmt(err_msg, pos - str, G_AS_STR(g)));
-        generic_error_destroy(g);
+        ugeneric_t t = G_ERROR(ustring_fmt(err_msg, pos - str, G_AS_STR(g)));
+        ugeneric_error_destroy(g);
         g = t;
     }
 
     return g;
 }
 
-void generic_array_reverse(generic_t *base, size_t nmembs, size_t l, size_t r)
+void ugeneric_array_reverse(ugeneric_t *base, size_t nmembs, size_t l, size_t r)
 {
-    ASSERT_INPUT(l < nmembs);
-    ASSERT_INPUT(r < nmembs);
-    ASSERT_INPUT(l <= r); // when l == r do nothing
+    UASSERT_INPUT(l < nmembs);
+    UASSERT_INPUT(r < nmembs);
+    UASSERT_INPUT(l <= r); // when l == r do nothing
 
     while (l < r)
-        generic_swap(&base[l++], &base[r--]);
+        ugeneric_swap(&base[l++], &base[r--]);
 }
 
-bool generic_next_permutation(generic_t *base, size_t nmembs, void_cmp_t cmp)
+bool ugeneric_next_permutation(ugeneric_t *base, size_t nmembs, void_cmp_t cmp)
 {
-    ASSERT_INPUT(base);
+    UASSERT_INPUT(base);
 
     if (!nmembs)
         return false;
 
     size_t i = nmembs - 1;
-    while (i > 0 && generic_compare(base[i - 1], base[i], cmp) >= 0)
+    while (i > 0 && ugeneric_compare(base[i - 1], base[i], cmp) >= 0)
     {
        i--;
     }
@@ -644,22 +643,22 @@ bool generic_next_permutation(generic_t *base, size_t nmembs, void_cmp_t cmp)
     }
 
     size_t j = nmembs - 1;
-    while (generic_compare(base[j], base[i - 1], cmp) <= 0)
+    while (ugeneric_compare(base[j], base[i - 1], cmp) <= 0)
     {
         j--;
     }
 
-    generic_swap(&base[i - 1], &base[j]);
-    generic_array_reverse(base, nmembs, i, nmembs - 1);
+    ugeneric_swap(&base[i - 1], &base[j]);
+    ugeneric_array_reverse(base, nmembs, i, nmembs - 1);
 
     return true;
 }
 
-static size_t _bsearch(generic_t base[], size_t l, size_t r,
-                       generic_t e, void_cmp_t cmp)
+static size_t _bsearch(ugeneric_t base[], size_t l, size_t r,
+                       ugeneric_t e, void_cmp_t cmp)
 {
     size_t m = l + (r - l) / 2;
-    int ret = generic_compare(e, base[m], cmp);
+    int ret = ugeneric_compare(e, base[m], cmp);
 
     if ((l == r) && ret)
     {
@@ -680,11 +679,11 @@ static size_t _bsearch(generic_t base[], size_t l, size_t r,
     }
 }
 
-size_t generic_bsearch(generic_t *base, size_t nmembs, generic_t e,
+size_t ugeneric_bsearch(ugeneric_t *base, size_t nmembs, ugeneric_t e,
                        void_cmp_t cmp)
 {
-    ASSERT_INPUT(base);
-    ASSERT_INPUT(nmembs < SIZE_MAX);
+    UASSERT_INPUT(base);
+    UASSERT_INPUT(nmembs < SIZE_MAX);
     return (nmembs) ? _bsearch(base, 0, nmembs - 1, e, cmp) : SIZE_MAX;
 }
 
@@ -735,12 +734,12 @@ static uint32_t _hash(const void *key, int len, uint32_t seed)
     return h1;
 }
 
-size_t generic_hash(generic_t g, void_hasher_t hasher)
+size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
 {
     void *data;
     size_t size;
 
-    switch (generic_get_type(g))
+    switch (ugeneric_get_type(g))
     {
         case G_NULL_T:
             return 0;
@@ -775,10 +774,10 @@ size_t generic_hash(generic_t g, void_hasher_t hasher)
             return G_AS_BOOL(g);
 
         default:
-            ASSERT(0);
+            UASSERT(0);
     }
 
-    ASSERT(size < INT_MAX);
+    UASSERT(size < INT_MAX);
     return _hash(data, size, 0xbaadf00d);
 }
 
@@ -789,8 +788,8 @@ size_t generic_hash(generic_t g, void_hasher_t hasher)
  */
 int random_from_range(int l, int h)
 {
-    ASSERT_INPUT(l < h);
-    ASSERT_INPUT(h < RAND_MAX);
+    UASSERT_INPUT(l < h);
+    UASSERT_INPUT(h < RAND_MAX);
 
     static bool rand_is_initialized = false;
 

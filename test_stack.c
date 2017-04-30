@@ -8,57 +8,57 @@
 bool is_balanced(const char *str)
 {
     bool ret = true;
-    stack_t *s = stack_create();
+    ustack_t *s = ustack_create();
     for (size_t i = 0; i < strlen(str); i++)
     {
         char c = str[i];
         if (c == '[')
         {
-            stack_push(s, G_INT(']'));
+            ustack_push(s, G_INT(']'));
         }
         else if (c == '(')
         {
-            stack_push(s, G_INT(')'));
+            ustack_push(s, G_INT(')'));
         }
         else if (c == '{')
         {
-            stack_push(s, G_INT('}'));
+            ustack_push(s, G_INT('}'));
         }
         else
         {
-            if (stack_is_empty(s) || G_AS_INT(stack_peek(s)) != c)
+            if (ustack_is_empty(s) || G_AS_INT(ustack_peek(s)) != c)
             {
                 ret = false;
                 break;
             }
             else
             {
-                stack_pop(s);
+                ustack_pop(s);
             }
         }
     }
 
-    ret &= stack_is_empty(s);
-    stack_destroy(s);
+    ret &= ustack_is_empty(s);
+    ustack_destroy(s);
 
     return ret;
 }
 
 void test_balanced_brackets(void)
 {
-    ASSERT(is_balanced("[]"));
-    ASSERT(is_balanced("{[()]}"));
-    ASSERT(is_balanced("{}[]()"));
-    ASSERT(is_balanced("[()(){{}}]"));
-    ASSERT(!is_balanced("["));
-    ASSERT(!is_balanced(")"));
-    ASSERT(!is_balanced("[()(){{}]"));
-    ASSERT(!is_balanced("[][][]("));
-    ASSERT(is_balanced("[[[[[[[[((((((((({{{{{{{{}}}}}}}})))))))))]]]]]]]]"));
-    ASSERT(!is_balanced("[[[[[[[[((((((((({{{{{{{{[}}}}}}}})))))))))]]]]]]]]"));
+    UASSERT(is_balanced("[]"));
+    UASSERT(is_balanced("{[()]}"));
+    UASSERT(is_balanced("{}[]()"));
+    UASSERT(is_balanced("[()(){{}}]"));
+    UASSERT(!is_balanced("["));
+    UASSERT(!is_balanced(")"));
+    UASSERT(!is_balanced("[()(){{}]"));
+    UASSERT(!is_balanced("[][][]("));
+    UASSERT(is_balanced("[[[[[[[[((((((((({{{{{{{{}}}}}}}})))))))))]]]]]]]]"));
+    UASSERT(!is_balanced("[[[[[[[[((((((((({{{{{{{{[}}}}}}}})))))))))]]]]]]]]"));
 }
 
-void test_queue_on_two_stacks(void)
+void test_uqueue_on_two_stacks(void)
 {
     /*
 
@@ -92,8 +92,8 @@ int calc(const char *exp)
     int a1;
     int a2;
     char op;
-    stack_t *op_stack = stack_create();
-    stack_t *arg_stack = stack_create();
+    ustack_t *op_stack = ustack_create();
+    ustack_t *arg_stack = ustack_create();
 
     size_t explen = strlen(exp);
     for (size_t i = 0; i < explen; i++)
@@ -104,59 +104,59 @@ int calc(const char *exp)
             case '-':
             case '/':
             case '*':
-                stack_push(op_stack, G_INT(exp[i]));
+                ustack_push(op_stack, G_INT(exp[i]));
                 break;
             case ' ':
                 break;
             case ')':
-                a1 = G_AS_INT(stack_pop(arg_stack)) - 0x30;
-                a2 = G_AS_INT(stack_pop(arg_stack)) - 0x30;
-                op = G_AS_INT(stack_pop(op_stack));
+                a1 = G_AS_INT(ustack_pop(arg_stack)) - 0x30;
+                a2 = G_AS_INT(ustack_pop(arg_stack)) - 0x30;
+                op = G_AS_INT(ustack_pop(op_stack));
                 switch (op)
                 {
                     case '+':
-                        stack_push(arg_stack, G_INT((a1 + a2)));
+                        ustack_push(arg_stack, G_INT((a1 + a2)));
                         break;
                     case '-':
-                        stack_push(arg_stack, G_INT((a1 - a2)));
+                        ustack_push(arg_stack, G_INT((a1 - a2)));
                         break;
                     case '/':
-                        stack_push(arg_stack, G_INT((a1 / a2)));
+                        ustack_push(arg_stack, G_INT((a1 / a2)));
                         break;
                     case '*':
-                        stack_push(arg_stack, G_INT((a1 * a2)));
+                        ustack_push(arg_stack, G_INT((a1 * a2)));
                         break;
                 }
             default:
                 continue;
         }
     }
-    while (!stack_is_empty(op_stack))
+    while (!ustack_is_empty(op_stack))
     {
-        a1 = G_AS_INT(stack_pop(arg_stack));
-        a2 = G_AS_INT(stack_pop(arg_stack));
-        op = G_AS_INT(stack_pop(op_stack));
+        a1 = G_AS_INT(ustack_pop(arg_stack));
+        a2 = G_AS_INT(ustack_pop(arg_stack));
+        op = G_AS_INT(ustack_pop(op_stack));
         switch (op)
         {
             case '+':
-                stack_push(arg_stack, G_INT((a1 + a2)));
+                ustack_push(arg_stack, G_INT((a1 + a2)));
                 break;
             case '-':
-                stack_push(arg_stack, G_INT((a1 - a2)));
+                ustack_push(arg_stack, G_INT((a1 - a2)));
                 break;
             case '/':
-                stack_push(arg_stack, G_INT((a1 / a2)));
+                ustack_push(arg_stack, G_INT((a1 / a2)));
                 break;
             case '*':
-                stack_push(arg_stack, G_INT((a1 * a2)));
+                ustack_push(arg_stack, G_INT((a1 * a2)));
                 break;
         }
     }
 
-    stack_destroy(arg_stack);
-    stack_destroy(op_stack);
+    ustack_destroy(arg_stack);
+    ustack_destroy(op_stack);
 
-    return G_AS_INT(stack_pop(arg_stack));
+    return G_AS_INT(ustack_pop(arg_stack));
 }
 
 void test_calc(void)
@@ -164,43 +164,43 @@ void test_calc(void)
     //printf("%d", calc("2 + 3"));
 }
 
-void test_stack_api(void)
+void test_ustack_api(void)
 {
-    stack_t *s = stack_create();
-    ASSERT(stack_is_empty(s));
+    ustack_t *s = ustack_create();
+    UASSERT(ustack_is_empty(s));
 
-    stack_push(s, G_INT(N));
-    ASSERT(!stack_is_empty(s));
-    ASSERT(G_AS_INT(stack_pop(s)) == N);
-    ASSERT(stack_is_empty(s));
-
-    for (int i = 0; i < N; i++)
-    {
-        stack_push(s, G_INT(i));
-    }
-    ASSERT(!stack_is_empty(s));
-    ASSERT(stack_get_size(s) == N);
+    ustack_push(s, G_INT(N));
+    UASSERT(!ustack_is_empty(s));
+    UASSERT(G_AS_INT(ustack_pop(s)) == N);
+    UASSERT(ustack_is_empty(s));
 
     for (int i = 0; i < N; i++)
     {
-        ASSERT(G_AS_INT(stack_peek(s)) == N - 1 - i);
-        ASSERT(G_AS_INT(stack_pop(s)) == N - 1 - i);
+        ustack_push(s, G_INT(i));
     }
-    ASSERT(stack_is_empty(s));
+    UASSERT(!ustack_is_empty(s));
+    UASSERT(ustack_get_size(s) == N);
 
-    stack_push(s, G_INT(N));
-    ASSERT(!stack_is_empty(s));
-    ASSERT(G_AS_INT(stack_pop(s)) == N);
-    ASSERT(stack_is_empty(s));
+    for (int i = 0; i < N; i++)
+    {
+        UASSERT(G_AS_INT(ustack_peek(s)) == N - 1 - i);
+        UASSERT(G_AS_INT(ustack_pop(s)) == N - 1 - i);
+    }
+    UASSERT(ustack_is_empty(s));
 
-    stack_destroy(s);
+    ustack_push(s, G_INT(N));
+    UASSERT(!ustack_is_empty(s));
+    UASSERT(G_AS_INT(ustack_pop(s)) == N);
+    UASSERT(ustack_is_empty(s));
+
+    ustack_destroy(s);
 
 }
 
 int main(void)
 {
     test_calc();
-    test_stack_api();
+    test_ustack_api();
     test_balanced_brackets();
 
     return 0;

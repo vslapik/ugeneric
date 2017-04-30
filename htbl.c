@@ -7,15 +7,15 @@
 #define HTBL_INITIAL_NUM_OF_BUCKETS 32
 #define REHASH_THRESHOLD (3.0)/(4.0)
 
-struct htbl_record {
-    generic_t k;
-    generic_t v;
-    struct htbl_record *next;
+struct uhtbl_record {
+    ugeneric_t k;
+    ugeneric_t v;
+    struct uhtbl_record *next;
 };
-typedef struct htbl_record htbl_record_t;
+typedef struct uhtbl_record uhtbl_record_t;
 
-struct htbl_opaq {
-    htbl_record_t **buckets;
+struct uhtbl_opaq {
+    uhtbl_record_t **buckets;
     size_t number_of_buckets;
     size_t number_of_records;
     bool is_data_owner;
@@ -26,25 +26,25 @@ struct htbl_opaq {
     void_dtr_t dtr;
 };
 
-struct htbl_iterator_opaq {
-    const htbl_t *htbl;
-    htbl_record_t *current_dr;
+struct uhtbl_iterator_opaq {
+    const uhtbl_t *htbl;
+    uhtbl_record_t *current_dr;
     size_t bucket;
     size_t records_to_iterate;
 };
 
-static void _destroy_buckets(htbl_t *h)
+static void _destroy_buckets(uhtbl_t *h)
 {
     for (size_t i = 0; i < h->number_of_buckets; i++)
     {
-        htbl_record_t *hr = h->buckets[i];
+        uhtbl_record_t *hr = h->buckets[i];
         while (hr)
         {
-            htbl_record_t *hr_next = hr->next;
+            uhtbl_record_t *hr_next = hr->next;
             if (h->is_data_owner)
             {
-                generic_destroy(hr->k, h->dtr);
-                generic_destroy(hr->v, h->dtr);
+                ugeneric_destroy(hr->k, h->dtr);
+                ugeneric_destroy(hr->v, h->dtr);
             }
             ufree(hr);
             hr = hr_next;
@@ -55,11 +55,11 @@ static void _destroy_buckets(htbl_t *h)
 /*
  * Either a record pointer or NULL when we are at the end of table.
  */
-static htbl_record_t *_find_next_record(const htbl_t *h,
-                                        htbl_record_t *current_dr,
+static uhtbl_record_t *_find_next_record(const uhtbl_t *h,
+                                        uhtbl_record_t *current_dr,
                                         size_t *bucket)
 {
-    htbl_record_t *next_record = NULL;
+    uhtbl_record_t *next_record = NULL;
 
     if (current_dr)
     {
@@ -86,13 +86,13 @@ static htbl_record_t *_find_next_record(const htbl_t *h,
  * Either return pointer to corresponded htbl record found by key
  * or return pointer to place where such a record should be placed.
  */
-static htbl_record_t **_find_by_key(const htbl_t *h, generic_t k)
+static uhtbl_record_t **_find_by_key(const uhtbl_t *h, ugeneric_t k)
 {
-    htbl_record_t **hr;
-    hr = &h->buckets[generic_hash(k, h->hasher) % h->number_of_buckets];
+    uhtbl_record_t **hr;
+    hr = &h->buckets[ugeneric_hash(k, h->hasher) % h->number_of_buckets];
     while (*hr)
     {
-        if (generic_compare((*hr)->k, k, h->key_cmp) == 0)
+        if (ugeneric_compare((*hr)->k, k, h->key_cmp) == 0)
         {
             break;
         }
@@ -102,15 +102,15 @@ static htbl_record_t **_find_by_key(const htbl_t *h, generic_t k)
     return hr;
 }
 
-static float _get_load_factor(const htbl_t *h)
+static float _get_load_factor(const uhtbl_t *h)
 {
     return (float)h->number_of_records / h->number_of_buckets;
 }
 /*
-static void _rehash(htbl_t *h)
+static void _rehash(uhtbl_t *h)
 {
     size_t new_number_of_buckets;
-    htbl_record_t **new_buckets;
+    uhtbl_record_t **new_buckets;
 
     new_number_of_buckets = HTBL_SCALE_FACTOR * d->number_of_buckets;
     new_buckets = ucalloc(new_number_of_buckets,
@@ -118,14 +118,14 @@ static void _rehash(htbl_t *h)
 
     for (size_t i = 0; i < d->number_of_buckets; i++)
     {
-        htbl_record_t *hr = d->buckets[i];
+        uhtbl_record_t *hr = d->buckets[i];
         while (dr)
         {
-            htbl_record_t *hr_next = dr->next;
+            uhtbl_record_t *hr_next = dr->next;
             if (d->is_data_owner)
             {
-                generic_destroy(dr->k, d->dtr);
-                generic_destroy(dr->v, d->dtr);
+                ugeneric_destroy(dr->k, d->dtr);
+                ugeneric_destroy(dr->v, d->dtr);
             }
             ufree(dr);
             dr = dr_next;
@@ -138,9 +138,9 @@ static void _rehash(htbl_t *h)
 }
 */
 
-htbl_t *htbl_create(void)
+uhtbl_t *uhtbl_create(void)
 {
-    htbl_t *h = umalloc(sizeof(*h));
+    uhtbl_t *h = umalloc(sizeof(*h));
     h->buckets = ucalloc(HTBL_INITIAL_NUM_OF_BUCKETS,
                          sizeof(h->buckets[0]));
     h->number_of_buckets = HTBL_INITIAL_NUM_OF_BUCKETS;
@@ -155,33 +155,33 @@ htbl_t *htbl_create(void)
     return h;
 }
 
-void htbl_take_data_ownership(htbl_t *h)
+void uhtbl_take_data_ownership(uhtbl_t *h)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     h->is_data_owner = true;
 }
 
-void htbl_drop_data_ownership(htbl_t *h)
+void uhtbl_drop_data_ownership(uhtbl_t *h)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     h->is_data_owner = false;
 }
 
-void htbl_set_destroyer(htbl_t *h, void_dtr_t dtr)
+void uhtbl_set_destroyer(uhtbl_t *h, void_dtr_t dtr)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     h->dtr = dtr;
 }
 
-void htbl_set_comparator(htbl_t *h, void_cmp_t cmp)
+void uhtbl_set_comparator(uhtbl_t *h, void_cmp_t cmp)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     h->cmp = cmp;
 }
 
-void htbl_set_hasher(htbl_t *h, void_hasher_t hasher)
+void uhtbl_set_hasher(uhtbl_t *h, void_hasher_t hasher)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     h->hasher = hasher;
 }
 
@@ -189,10 +189,10 @@ void htbl_set_hasher(htbl_t *h, void_hasher_t hasher)
  * Puts without copy, keys and values which contains pointers
  * may cause issue if you forget who owns the data.
  */
-void htbl_put(htbl_t *h, generic_t k, generic_t v)
+void uhtbl_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
 {
-    ASSERT_INPUT(h);
-    htbl_record_t **hr = _find_by_key(h, k);
+    UASSERT_INPUT(h);
+    uhtbl_record_t **hr = _find_by_key(h, k);
 
     if (_get_load_factor(h) >= REHASH_THRESHOLD)
     {
@@ -205,8 +205,8 @@ void htbl_put(htbl_t *h, generic_t k, generic_t v)
         // Update existing.
         if (h->is_data_owner)
         {
-            generic_destroy((*hr)->k, h->dtr);
-            generic_destroy((*hr)->v, h->dtr);
+            ugeneric_destroy((*hr)->k, h->dtr);
+            ugeneric_destroy((*hr)->v, h->dtr);
         }
         (*hr)->k = k;
         (*hr)->v = v;
@@ -214,7 +214,7 @@ void htbl_put(htbl_t *h, generic_t k, generic_t v)
     else
     {
         // Insert a new one.
-        *hr = umalloc(sizeof(htbl_record_t));
+        *hr = umalloc(sizeof(uhtbl_record_t));
         (*hr)->k = k;
         (*hr)->v = v;
         (*hr)->next = NULL;
@@ -225,25 +225,25 @@ void htbl_put(htbl_t *h, generic_t k, generic_t v)
 /* Returns either data stored in htbl or
  * vdef if data is not found by the key.
 */
-generic_t htbl_get(const htbl_t *h, generic_t k, generic_t vdef)
+ugeneric_t uhtbl_get(const uhtbl_t *h, ugeneric_t k, ugeneric_t vdef)
 {
-    ASSERT_INPUT(h);
-    htbl_record_t **hr = _find_by_key(h, k);
+    UASSERT_INPUT(h);
+    uhtbl_record_t **hr = _find_by_key(h, k);
 
     return (*hr) ? (*hr)->v : vdef;
 }
 
-generic_t htbl_pop(htbl_t *h, generic_t k, generic_t vdef)
+ugeneric_t uhtbl_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t vdef)
 {
-    ASSERT_INPUT(h);
-    generic_t ret = vdef;
-    htbl_record_t **hr = _find_by_key(h, k);
+    UASSERT_INPUT(h);
+    ugeneric_t ret = vdef;
+    uhtbl_record_t **hr = _find_by_key(h, k);
 
     if (*hr)
     {
-        htbl_record_t *del = *hr;
+        uhtbl_record_t *del = *hr;
         ret = del->v;
-        generic_destroy(del->k, h->dtr);
+        ugeneric_destroy(del->k, h->dtr);
         *hr = (*hr)->next;
         ufree(del);
         h->number_of_records -= 1;
@@ -252,7 +252,7 @@ generic_t htbl_pop(htbl_t *h, generic_t k, generic_t vdef)
     return ret;
 }
 
-void htbl_destroy(htbl_t *h)
+void uhtbl_destroy(uhtbl_t *h)
 {
     if (h)
     {
@@ -262,71 +262,71 @@ void htbl_destroy(htbl_t *h)
     }
 }
 
-void htbl_clear(htbl_t *h)
+void uhtbl_clear(uhtbl_t *h)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     _destroy_buckets(h);
     memset(h->buckets, 0, h->number_of_buckets * sizeof(h->buckets[0]));
     h->number_of_records = 0;
 }
 
-void htbl_serialize(const htbl_t *h, buffer_t *buf)
+void uhtbl_serialize(const uhtbl_t *h, ubuffer_t *buf)
 {
-    ASSERT_INPUT(h);
-    ASSERT_INPUT(buf);
+    UASSERT_INPUT(h);
+    UASSERT_INPUT(buf);
 
-    buffer_append_byte(buf, '{');
-    htbl_iterator_t *hi = htbl_iterator_create(h);
-    while (htbl_iterator_has_next(hi))
+    ubuffer_append_byte(buf, '{');
+    uhtbl_iterator_t *hi = uhtbl_iterator_create(h);
+    while (uhtbl_iterator_has_next(hi))
     {
-        generic_kv_t kv = htbl_iterator_get_next(hi);
-        generic_serialize(kv.k, buf, NULL);
-        buffer_append_data(buf, ": ", 2);
-        generic_serialize(kv.v, buf, NULL);
-        if (htbl_iterator_has_next(hi))
+        ugeneric_kv_t kv = uhtbl_iterator_get_next(hi);
+        ugeneric_serialize(kv.k, buf, NULL);
+        ubuffer_append_data(buf, ": ", 2);
+        ugeneric_serialize(kv.v, buf, NULL);
+        if (uhtbl_iterator_has_next(hi))
         {
-            buffer_append_data(buf, ", ", 2);
+            ubuffer_append_data(buf, ", ", 2);
         }
     }
-    htbl_iterator_destroy(hi);
-    buffer_append_byte(buf, '}');
+    uhtbl_iterator_destroy(hi);
+    ubuffer_append_byte(buf, '}');
 }
 
-char *htbl_as_str(const htbl_t *h)
+char *uhtbl_as_str(const uhtbl_t *h)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
 
-    buffer_t buf = {0};
-    htbl_serialize(h, &buf);
-    buffer_null_terminate(&buf);
+    ubuffer_t buf = {0};
+    uhtbl_serialize(h, &buf);
+    ubuffer_null_terminate(&buf);
 
     return buf.data;
 }
 
-int htbl_print(const htbl_t *h)
+int uhtbl_print(const uhtbl_t *h)
 {
-    ASSERT_INPUT(h);
-    return htbl_fprint(h, stdout);
+    UASSERT_INPUT(h);
+    return uhtbl_fprint(h, stdout);
 }
 
-int htbl_fprint(const htbl_t *h, FILE *out)
+int uhtbl_fprint(const uhtbl_t *h, FILE *out)
 {
-    ASSERT_INPUT(h);
-    ASSERT_INPUT(out);
+    UASSERT_INPUT(h);
+    UASSERT_INPUT(out);
 
-    char *str = htbl_as_str(h);
+    char *str = uhtbl_as_str(h);
     int ret = fprintf(out, "%s\n", str);
     ufree(str);
 
     return ret;
 }
 
-void htbl_dump_to_dot(const htbl_t *h, FILE *out)
+void uhtbl_dump_to_dot(const uhtbl_t *h, FILE *out)
 {
-    ASSERT_INPUT(h);
-    ASSERT_INPUT(out);
+    UASSERT_INPUT(h);
+    UASSERT_INPUT(out);
 
-    fprintf(out, "%s %s {\n", "higraph", "htbl_name");
+    fprintf(out, "%s %s {\n", "higraph", "uhtbl_name");
     fprintf(out, "    rankhir=LR;\n");
     fprintf(out, "    node [shape=record];\n");
 
@@ -341,15 +341,15 @@ void htbl_dump_to_dot(const htbl_t *h, FILE *out)
     size_t j = 1;
     for (size_t i = 0; i < h->number_of_buckets; i++)
     {
-        htbl_record_t *hr = h->buckets[i];
+        uhtbl_record_t *hr = h->buckets[i];
         if (hr)
         {
             size_t k = j;
             fprintf(out, "\n");
             while (hr)
             {
-                char *k = generic_as_str(hr->k, NULL);
-                char *v = generic_as_str(hr->v, NULL);
+                char *k = ugeneric_as_str(hr->k, NULL);
+                char *v = ugeneric_as_str(hr->v, NULL);
                 fprintf(out, "    node%zu [label = \"{ <data> '%s':'%s' | <ref> }\"];\n",
                         j++, k, v);
                 hr = hr->next;
@@ -368,11 +368,11 @@ void htbl_dump_to_dot(const htbl_t *h, FILE *out)
     fprintf(out, "}\n");
 }
 
-htbl_iterator_t *htbl_iterator_create(const htbl_t *h)
+uhtbl_iterator_t *uhtbl_iterator_create(const uhtbl_t *h)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
 
-    htbl_iterator_t *hi = umalloc(sizeof(*hi));
+    uhtbl_iterator_t *hi = umalloc(sizeof(*hi));
     hi->htbl = h;
     hi->bucket = 0;
     hi->records_to_iterate = h->number_of_records;
@@ -381,34 +381,34 @@ htbl_iterator_t *htbl_iterator_create(const htbl_t *h)
     return hi;
 }
 
-generic_kv_t htbl_iterator_get_next(htbl_iterator_t *hi)
+ugeneric_kv_t uhtbl_iterator_get_next(uhtbl_iterator_t *hi)
 {
-    ASSERT_INPUT(hi);
-    ASSERT_MSG(hi->records_to_iterate, "iteration is done");
-    ASSERT_MSG(hi->htbl->number_of_records, "container is empty");
+    UASSERT_INPUT(hi);
+    UASSERT_MSG(hi->records_to_iterate, "iteration is done");
+    UASSERT_MSG(hi->htbl->number_of_records, "container is empty");
 
     hi->current_dr = _find_next_record(hi->htbl, hi->current_dr, &hi->bucket);
-    generic_kv_t kv = {.k = hi->current_dr->k, .v = hi->current_dr->v};
+    ugeneric_kv_t kv = {.k = hi->current_dr->k, .v = hi->current_dr->v};
     hi->records_to_iterate -= 1;
 
     return kv;
 }
 
-bool htbl_iterator_has_next(const htbl_iterator_t *hi)
+bool uhtbl_iterator_has_next(const uhtbl_iterator_t *hi)
 {
-    ASSERT_INPUT(hi);
+    UASSERT_INPUT(hi);
     return hi->records_to_iterate;
 }
 
-void htbl_iterator_reset(htbl_iterator_t *hi)
+void uhtbl_iterator_reset(uhtbl_iterator_t *hi)
 {
-    ASSERT_INPUT(hi);
+    UASSERT_INPUT(hi);
     hi->bucket = 0;
     hi->current_dr = hi->htbl->buckets[0];
     hi->records_to_iterate = hi->htbl->number_of_records;
 }
 
-void htbl_iterator_destroy(htbl_iterator_t *hi)
+void uhtbl_iterator_destroy(uhtbl_iterator_t *hi)
 {
     if (hi)
     {
@@ -416,20 +416,20 @@ void htbl_iterator_destroy(htbl_iterator_t *hi)
     }
 }
 
-size_t htbl_get_size(const htbl_t *h)
+size_t uhtbl_get_size(const uhtbl_t *h)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     return h->number_of_records;
 }
 
-bool htbl_is_empty(const htbl_t *h)
+bool uhtbl_is_empty(const uhtbl_t *h)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     return h->number_of_records == 0;
 }
 
-bool htbl_has_key(const htbl_t *h, generic_t k)
+bool uhtbl_has_key(const uhtbl_t *h, ugeneric_t k)
 {
-    ASSERT_INPUT(h);
+    UASSERT_INPUT(h);
     return *_find_by_key(h, k) != NULL;
 }

@@ -1,13 +1,13 @@
-#ifndef DSU_H__
-#define DSU_H__
+#ifndef UDSU_H__
+#define UDSU_H__
 
 #include "generic.h"
 
-typedef struct dsu_opaq dsu_t;
+typedef struct udsu_opaq udsu_t;
 
-dsu_t *dsu_create(size_t size);
-bool dsu_is_united(dsu_t *d, size_t p, size_t);
-void dsu_unite(dsu_t *d, size_t p, size_t q);
-void dsu_destroy(dsu_t *d);
+udsu_t *udsu_create(size_t size);
+bool udsu_is_united(udsu_t *d, size_t p, size_t);
+void udsu_unite(udsu_t *d, size_t p, size_t q);
+void udsu_destroy(udsu_t *d);
 
 #endif

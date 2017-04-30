@@ -1,5 +1,5 @@
 class GenericsPrettyPrinter:
-    ''' Pretty printing of generic_t instances.
+    ''' Pretty printing of ugeneric_t instances.
     '''
     def __init__(self, val):
         self.val = val
@@ -25,12 +25,12 @@ class GenericsPrettyPrinter:
                 "G_SIZE_T":  str(v['size']),
                 "G_BOOL_T":  str(v['boolean']),
                 "G_VECTOR_T": str(v['ptr']),
-                "G_DICT_T":   str(v['ptr']),
+                "G_UDICT_T":   str(v['ptr']),
             }.get(str(t['type']), "unknown") + "}"
 
-def print_generic_t(val):
-    if str(val.type) == 'generic_t':
+def print_ugeneric_t(val):
+    if str(val.type) == 'ugeneric_t':
         return GenericsPrettyPrinter(val)
     return None
 
-gdb.pretty_printers.append(print_generic_t)
+gdb.pretty_printers.append(print_ugeneric_t)

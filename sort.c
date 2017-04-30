@@ -3,22 +3,22 @@
 #include "mem.h"
 #include "sort.h"
 
-static size_t _insertion_sort(generic_t *base, size_t nmemb, void_cmp_t cmp);
-static size_t _partition(generic_t *base, size_t l, size_t r, void_cmp_t cmp);
-static void _quick_sort(generic_t *base, size_t l, size_t r, void_cmp_t cmp);
-static size_t _merge(generic_t *lbase, size_t lsize, generic_t *rbase,
-                     size_t rsize, generic_t *aux, void_cmp_t cmp);
-static size_t _merge_sort(generic_t *base, generic_t *aux, size_t nmemb,
+static size_t _insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
+static size_t _partition(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp);
+static void _quick_sort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp);
+static size_t _merge(ugeneric_t *lbase, size_t lsize, ugeneric_t *rbase,
+                     size_t rsize, ugeneric_t *aux, void_cmp_t cmp);
+static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb,
                           void_cmp_t cmp);
 
-size_t count_inversions(generic_t *base, size_t nmemb, void_cmp_t cmp)
+size_t count_inversions(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    ASSERT_INPUT(base);
+    UASSERT_INPUT(base);
 
     size_t inv = 0;
     if (nmemb > 1)
     {
-        generic_t *aux = umalloc(nmemb * sizeof(*aux));
+        ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
         inv = _merge_sort(base, aux, nmemb, cmp);
         ufree(aux);
     }
@@ -26,9 +26,9 @@ size_t count_inversions(generic_t *base, size_t nmemb, void_cmp_t cmp)
     return inv;
 }
 
-void quick_sort(generic_t *base, size_t nmemb, void_cmp_t cmp)
+void quick_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    ASSERT_INPUT(base);
+    UASSERT_INPUT(base);
 
     if (nmemb)
     {
@@ -36,29 +36,29 @@ void quick_sort(generic_t *base, size_t nmemb, void_cmp_t cmp)
     }
 }
 
-void selection_sort(generic_t *base, size_t nmemb, void_cmp_t cmp)
+void selection_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    ASSERT_INPUT(base);
+    UASSERT_INPUT(base);
     (void)nmemb;
     (void)cmp;
-    ASSERT(0);
+    UASSERT(0);
 }
 
-void merge_sort(generic_t *base, size_t nmemb, void_cmp_t cmp)
+void merge_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    ASSERT_INPUT(base);
+    UASSERT_INPUT(base);
 
     if (nmemb > 1)
     {
-        generic_t *aux = umalloc(nmemb * sizeof(*aux));
+        ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
          _merge_sort(base, aux, nmemb, cmp);
         ufree(aux);
     }
 }
 
-void insertion_sort(generic_t *base, size_t nmemb, void_cmp_t cmp)
+void insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    ASSERT_INPUT(base);
+    UASSERT_INPUT(base);
 
     if (nmemb > 1)
     {
@@ -66,7 +66,7 @@ void insertion_sort(generic_t *base, size_t nmemb, void_cmp_t cmp)
     }
 }
 
-static void _quick_sort(generic_t *base, size_t l, size_t r, void_cmp_t cmp)
+static void _quick_sort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
 {
     if (r > l)
     {
@@ -76,33 +76,33 @@ static void _quick_sort(generic_t *base, size_t l, size_t r, void_cmp_t cmp)
     }
 }
 
-static size_t _partition(generic_t *base, size_t l, size_t r, void_cmp_t cmp)
+static size_t _partition(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
 {
-    generic_t p = base[r];
+    ugeneric_t p = base[r];
     size_t pi = l;
 
     for (size_t i = l; i < r; i++)
     {
-        if (generic_compare(base[i], p, cmp) <= 0)
+        if (ugeneric_compare(base[i], p, cmp) <= 0)
         {
-            generic_swap(&base[pi], &base[i]);
+            ugeneric_swap(&base[pi], &base[i]);
             pi++;
         }
     }
-    generic_swap(&base[pi], &base[r]);
+    ugeneric_swap(&base[pi], &base[r]);
 
     return pi;
 }
 
-static size_t _insertion_sort(generic_t *base, size_t nmemb, void_cmp_t cmp)
+static size_t _insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
     size_t inv = 0;
 
     for (size_t i = 1; i < nmemb; i++)
     {
         int j = i - 1;
-        generic_t t = base[i];
-        while (j >= 0 && (generic_compare(base[j], t, cmp) > 0))
+        ugeneric_t t = base[i];
+        while (j >= 0 && (ugeneric_compare(base[j], t, cmp) > 0))
         {
             base[j + 1] = base[j];
             inv++;
@@ -114,8 +114,8 @@ static size_t _insertion_sort(generic_t *base, size_t nmemb, void_cmp_t cmp)
     return inv;
 }
 
-static size_t _merge(generic_t *lbase, size_t lsize, generic_t *rbase, size_t rsize,
-                     generic_t *aux, void_cmp_t cmp)
+static size_t _merge(ugeneric_t *lbase, size_t lsize, ugeneric_t *rbase, size_t rsize,
+                     ugeneric_t *aux, void_cmp_t cmp)
 {
     size_t i, j, k, inv;
 
@@ -123,7 +123,7 @@ static size_t _merge(generic_t *lbase, size_t lsize, generic_t *rbase, size_t rs
 
     while ((i < lsize) && (j < rsize))
     {
-        if (generic_compare(lbase[i], rbase[j], cmp) <= 0)
+        if (ugeneric_compare(lbase[i], rbase[j], cmp) <= 0)
         {
             aux[k++] = lbase[i++];
         }
@@ -145,7 +145,7 @@ static size_t _merge(generic_t *lbase, size_t lsize, generic_t *rbase, size_t rs
     return inv;
 }
 
-static size_t _merge_sort(generic_t *base, generic_t *aux, size_t nmemb, void_cmp_t cmp)
+static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb, void_cmp_t cmp)
 {
     size_t inv = 0;
     size_t j;

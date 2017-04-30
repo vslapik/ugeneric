@@ -5,17 +5,17 @@
 
 /* out <-- [h][e][e][...][e][e][t] <-- in */
 
-struct queue_opaq {
-    generic_t *data;
+struct uqueue_opaq {
+    ugeneric_t *data;
     size_t h; // head
     size_t t; // tail
     size_t size;
     size_t capacity;
 };
 
-queue_t *queue_create(void)
+uqueue_t *uqueue_create(void)
 {
-    queue_t *q = umalloc(sizeof(*q));
+    uqueue_t *q = umalloc(sizeof(*q));
     q->data = NULL;
     q->h = 0;
     q->t = 0;
@@ -25,7 +25,7 @@ queue_t *queue_create(void)
     return q;
 }
 
-void queue_destroy(queue_t *q)
+void uqueue_destroy(uqueue_t *q)
 {
     if (q)
     {
@@ -34,24 +34,24 @@ void queue_destroy(queue_t *q)
     }
 }
 
-void queue_clear(queue_t *q)
+void uqueue_clear(uqueue_t *q)
 {
-    ASSERT_INPUT(q);
+    UASSERT_INPUT(q);
 
     q->h = 0;
     q->t = 0;
     q->size = 0;
 }
 
-void queue_enq(queue_t *q, generic_t element)
+void uqueue_enq(uqueue_t *q, ugeneric_t element)
 {
-    ASSERT_INPUT(q);
+    UASSERT_INPUT(q);
 
     if (q->capacity == q->size)
     {
         size_t new_capacity = MAX(SCALE_FACTOR * q->size,
                                   QUEUE_INITIAL_CAPACITY);
-        queue_reserve_capacity(q, new_capacity ? new_capacity : 1);
+        uqueue_reserve_capacity(q, new_capacity ? new_capacity : 1);
     }
     if (q->size)
     {
@@ -61,12 +61,12 @@ void queue_enq(queue_t *q, generic_t element)
     q->size++;
 }
 
-generic_t queue_deq(queue_t *q)
+ugeneric_t uqueue_deq(uqueue_t *q)
 {
-    ASSERT_INPUT(q);
-    ASSERT_MSG(q->size, "dequeuing from an empty queue");
+    UASSERT_INPUT(q);
+    UASSERT_MSG(q->size, "dequeuing from an empty queue");
 
-    generic_t e = q->data[q->h];
+    ugeneric_t e = q->data[q->h];
     if (q->h != q->t)
     {
         q->h = (q->h + 1) % q->capacity;
@@ -76,34 +76,34 @@ generic_t queue_deq(queue_t *q)
     return e;
 }
 
-generic_t queue_peek(const queue_t *q)
+ugeneric_t uqueue_peek(const uqueue_t *q)
 {
-    ASSERT_INPUT(q);
-    ASSERT_MSG(q->size, "peeking from an empty queue");
+    UASSERT_INPUT(q);
+    UASSERT_MSG(q->size, "peeking from an empty queue");
     return q->data[q->h];
 }
 
-size_t queue_get_size(const queue_t *q)
+size_t uqueue_get_size(const uqueue_t *q)
 {
-    ASSERT_INPUT(q);
+    UASSERT_INPUT(q);
     return q->size;
 }
 
-size_t queue_get_capacity(const queue_t *q)
+size_t uqueue_get_capacity(const uqueue_t *q)
 {
-    ASSERT_INPUT(q);
+    UASSERT_INPUT(q);
     return q->capacity;
 }
 
-bool queue_is_empty(const queue_t *q)
+bool uqueue_is_empty(const uqueue_t *q)
 {
-    ASSERT_INPUT(q);
+    UASSERT_INPUT(q);
     return q->size == 0;
 }
 
-void queue_reserve_capacity(queue_t *q, size_t new_capacity)
+void uqueue_reserve_capacity(uqueue_t *q, size_t new_capacity)
 {
-    ASSERT_INPUT(q);
+    UASSERT_INPUT(q);
 
     /* If queue is not empty and we need more slots we allocate
      * additional memory and move existing elements to bigger room.
@@ -111,7 +111,7 @@ void queue_reserve_capacity(queue_t *q, size_t new_capacity)
      */
     if (q->size)
     {
-        generic_t *p = umalloc(new_capacity * sizeof(*p));
+        ugeneric_t *p = umalloc(new_capacity * sizeof(*p));
         for (size_t i = 0; i < q->size; i++)
         {
             p[i] = q->data[(q->h + i) % q->capacity];
@@ -129,48 +129,48 @@ void queue_reserve_capacity(queue_t *q, size_t new_capacity)
     }
 }
 
-void queue_serialize(const queue_t *q, buffer_t *buf)
+void uqueue_serialize(const uqueue_t *q, ubuffer_t *buf)
 {
-    ASSERT_INPUT(q);
-    ASSERT_INPUT(buf);
+    UASSERT_INPUT(q);
+    UASSERT_INPUT(buf);
 
-    buffer_append_byte(buf, '[');
+    ubuffer_append_byte(buf, '[');
     for (size_t i = 0; i < q->size; i++)
     {
-        generic_serialize(q->data[(q->h + i) % q->capacity], buf, NULL);
+        ugeneric_serialize(q->data[(q->h + i) % q->capacity], buf, NULL);
         if (i < q->size - 1)
         {
-            buffer_append_data(buf, ", ", 2);
+            ubuffer_append_data(buf, ", ", 2);
         }
     }
-    buffer_append_byte(buf, ']');
+    ubuffer_append_byte(buf, ']');
 }
 
-char *queue_as_str(const queue_t *q)
+char *uqueue_as_str(const uqueue_t *q)
 {
-    ASSERT_INPUT(q);
+    UASSERT_INPUT(q);
 
-    buffer_t buf = {0};
-    queue_serialize(q, &buf);
-    buffer_null_terminate(&buf);
+    ubuffer_t buf = {0};
+    uqueue_serialize(q, &buf);
+    ubuffer_null_terminate(&buf);
 
     return buf.data;
 }
 
-int queue_fprint(const queue_t *q, FILE *out)
+int uqueue_fprint(const uqueue_t *q, FILE *out)
 {
-    ASSERT_INPUT(q);
-    ASSERT_INPUT(out);
+    UASSERT_INPUT(q);
+    UASSERT_INPUT(out);
 
-    char *str = queue_as_str(q);
+    char *str = uqueue_as_str(q);
     int ret = fprintf(out, "%s\n", str);
     ufree(str);
 
     return ret;
 }
 
-int queue_print(const queue_t *q)
+int uqueue_print(const uqueue_t *q)
 {
-    ASSERT_INPUT(q);
-    return queue_fprint(q, stdout);
+    UASSERT_INPUT(q);
+    return uqueue_fprint(q, stdout);
 }

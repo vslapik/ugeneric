@@ -1,18 +1,18 @@
 #include "dsu.h"
 #include "mem.h"
 
-struct dsu_opaq {
+struct udsu_opaq {
     size_t rank; // rank
     size_t size; // number of IDs in DSU
     size_t *ids; // IDs array
     size_t *rs;  // rank of subtree rooted at ids[i]
 };
 
-dsu_t *dsu_create(size_t size)
+udsu_t *udsu_create(size_t size)
 {
-    ASSERT_INPUT(size);
+    UASSERT_INPUT(size);
 
-    dsu_t *d = umalloc(sizeof(*d));
+    udsu_t *d = umalloc(sizeof(*d));
     d->ids = umalloc(size * sizeof(d->ids[0]));
     d->rs = umalloc(size * sizeof(d->rs[0]));
     d->rank = size;
@@ -26,7 +26,7 @@ dsu_t *dsu_create(size_t size)
     return d;
 }
 
-static size_t _root(dsu_t *d, size_t e)
+static size_t _root(udsu_t *d, size_t e)
 {
     while (e != d->ids[e])
     {
@@ -37,20 +37,20 @@ static size_t _root(dsu_t *d, size_t e)
     return e;
 }
 
-bool dsu_is_united(dsu_t *d, size_t p, size_t q)
+bool udsu_is_united(udsu_t *d, size_t p, size_t q)
 {
-    ASSERT_INPUT(d);
-    ASSERT_INPUT(q < d->size);
-    ASSERT_INPUT(p < d->size);
+    UASSERT_INPUT(d);
+    UASSERT_INPUT(q < d->size);
+    UASSERT_INPUT(p < d->size);
 
     return _root(d, p) == _root(d, q);
 }
 
-void dsu_unite(dsu_t *d, size_t p, size_t q)
+void udsu_unite(udsu_t *d, size_t p, size_t q)
 {
-    ASSERT_INPUT(d);
-    ASSERT_INPUT(q < d->size);
-    ASSERT_INPUT(p < d->size);
+    UASSERT_INPUT(d);
+    UASSERT_INPUT(q < d->size);
+    UASSERT_INPUT(p < d->size);
 
     /* union by rank */
     size_t proot = _root(d, p);
@@ -77,7 +77,7 @@ void dsu_unite(dsu_t *d, size_t p, size_t q)
     d->rank -= 1;
 }
 
-void dsu_destroy(dsu_t *d)
+void udsu_destroy(udsu_t *d)
 {
     if (d)
     {

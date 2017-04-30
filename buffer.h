@@ -1,5 +1,5 @@
-#ifndef BUFFER_H__
-#define BUFFER_H__
+#ifndef UBUFFER_H__
+#define UBUFFER_H__
 
 #include <stdio.h> // FILE*
 #include <stddef.h> // size_t
@@ -11,24 +11,24 @@ typedef struct {
     void *data;
     size_t data_size;
     size_t capacity;
-} buffer_t;
+} ubuffer_t;
 
 typedef struct {
     size_t size;
     void *data;
-} memchunk_t;
+} umemchunk_t;
 
-void buffer_append_data(buffer_t *buf, const void *data, size_t size);
-void buffer_append_memchunk(buffer_t *buf, const memchunk_t *data);
-void buffer_append_buffer(buffer_t *buf, const buffer_t *data);
-void buffer_append_byte(buffer_t *buf, char byte);
-void buffer_append_string(buffer_t *buf, const char *str);
-void buffer_null_terminate(buffer_t *buf);
-void buffer_reset(buffer_t *buf);
+void ubuffer_append_data(ubuffer_t *buf, const void *data, size_t size);
+void ubuffer_append_memchunk(ubuffer_t *buf, const umemchunk_t *data);
+void ubuffer_append_buffer(ubuffer_t *buf, const ubuffer_t *data);
+void ubuffer_append_byte(ubuffer_t *buf, char byte);
+void ubuffer_append_string(ubuffer_t *buf, const char *str);
+void ubuffer_null_terminate(ubuffer_t *buf);
+void ubuffer_reset(ubuffer_t *buf);
 
-char *memchunk_as_str(memchunk_t m);
-void memchunk_serialize(memchunk_t m, buffer_t *buf);
-int memchunk_fprint(memchunk_t m, FILE *out);
-int memchunk_print(memchunk_t m);
+char *umemchunk_as_str(umemchunk_t m);
+void umemchunk_serialize(umemchunk_t m, ubuffer_t *buf);
+int umemchunk_fprint(umemchunk_t m, FILE *out);
+int umemchunk_print(umemchunk_t m);
 
 #endif

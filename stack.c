@@ -6,68 +6,68 @@
 
 #define STACK_INITIAL_CAPACITY 16
 
-struct stack_opaq {
-    vector_t *data;
+struct ustack_opaq {
+    uvector_t *data;
 };
 
-stack_t *stack_create()
+ustack_t *ustack_create()
 {
-    stack_t *s = umalloc(sizeof(*s));
-    s->data = vector_create();
-    vector_reserve_capacity(s->data, STACK_INITIAL_CAPACITY);
+    ustack_t *s = umalloc(sizeof(*s));
+    s->data = uvector_create();
+    uvector_reserve_capacity(s->data, STACK_INITIAL_CAPACITY);
 
     return s;
 }
 
-void stack_destroy(stack_t *s)
+void ustack_destroy(ustack_t *s)
 {
     if (s)
     {
-        vector_destroy(s->data);
+        uvector_destroy(s->data);
         ufree(s);
     }
 }
 
-generic_t stack_pop(stack_t *s)
+ugeneric_t ustack_pop(ustack_t *s)
 {
-    ASSERT_INPUT(s);
-    ASSERT_INPUT(!vector_is_empty(s->data));
-    return vector_pop_back(s->data);
+    UASSERT_INPUT(s);
+    UASSERT_INPUT(!uvector_is_empty(s->data));
+    return uvector_pop_back(s->data);
 }
 
-generic_t stack_peek(const stack_t *s)
+ugeneric_t ustack_peek(const ustack_t *s)
 {
-    ASSERT_INPUT(s);
-    ASSERT_INPUT(!vector_is_empty(s->data));
-    return vector_get_at(s->data, vector_get_size(s->data) - 1);
+    UASSERT_INPUT(s);
+    UASSERT_INPUT(!uvector_is_empty(s->data));
+    return uvector_get_at(s->data, uvector_get_size(s->data) - 1);
 }
 
-void stack_push(stack_t *s, generic_t e)
+void ustack_push(ustack_t *s, ugeneric_t e)
 {
-    ASSERT_INPUT(s);
-    vector_append(s->data, e);
+    UASSERT_INPUT(s);
+    uvector_append(s->data, e);
 }
 
-size_t stack_get_size(const stack_t *s)
+size_t ustack_get_size(const ustack_t *s)
 {
-    ASSERT_INPUT(s);
-    return vector_get_size(s->data);
+    UASSERT_INPUT(s);
+    return uvector_get_size(s->data);
 }
 
-bool stack_is_empty(const stack_t *s)
+bool ustack_is_empty(const ustack_t *s)
 {
-    ASSERT_INPUT(s);
-    return vector_is_empty(s->data);
+    UASSERT_INPUT(s);
+    return uvector_is_empty(s->data);
 }
 
-void stack_reserve_capacity(stack_t *s, size_t capacity)
+void ustack_reserve_capacity(ustack_t *s, size_t capacity)
 {
-    ASSERT_INPUT(s);
-    vector_reserve_capacity(s->data, capacity);
+    UASSERT_INPUT(s);
+    uvector_reserve_capacity(s->data, capacity);
 }
 
-size_t stack_get_capacity(const stack_t *s)
+size_t ustack_get_capacity(const ustack_t *s)
 {
-    ASSERT_INPUT(s);
-    return vector_get_capacity(s->data);
+    UASSERT_INPUT(s);
+    return uvector_get_capacity(s->data);
 }

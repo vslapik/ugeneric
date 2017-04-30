@@ -6,8 +6,8 @@
 
 /* [0][1][2][...][size - 1][.][.][...][.][.][capacity - 1] */
 
-struct vector_opaq {
-    generic_t *cells;
+struct uvector_opaq {
+    ugeneric_t *cells;
     size_t size;
     size_t capacity;
     bool is_data_owner;
@@ -17,9 +17,9 @@ struct vector_opaq {
     void_s8r_t void_serializer;
 };
 
-static vector_t *_vcpy(const vector_t *v, bool deep)
+static uvector_t *_vcpy(const uvector_t *v, bool deep)
 {
-    vector_t *copy = vector_create();
+    uvector_t *copy = uvector_create();
     memcpy(copy, v, sizeof(*v));
     copy->cells = umalloc(v->size * sizeof(copy->cells[0]));
 
@@ -28,7 +28,7 @@ static vector_t *_vcpy(const vector_t *v, bool deep)
         copy->is_data_owner = true;
         for (size_t i = 0; i < v->size; i++)
         {
-            copy->cells[i] = generic_copy(v->cells[i], v->cpy);
+            copy->cells[i] = ugeneric_copy(v->cells[i], v->cpy);
         }
     }
     else
@@ -43,9 +43,9 @@ static vector_t *_vcpy(const vector_t *v, bool deep)
     return copy;
 }
 
-static vector_t *_allocate_vector(void)
+static uvector_t *_allocate_vector(void)
 {
-    vector_t *v = umalloc(sizeof(*v));
+    uvector_t *v = umalloc(sizeof(*v));
     v->size = 0;
     v->capacity = 0;
     v->cells = NULL;
@@ -58,15 +58,15 @@ static vector_t *_allocate_vector(void)
     return v;
 }
 
-int vector_compare(const vector_t *v1, const vector_t *v2, void_cmp_t cmp)
+int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp)
 {
-    ASSERT_INPUT(v1);
-    ASSERT_INPUT(v2);
+    UASSERT_INPUT(v1);
+    UASSERT_INPUT(v2);
 
     size_t size = MIN(v1->size, v2->size);
     for (size_t i = 0; i < size; i++)
     {
-        int diff = generic_compare(v1->cells[i], v2->cells[i], cmp);
+        int diff = ugeneric_compare(v1->cells[i], v2->cells[i], cmp);
         if (diff)
         {
             return diff;
@@ -75,12 +75,12 @@ int vector_compare(const vector_t *v1, const vector_t *v2, void_cmp_t cmp)
     return v1->size - v2->size;
 }
 
-vector_t *vector_create_with_size(size_t size, generic_t value)
+uvector_t *uvector_create_with_size(size_t size, ugeneric_t value)
 {
-    vector_t *v = _allocate_vector();
+    uvector_t *v = _allocate_vector();
     if (size)
     {
-        vector_reserve_capacity(v, size);
+        uvector_reserve_capacity(v, size);
         for (size_t i = 0; i < size; i++)
         {
             v->cells[i] = value;
@@ -91,24 +91,24 @@ vector_t *vector_create_with_size(size_t size, generic_t value)
     return v;
 }
 
-vector_t *vector_create(void)
+uvector_t *uvector_create(void)
 {
     return _allocate_vector();
 }
 
-vector_t *vector_create_from_array(void *array, size_t array_len,
+uvector_t *uvector_create_from_array(void *array, size_t array_len,
                                    size_t array_element_size,
-                                   generic_type_e vector_element_type)
+                                   ugeneric_type_e uvector_element_type)
 {
     size_t i = 0;
-    vector_t *v = _allocate_vector();
-    vector_reserve_capacity(v, array_len);
+    uvector_t *v = _allocate_vector();
+    uvector_reserve_capacity(v, array_len);
     char *p = array;
 
     while (i < array_len)
     {
-        v->cells[i] = (generic_t){0};
-        v->cells[i].type.type = vector_element_type;
+        v->cells[i] = (ugeneric_t){0};
+        v->cells[i].type.type = uvector_element_type;
         // TODO: check portability
         memcpy(&(v->cells[i].value), p, array_element_size);
         p += array_element_size;
@@ -119,67 +119,67 @@ vector_t *vector_create_from_array(void *array, size_t array_len,
     return v;
 }
 
-void vector_take_data_ownership(vector_t *v)
+void uvector_take_data_ownership(uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     v->is_data_owner = true;
 }
 
-void vector_drop_data_ownership(vector_t *v)
+void uvector_drop_data_ownership(uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     v->is_data_owner = false;
 }
 
-void vector_set_destroyer(vector_t *v, void_dtr_t dtr)
+void uvector_set_destroyer(uvector_t *v, void_dtr_t dtr)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     v->dtr = dtr;
 }
 
-void vector_set_comparator(vector_t *v, void_cmp_t cmp)
+void uvector_set_comparator(uvector_t *v, void_cmp_t cmp)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     v->cmp = cmp;
 }
 
-void vector_set_copier(vector_t *v, void_cpy_t cpy)
+void uvector_set_copier(uvector_t *v, void_cpy_t cpy)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     v->cpy = cpy;
 }
 
-void_dtr_t vector_get_destroyer(const vector_t *v)
+void_dtr_t uvector_get_destroyer(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->dtr;
 }
 
-void_cmp_t vector_get_comparator(const vector_t *v)
+void_cmp_t uvector_get_comparator(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->cmp;
 }
 
-void_cpy_t vector_get_copier(const vector_t *v)
+void_cpy_t uvector_get_copier(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->cpy;
 }
 
-void_s8r_t vector_get_void_serializer(const vector_t *v)
+void_s8r_t uvector_get_void_serializer(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->void_serializer;
 }
 
-void vector_set_void_serializer(vector_t *v, void_s8r_t serializer)
+void uvector_set_void_serializer(uvector_t *v, void_s8r_t serializer)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     v->void_serializer = serializer;
 }
 
-void vector_destroy(vector_t *v)
+void uvector_destroy(uvector_t *v)
 {
     if (v)
     {
@@ -187,7 +187,7 @@ void vector_destroy(vector_t *v)
         {
             for (size_t i = 0; i < v->size; i++)
             {
-                generic_destroy(v->cells[i], v->dtr);
+                ugeneric_destroy(v->cells[i], v->dtr);
             }
         }
         ufree(v->cells);
@@ -195,51 +195,51 @@ void vector_destroy(vector_t *v)
     }
 }
 
-generic_t vector_get_at(const vector_t *v, size_t i)
+ugeneric_t uvector_get_at(const uvector_t *v, size_t i)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(i < v->size);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(i < v->size);
     return v->cells[i];
 }
 
-generic_t vector_get_at_random(const vector_t *v)
+ugeneric_t uvector_get_at_random(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->cells[random_from_range(0, v->size - 1)];
 }
 
-void vector_set_at(vector_t *v, size_t i, generic_t e)
+void uvector_set_at(uvector_t *v, size_t i, ugeneric_t e)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(i < v->size);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(i < v->size);
 
     if (v->is_data_owner)
     {
-        generic_destroy(v->cells[i], v->dtr);
+        ugeneric_destroy(v->cells[i], v->dtr);
     }
     v->cells[i] = e;
 }
 
-generic_t *vector_get_cells(const vector_t *v)
+ugeneric_t *uvector_get_cells(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->cells;
 }
 
-void vector_swap(vector_t *v, size_t l, size_t r)
+void uvector_swap(uvector_t *v, size_t l, size_t r)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(l < v->size);
-    ASSERT_INPUT(r < v->size);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(l < v->size);
+    UASSERT_INPUT(r < v->size);
 
-    generic_swap(&v->cells[l], &v->cells[r]);
+    ugeneric_swap(&v->cells[l], &v->cells[r]);
 }
 
-void vector_resize(vector_t *v, size_t new_size, generic_t value)
+void uvector_resize(uvector_t *v, size_t new_size, ugeneric_t value)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
 
-    vector_reserve_capacity(v, new_size);
+    uvector_reserve_capacity(v, new_size);
     for (size_t i = v->size; i < new_size; i++)
     {
         v->cells[i] = value;
@@ -248,15 +248,15 @@ void vector_resize(vector_t *v, size_t new_size, generic_t value)
     {
         for (size_t i = new_size; i < v->size; i++)
         {
-            generic_destroy(v->cells[i], v->dtr);
+            ugeneric_destroy(v->cells[i], v->dtr);
         }
     }
     v->size = new_size;
 }
 
-void vector_shrink_to_size(vector_t *v)
+void uvector_shrink_to_size(uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
 
     if (v->capacity && v->size)
     {
@@ -266,9 +266,9 @@ void vector_shrink_to_size(vector_t *v)
     }
 }
 
-void vector_reserve_capacity(vector_t *v, size_t new_capacity)
+void uvector_reserve_capacity(uvector_t *v, size_t new_capacity)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
 
     if (v->capacity < new_capacity)
     {
@@ -278,51 +278,51 @@ void vector_reserve_capacity(vector_t *v, size_t new_capacity)
     }
 }
 
-size_t vector_get_capacity(const vector_t *v)
+size_t uvector_get_capacity(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->capacity;
 }
 
-size_t vector_get_size(const vector_t *v)
+size_t uvector_get_size(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->size;
 }
 
-bool vector_is_empty(const vector_t *v)
+bool uvector_is_empty(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->size == 0;
 }
 
-void vector_insert_at(vector_t *v, size_t i, generic_t e)
+void uvector_insert_at(uvector_t *v, size_t i, ugeneric_t e)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(i < v->size);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(i < v->size);
 
-    vector_reserve_capacity(v, v->size + 1);
+    uvector_reserve_capacity(v, v->size + 1);
     memmove(v->cells + i + 1, v->cells + i, (v->size - i) * sizeof(v->cells[0]));
     v->cells[i] = e;
     v->size++;
 }
 
-void vector_remove_at(vector_t *v, size_t i)
+void uvector_remove_at(uvector_t *v, size_t i)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(i < v->size);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(i < v->size);
 
     if (v->is_data_owner)
     {
-        generic_destroy(v->cells[i], v->dtr);
+        ugeneric_destroy(v->cells[i], v->dtr);
     }
     memmove(v->cells + i, v->cells + i + 1, (v->size - i - 1) * sizeof(v->cells[0]));
     v->size--;
 }
 
-void vector_clear(vector_t *v)
+void uvector_clear(uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
 
     if (v->size)
     {
@@ -330,7 +330,7 @@ void vector_clear(vector_t *v)
         {
             for (size_t i = 0; i < v->size; i++)
             {
-                generic_destroy(v->cells[i], v->dtr);
+                ugeneric_destroy(v->cells[i], v->dtr);
             }
         }
         ufree(v->cells);
@@ -340,121 +340,121 @@ void vector_clear(vector_t *v)
     v->capacity = 0;
 }
 
-void vector_append(vector_t *v, generic_t e)
+void uvector_append(uvector_t *v, ugeneric_t e)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
 
     if (v->capacity == v->size)
     {
         size_t new_capacity = MAX(SCALE_FACTOR * v->size,
                                   VECTOR_INITIAL_CAPACITY);
-        vector_reserve_capacity(v, new_capacity ? new_capacity : 1);
+        uvector_reserve_capacity(v, new_capacity ? new_capacity : 1);
     }
     v->cells[v->size++] = e;
 }
 
-generic_t vector_get_back(const vector_t *v)
+ugeneric_t uvector_get_back(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return v->cells[v->size - 1];
 }
 
-generic_t vector_pop_at(vector_t *v, size_t i)
+ugeneric_t uvector_pop_at(uvector_t *v, size_t i)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(i < v->size);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(i < v->size);
 
-    generic_t e = v->cells[i];
+    ugeneric_t e = v->cells[i];
     memmove(v->cells + i, v->cells - i + 1, (v->size - i - 1) * sizeof(v->cells[0]));
     v->size--;
 
     return e;
 }
 
-generic_t vector_pop_back(vector_t *v)
+ugeneric_t uvector_pop_back(uvector_t *v)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(v->size);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(v->size);
     return v->cells[--v->size];
 }
 
-void vector_reverse(vector_t *v, size_t l, size_t r)
+void uvector_reverse(uvector_t *v, size_t l, size_t r)
 {
-    generic_array_reverse(v->cells, v->size, l, r);
+    ugeneric_array_reverse(v->cells, v->size, l, r);
 }
 
-void vector_sort(vector_t *v)
+void uvector_sort(uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     quick_sort(v->cells, v->size, v->cmp);
 }
 
-vector_t *vector_copy(const vector_t *v)
+uvector_t *uvector_copy(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return _vcpy(v, false);
 }
 
-vector_t *vector_deep_copy(const vector_t *v)
+uvector_t *uvector_deep_copy(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
     return _vcpy(v, true);
 }
 
-void vector_serialize(const vector_t *v, buffer_t *buf)
+void uvector_serialize(const uvector_t *v, ubuffer_t *buf)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(buf);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(buf);
 
-    buffer_append_byte(buf, '[');
+    ubuffer_append_byte(buf, '[');
     for (size_t i = 0; i < v->size; i++)
     {
-        generic_serialize(v->cells[i], buf, v->void_serializer);
+        ugeneric_serialize(v->cells[i], buf, v->void_serializer);
         if (i < v->size - 1)
         {
-            buffer_append_data(buf, ", ", 2);
+            ubuffer_append_data(buf, ", ", 2);
         }
     }
-    buffer_append_byte(buf, ']');
+    ubuffer_append_byte(buf, ']');
 }
 
-char *vector_as_str(const vector_t *v)
+char *uvector_as_str(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
+    UASSERT_INPUT(v);
 
-    buffer_t buf = {0};
-    vector_serialize(v, &buf);
-    buffer_null_terminate(&buf);
+    ubuffer_t buf = {0};
+    uvector_serialize(v, &buf);
+    ubuffer_null_terminate(&buf);
 
     return buf.data;
 }
 
-int vector_print(const vector_t *v)
+int uvector_print(const uvector_t *v)
 {
-    ASSERT_INPUT(v);
-    return vector_fprint(v, stdout);
+    UASSERT_INPUT(v);
+    return uvector_fprint(v, stdout);
 }
 
-int vector_fprint(const vector_t *v, FILE *out)
+int uvector_fprint(const uvector_t *v, FILE *out)
 {
-    ASSERT_INPUT(v);
-    ASSERT_INPUT(out);
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(out);
 
-    char *str = vector_as_str(v);
+    char *str = uvector_as_str(v);
     int ret = fprintf(out, "%s\n", str);
     ufree(str);
 
     return ret;
 }
 
-size_t vector_bsearch(const vector_t *v, generic_t e)
+size_t uvector_bsearch(const uvector_t *v, ugeneric_t e)
 {
-    ASSERT_INPUT(v);
-    return generic_bsearch(v->cells, v->size, e, v->cmp);
+    UASSERT_INPUT(v);
+    return ugeneric_bsearch(v->cells, v->size, e, v->cmp);
 }
 
-bool vector_next_permutation(vector_t *v)
+bool uvector_next_permutation(uvector_t *v)
 {
-    ASSERT_INPUT(v);
-    return generic_next_permutation(v->cells, v->size, v->cmp);
+    UASSERT_INPUT(v);
+    return ugeneric_next_permutation(v->cells, v->size, v->cmp);
 }

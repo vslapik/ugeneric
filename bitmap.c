@@ -26,37 +26,37 @@ static void _flip_range(void *a, size_t l, size_t r)
 
 void ubitmap_flip_range(void *a, size_t l, size_t r)
 {
-    ASSERT_INPUT(a);
-    ASSERT_INPUT(l < r);
+    UASSERT_INPUT(a);
+    UASSERT_INPUT(l < r);
     _flip_range(a, l, r);
 }
 
 void ubitmap_flip_all(void *a, size_t len)
 {
-    ASSERT_INPUT(a);
+    UASSERT_INPUT(a);
     _flip_range(a, 0, len);
 }
 
 char *ubitmap_as_str(const void *a, size_t len)
 {
-    ASSERT_INPUT(a);
+    UASSERT_INPUT(a);
     return ubitmap_range_as_str(a, 0, len);
 }
 
 char *ubitmap_range_as_str(const void *a, size_t l, size_t r)
 {
-    ASSERT_INPUT(a);
-    ASSERT_INPUT(l < r);
+    UASSERT_INPUT(a);
+    UASSERT_INPUT(l < r);
 
-    buffer_t buf = {0};
+    ubuffer_t buf = {0};
 
     while ((l < r) && (l % 8))
     {
-        buffer_append_byte(&buf, ubitmap_get_bit(a, l) + '0');
+        ubuffer_append_byte(&buf, ubitmap_get_bit(a, l) + '0');
         l++;
     }
 
-    memchunk_t m;
+    umemchunk_t m;
     while ((l < r) && ((r - l) >= 8))
     {
         uint8_t byte = ((uint8_t *)a)[l / 8];
@@ -68,26 +68,26 @@ char *ubitmap_range_as_str(const void *a, size_t l, size_t r)
         };
         m.data = &byte_str;
         m.size = sizeof(byte_str);
-        buffer_append_memchunk(&buf, &m);
+        ubuffer_append_memchunk(&buf, &m);
         l += 8;
     }
 
     while (l < r)
     {
-        buffer_append_byte(&buf, ubitmap_get_bit(a, l) + '0');
+        ubuffer_append_byte(&buf, ubitmap_get_bit(a, l) + '0');
         l++;
     }
 
-    buffer_null_terminate(&buf);
+    ubuffer_null_terminate(&buf);
 
     return buf.data;
 }
 
 int ubitmap_fprint_range(const void *a, size_t l, size_t r, FILE *f)
 {
-    ASSERT_INPUT(a);
-    ASSERT_INPUT(f);
-    ASSERT_INPUT(l < r);
+    UASSERT_INPUT(a);
+    UASSERT_INPUT(f);
+    UASSERT_INPUT(l < r);
 
     char *str = ubitmap_range_as_str(a, l, r);
     int ret = fprintf(f, "%s\n", str);
@@ -98,7 +98,7 @@ int ubitmap_fprint_range(const void *a, size_t l, size_t r, FILE *f)
 
 int ubitmap_fprint(const void *a, size_t len, FILE *f)
 {
-    ASSERT_INPUT(a);
-    ASSERT_INPUT(f);
+    UASSERT_INPUT(a);
+    UASSERT_INPUT(f);
     return ubitmap_fprint_range(a, 0, len, f);
 }
