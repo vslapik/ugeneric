@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "buffer.h"
+#include "mem.h"
 #include "asserts.h"
 
 typedef enum {

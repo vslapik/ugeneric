@@ -8,7 +8,6 @@
 #include "vector.h"
 #include "dict.h"
 #include "string_utils.h"
-#include "buffer.h"
 
 static ugeneric_t _parse_item(const char **str);
 

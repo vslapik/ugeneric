@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "vector.h"
-#include "buffer.h"
+#include "mem.h"
 #include "asserts.h"
 #include "string_utils.h"
 

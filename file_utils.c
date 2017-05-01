@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "mem.h"
-#include "buffer.h"
 #include "file_utils.h"
 
 struct ufile_reader_opaq {
