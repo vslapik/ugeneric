@@ -129,7 +129,7 @@ static inline bool G_IS_MEMCHUNK(ugeneric_t g){return g.type.type > G_MEMCHUNK_T
 typedef int (*void_cmp_t)(const void *ptr1, const void *ptr2);
 typedef void *(*void_cpy_t)(const void *ptr);
 typedef void (*void_dtr_t)(void *ptr);
-typedef umemchunk_t (*void_s8r_t)(const void *ptr);
+typedef char *(*void_s8r_t)(const void *ptr, size_t *output_size);
 typedef size_t (*void_hasher_t)(const void *ptr);
 typedef bool (*ugeneric_kv_iter_t)(ugeneric_t k, ugeneric_t v, void *data);
 

@@ -281,7 +281,7 @@ void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer
         case G_PTR_T:
             if (void_serializer)
             {
-                m = void_serializer(G_AS_PTR(g));
+                m.data = void_serializer(G_AS_PTR(g), &m.size);
                 ubuffer_append_memchunk(buf, &m);
                 ufree(m.data);
             }
@@ -307,7 +307,6 @@ void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer
             }
             ubuffer_append_byte(buf, '\"');
             break;
-
 
         case G_INT_T:
             snprintf(tmp, sizeof(tmp), "%ld", G_AS_INT(g));

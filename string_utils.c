@@ -111,19 +111,23 @@ char *ustring_fmt(const char *fmt, ...)
     return str;
 }
 
-umemchunk_t ustring_fmt_to_memchunk(const char *fmt, ...)
+char *ustring_fmt_sized(const char *fmt, size_t *output_size, ...)
 {
     UASSERT_INPUT(fmt);
 
     va_list ap, ap_copy;
     umemchunk_t mem;
 
-    va_start(ap, fmt);
+    va_start(ap, output_size);
     va_copy(ap_copy, ap);
     mem = _vstr_fmt(fmt, ap_copy);
     va_end(ap_copy);
 
-    return mem;
+    if (output_size)
+    {
+        *output_size = mem.size;
+    }
+    return mem.data;
 }
 
 bool ustring_starts_with(const char *str, const char *prefix)
