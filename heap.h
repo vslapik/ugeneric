@@ -3,7 +3,7 @@
 
 #include "generic.h"
 
-typedef struct heap_opaq heap_t;
+typedef struct uheap_opaq uheap_t;
 
 // For custom void * data you can use either one by
 // providing appropriate comparator but for ugeneric_t
@@ -11,33 +11,33 @@ typedef struct heap_opaq heap_t;
 // to MIN_HEAP. So there is function which allows to
 // explicitely set heap type.
 typedef enum {
-    MAX_HEAP = -1,
-    MIN_HEAP = 1, // default
-} heap_type_t;
+    UHEAP_TYPE_MAX = -1,
+    UHEAP_TYPE_MIN = 1, // default
+} uheap_type_t;
 
-heap_t *heap_create(void);
-heap_t *heap_create_ext(size_t capacity, heap_type_t);
-void heap_destroy(heap_t *h);
-void heap_clear(heap_t *h);
-void heap_push(heap_t *h, ugeneric_t e);
-ugeneric_t heap_pop(heap_t *h);
-size_t heap_get_size(const heap_t *h);
-bool heap_is_empty(const heap_t *h);
-ugeneric_t heap_peek(const heap_t *h);
+uheap_t *uheap_create(void);
+uheap_t *uheap_create_ext(size_t capacity, uheap_type_t);
+void uheap_destroy(uheap_t *h);
+void uheap_clear(uheap_t *h);
+void uheap_push(uheap_t *h, ugeneric_t e);
+ugeneric_t uheap_pop(uheap_t *h);
+size_t uheap_get_size(const uheap_t *h);
+bool uheap_is_empty(const uheap_t *h);
+ugeneric_t uheap_peek(const uheap_t *h);
 
-size_t heap_get_capacity(const heap_t *h);
-void heap_reserve_capacity(heap_t *h, size_t new_capacity);
-ugeneric_t *heap_get_cells(const heap_t *h);
+size_t uheap_get_capacity(const uheap_t *h);
+void uheap_reserve_capacity(uheap_t *h, size_t new_capacity);
+ugeneric_t *uheap_get_cells(const uheap_t *h);
 
-void heap_take_data_ownership(heap_t *h);
-void heap_drop_data_ownership(heap_t *h);
-void heap_set_destroyer(heap_t *h, void_dtr_t dtr);
-void heap_set_comparator(heap_t *h, void_cmp_t cmp);
-void heap_set_copier(heap_t *h, void_cpy_t cpy);
-void_dtr_t heap_get_destroyer(const heap_t *h);
-void_cmp_t heap_get_comparator(const heap_t *h);
-void_cpy_t heap_get_copier(const heap_t *h);
+void uheap_take_data_ownership(uheap_t *h);
+void uheap_drop_data_ownership(uheap_t *h);
+void uheap_set_destroyer(uheap_t *h, void_dtr_t dtr);
+void uheap_set_comparator(uheap_t *h, void_cmp_t cmp);
+void uheap_set_copier(uheap_t *h, void_cpy_t cpy);
+void_dtr_t uheap_get_destroyer(const uheap_t *h);
+void_cmp_t uheap_get_comparator(const uheap_t *h);
+void_cpy_t uheap_get_copier(const uheap_t *h);
 
-void heap_dump_to_dot(const heap_t *h, const char *name, FILE *out);
+void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out);
 
 #endif

@@ -12,20 +12,20 @@
 #define RCHILD_IDX(i) (2 * (i) + 2)
 #define ROOT_IDX 0
 
-struct heap_opaq {
+struct uheap_opaq {
     uvector_t *data;
-    heap_type_t type;
+    uheap_type_t type;
 };
 
-heap_t *heap_create(void)
+uheap_t *uheap_create(void)
 {
-    return heap_create_ext(HEAP_INITIAL_CAPACITY, MIN_HEAP);
+    return uheap_create_ext(HEAP_INITIAL_CAPACITY, UHEAP_TYPE_MIN);
 }
 
-heap_t *heap_create_ext(size_t capacity, heap_type_t type)
+uheap_t *uheap_create_ext(size_t capacity, uheap_type_t type)
 {
-    UASSERT_INPUT((type == MIN_HEAP) || (type == MAX_HEAP));
-    heap_t *h = umalloc(sizeof(*h));
+    UASSERT_INPUT((type == UHEAP_TYPE_MIN) || (type == UHEAP_TYPE_MAX));
+    uheap_t *h = umalloc(sizeof(*h));
     h->data = NULL;
     h->data = uvector_create();
     uvector_reserve_capacity(h->data, capacity);
@@ -34,7 +34,7 @@ heap_t *heap_create_ext(size_t capacity, heap_type_t type)
     return h;
 }
 
-void heap_destroy(heap_t *h)
+void uheap_destroy(uheap_t *h)
 {
     if (h)
     {
@@ -43,13 +43,13 @@ void heap_destroy(heap_t *h)
     }
 }
 
-void heap_clear(heap_t *h)
+void uheap_clear(uheap_t *h)
 {
     UASSERT_INPUT(h);
     uvector_clear(h->data);
 }
 
-void heap_push(heap_t *h, ugeneric_t e)
+void uheap_push(uheap_t *h, ugeneric_t e)
 {
     UASSERT_INPUT(h);
 
@@ -72,7 +72,7 @@ void heap_push(heap_t *h, ugeneric_t e)
     }
 }
 
-ugeneric_t heap_pop(heap_t *h)
+ugeneric_t uheap_pop(uheap_t *h)
 {
     UASSERT_INPUT(h);
     UASSERT_INPUT(!uvector_is_empty(h->data));
@@ -122,92 +122,92 @@ ugeneric_t heap_pop(heap_t *h)
     return e;
 }
 
-ugeneric_t heap_peek(const heap_t *h)
+ugeneric_t uheap_peek(const uheap_t *h)
 {
     UASSERT_INPUT(h);
     UASSERT_INPUT(!uvector_is_empty(h->data));
     return uvector_get_at(h->data, 0);
 }
 
-size_t heap_get_size(const heap_t *h)
+size_t uheap_get_size(const uheap_t *h)
 {
     UASSERT_INPUT(h);
     return uvector_get_size(h->data);
 }
 
-bool heap_is_empty(const heap_t *h)
+bool uheap_is_empty(const uheap_t *h)
 {
     UASSERT_INPUT(h);
     return (uvector_get_size(h->data) == 0);
 }
 
-size_t heap_get_capacity(const heap_t *h)
+size_t uheap_get_capacity(const uheap_t *h)
 {
     UASSERT_INPUT(h);
     return uvector_get_capacity(h->data);
 }
 
-void heap_reserve_capacity(heap_t *h, size_t new_capacity)
+void uheap_reserve_capacity(uheap_t *h, size_t new_capacity)
 {
     UASSERT_INPUT(h);
     uvector_reserve_capacity(h->data, new_capacity);
 }
 
-void heap_take_data_ownership(heap_t *h)
+void uheap_take_data_ownership(uheap_t *h)
 {
     UASSERT_INPUT(h);
     uvector_take_data_ownership(h->data);
 }
 
-void heap_drop_data_ownership(heap_t *h)
+void uheap_drop_data_ownership(uheap_t *h)
 {
     UASSERT_INPUT(h);
     uvector_drop_data_ownership(h->data);
 }
 
-void heap_set_destroyer(heap_t *h, void_dtr_t dtr)
+void uheap_set_destroyer(uheap_t *h, void_dtr_t dtr)
 {
     UASSERT_INPUT(h);
     uvector_set_destroyer(h->data, dtr);
 }
 
-void heap_set_comparator(heap_t *h, void_cmp_t cmp)
+void uheap_set_comparator(uheap_t *h, void_cmp_t cmp)
 {
     UASSERT_INPUT(h);
     uvector_set_comparator(h->data, cmp);
 }
 
-void heap_set_copier(heap_t *h, void_cpy_t cpy)
+void uheap_set_copier(uheap_t *h, void_cpy_t cpy)
 {
     UASSERT_INPUT(h);
     uvector_set_copier(h->data, cpy);
 }
 
-void_dtr_t heap_get_destroyer(const heap_t *h)
+void_dtr_t uheap_get_destroyer(const uheap_t *h)
 {
     UASSERT_INPUT(h);
     return uvector_get_destroyer(h->data);
 }
 
-void_cmp_t heap_get_comparator(const heap_t *h)
+void_cmp_t uheap_get_comparator(const uheap_t *h)
 {
     UASSERT_INPUT(h);
     return uvector_get_comparator(h->data);
 }
 
-void_cpy_t heap_get_copier(const heap_t *h)
+void_cpy_t uheap_get_copier(const uheap_t *h)
 {
     UASSERT_INPUT(h);
     return uvector_get_copier(h->data);
 }
 
-ugeneric_t *heap_get_cells(const heap_t *h)
+ugeneric_t *uheap_get_cells(const uheap_t *h)
 {
     UASSERT_INPUT(h);
     return uvector_get_cells(h->data);
 }
 
-void heap_dump_to_dot(const heap_t *h, const char *name, FILE *out)
+void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out)
 {
     UASSERT_INPUT(h);
 
