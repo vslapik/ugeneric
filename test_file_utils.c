@@ -55,7 +55,7 @@ void test_ufile_reader(void)
     UASSERT_STR_EQ(data, "373839");
     ufree(data);
 
-    UASSERT_NO_ERROR(ufile_reader_reset(fr));
+    UASSERT_NO_ERROR(ufile_reader_set_position(fr, 0));
 
     UASSERT_NO_ERROR(g = ufile_reader_read(fr, buffer_size, NULL));
     m = G_AS_MEMCHUNK(g);

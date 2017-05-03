@@ -2,9 +2,9 @@
 #include "generic.h"
 #include "mem.h"
 
-static bool _default_oom_handler(void *data)
+static bool _default_oom_handler(void *ctx)
 {
-    (void)data;
+    (void)ctx;
     fprintf(stderr, "seems we're gonna to be screwed ...\n");
     return false;
 }
@@ -12,10 +12,10 @@ static bool _default_oom_handler(void *data)
 static oom_handler_t _oom_handler = _default_oom_handler;
 static void *_oom_data = NULL;
 
-void libuugeneric_set_oom_handler(oom_handler_t handler, void *data)
+void libugeneric_set_oom_handler(oom_handler_t handler, void *ctx)
 {
     _oom_handler = handler;
-    _oom_data = data;
+    _oom_data = ctx;
 }
 
 void *umalloc(size_t size)

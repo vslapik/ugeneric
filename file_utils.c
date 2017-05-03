@@ -16,12 +16,22 @@ struct ufile_writer_opaq {
     FILE *file;
 };
 
+// Default handler does nothing besides propogating error up.
+static ugeneric_t _default_error_handler(ugeneric_t io_error, void *ctx)
+{
+    (void)ctx;
+    return io_error;
+}
+
+ufile_error_handler_t _error_handler = _default_error_handler;
+void *_error_handler_ctx = NULL;
+
 static ugeneric_t _get_position(FILE *f)
 {
     long pos = ftell(f);
     if (pos == -1)
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
     return G_SIZE(pos);
@@ -31,7 +41,7 @@ static ugeneric_t _set_position(FILE *f, size_t position)
 {
     if (fseek(f, position, SEEK_SET) == -1)
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
     return G_NULL;
 }
@@ -53,7 +63,7 @@ static ugeneric_t _get_file_size(FILE *f, bool save_pos)
 
     if (fseek(f, 0, SEEK_END) == -1)
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
     if (G_IS_ERROR(g = _get_position(f)))
@@ -66,7 +76,7 @@ static ugeneric_t _get_file_size(FILE *f, bool save_pos)
     {
         if (G_IS_ERROR(g = _set_position(f, saved_pos)))
         {
-            return G_ERROR_IO;
+            return g;
         }
     }
 
@@ -88,7 +98,7 @@ ugeneric_t ufile_get_size(const char *path)
 
     if (fclose(f) != 0)
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
     return g;
@@ -115,13 +125,13 @@ ugeneric_t ufile_read_to_string(const char *path)
     char *t = umalloc(fsize + 1);
     if (fread(t, 1, fsize, f) < fsize)
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
     t[fsize] = 0;
 
     if (fclose(f) != 0)
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
     return G_STR(t);
@@ -161,7 +171,7 @@ ugeneric_t ufile_open(const char *path, const char *mode)
     FILE *file = fopen(path, mode);
     if (!file)
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
     return G_PTR(file);
@@ -173,7 +183,7 @@ ugeneric_t ufile_close(FILE *f)
 
     if (0 != fclose(f))
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
     return G_NULL;
@@ -206,7 +216,8 @@ ugeneric_t ufile_reader_create(const char *path, size_t buffer_size)
 }
 
 /*
- * Read to memory provided by caller or to internal buffer if passed buffer is NULL.
+ * Read to memory provided by caller or to internal buffer
+ * if last argument is NULL.
  */
 ugeneric_t ufile_reader_read(ufile_reader_t *fr, size_t size, void *buffer)
 {
@@ -231,7 +242,7 @@ ugeneric_t ufile_reader_read(ufile_reader_t *fr, size_t size, void *buffer)
     {
         if (!feof(fr->file))
         {
-            return G_ERROR_IO;
+            return _error_handler(G_ERROR_IO, _error_handler_ctx);
         }
     }
     fr->read_offset += size;
@@ -242,19 +253,6 @@ ugeneric_t ufile_reader_read(ufile_reader_t *fr, size_t size, void *buffer)
 bool ufile_reader_has_next(const ufile_reader_t *fr)
 {
     return fr->read_offset < fr->file_size;
-}
-
-ugeneric_t ufile_reader_reset(ufile_reader_t *fr)
-{
-    UASSERT_INPUT(fr);
-
-    if (fseek(fr->file, 0, SEEK_SET) == -1)
-    {
-        return G_ERROR_IO;
-    }
-    fr->read_offset = 0;
-
-    return G_NULL;
 }
 
 ugeneric_t ufile_reader_get_file_size(ufile_reader_t *fr)
@@ -278,12 +276,13 @@ ugeneric_t ufile_reader_get_position(const ufile_reader_t *fr)
 ugeneric_t ufile_reader_set_position(ufile_reader_t *fr, size_t position)
 {
     UASSERT_INPUT(fr);
-    return _set_position(fr->file, position);
-}
 
-FILE *ufile_reader_get_file(const ufile_reader_t *fr)
-{
-    return fr->file;
+    ugeneric_t g = _set_position(fr->file, position);
+    if (!G_IS_ERROR(g))
+    {
+        fr->read_offset = position;
+    }
+    return g;
 }
 
 ugeneric_t ufile_reader_destroy(ufile_reader_t *fr)
@@ -323,7 +322,7 @@ ugeneric_t ufile_writer_write(ufile_writer_t *fw, umemchunk_t mchunk)
     // Short write, either EOF reached or I/O error.
     if (size < mchunk.size)
     {
-        return G_ERROR_IO;
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
     return G_NULL;
@@ -347,11 +346,6 @@ ugeneric_t ufile_writer_set_position(ufile_writer_t *fw, size_t position)
     return _set_position(fw->file, position);
 }
 
-FILE *ufile_writer_get_file(const ufile_writer_t *fw)
-{
-    return fw->file;
-}
-
 ugeneric_t ufile_writer_destroy(ufile_writer_t *fw)
 {
     ugeneric_t g = G_NULL;
@@ -362,4 +356,11 @@ ugeneric_t ufile_writer_destroy(ufile_writer_t *fw)
     }
 
     return g;
+}
+
+void libugeneric_set_file_error_handler(ufile_error_handler_t error_handler,
+                                        void *error_handler_ctx)
+{
+    _error_handler = error_handler;
+    _error_handler_ctx = error_handler_ctx;
 }

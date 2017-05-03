@@ -30,7 +30,7 @@ int main(void)
     uvector_t *v = uvector_create();
     uvector_set_destroyer(v, ufree);
 
-    libuugeneric_set_oom_handler(oom, v);
+    libugeneric_set_oom_handler(oom, v);
 
     while (true)
     {
