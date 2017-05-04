@@ -8,7 +8,7 @@
 - stack on top of vector, deque and list
 - queue on top of deque or list or circullar buffer (current implementation)
 - queue/dequeue iterators
-- implement multiset (on UBST)
+- implement multiset (on BST)
 - implement vector iterator
 - improve MCHUNK functions (load/store from/to file)
 - improve parse/serialize compatibilities with JSON spec

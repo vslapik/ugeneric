@@ -12,8 +12,8 @@ typedef enum {
     UDICT_BACKENDS_COUNT, // keep it last
 } udict_backend_t;
 
-void libuugeneric_udict_set_default_backend(udict_backend_t backend);
-udict_backend_t libuugeneric_udict_get_default_backend(void);
+void libugeneric_udict_set_default_backend(udict_backend_t backend);
+udict_backend_t libugeneric_udict_get_default_backend(void);
 
 typedef void         (*f_udict_set_destroyer)(void *d, void_dtr_t dtr);
 typedef void         (*f_udict_set_comparator)(void *d, void_cmp_t cmp);

@@ -56,14 +56,14 @@ static const udict_iterator_vtable_t _ubst_iterator_vtable = {
 
 static udict_backend_t _default_backend = UDICT_BACKEND_HTBL;
 
-void libuugeneric_udict_set_default_backend(udict_backend_t backend)
+void libugeneric_udict_set_default_backend(udict_backend_t backend)
 {
     UASSERT_INPUT(backend > UDICT_BACKEND_DEFAULT);
     UASSERT_INPUT(backend < UDICT_BACKENDS_COUNT);
     _default_backend = backend;
 }
 
-udict_backend_t libuugeneric_udict_get_default_backend(void)
+udict_backend_t libugeneric_udict_get_default_backend(void)
 {
     return _default_backend;
 }

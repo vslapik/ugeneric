@@ -154,7 +154,7 @@ void test_parse(void)
     };
 
     // We need to have the dict to be sorted
-    libuugeneric_udict_set_default_backend(UDICT_BACKEND_UBST_RB);
+    libugeneric_udict_set_default_backend(UDICT_BACKEND_UBST_RB);
 
     tcase_t *t = tc;
     while (t->in)
