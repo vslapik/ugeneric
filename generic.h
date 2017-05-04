@@ -61,9 +61,10 @@ typedef struct {
 } ugeneric_kv_t;
 
 typedef enum {
-    EC_OOM = 17,
-    EC_IO = 18,
-} exit_code_t;
+    UGENERIC_EXIT_OOM = 17,
+    UGENERIC_EXIT_IO = 18,
+    UGENERIC_EXIT_FORMAT = 19,
+} ugeneric_exit_code_t;
 
 static inline ugeneric_type_e ugeneric_get_type(ugeneric_t g)
 {
@@ -91,8 +92,6 @@ static inline ugeneric_type_e ugeneric_get_type(ugeneric_t g)
 #define G_DICT(v)      ((ugeneric_t){.value = {.ptr = (v)},             \
                                     .type.type = G_UDICT_T})
 
-#define G_MEMCHUNK(p, s) ((ugeneric_t){.value = {.ptr = (p)},           \
-                                    .type.size = s + G_MEMCHUNK_T})
 #define G_TRUE         ((ugeneric_t){.type.type = G_BOOL_T,             \
                                     .value = {.boolean = true}})
 #define G_FALSE        ((ugeneric_t){.type.type = G_BOOL_T,             \
@@ -107,8 +106,13 @@ static inline ugeneric_type_e ugeneric_get_type(ugeneric_t g)
 
 #define G_AS_MEMCHUNK_DATA(g) ((g).value.ptr)
 #define G_AS_MEMCHUNK_SIZE(g) ((g).type.size - G_MEMCHUNK_T)
-#define G_AS_MEMCHUNK(g) ((umemchunk_t){.data = G_AS_MEMCHUNK_DATA(g),      \
-                                     .size = G_AS_MEMCHUNK_SIZE(g)})
+
+static inline ugeneric_t  G_MEMCHUNK(void *ptr, size_t size) \
+                                     {return ((ugeneric_t){.value = {.ptr = (ptr)},
+                                                           .type.size = size + G_MEMCHUNK_T});}
+static inline umemchunk_t G_AS_MEMCHUNK(ugeneric_t g) \
+                                     {return (umemchunk_t){.data = G_AS_MEMCHUNK_DATA(g),
+                                                           .size = G_AS_MEMCHUNK_SIZE(g)};}
 
 static inline bool G_IS_ERROR(ugeneric_t g) {return g.type.type == G_ERROR_T;}
 static inline bool G_IS_NULL(ugeneric_t g)  {return g.type.type == G_NULL_T;}

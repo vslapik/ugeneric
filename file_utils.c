@@ -245,9 +245,8 @@ ugeneric_t ufile_reader_read(ufile_reader_t *fr, size_t size, void *buffer)
             return _error_handler(G_ERROR_IO, _error_handler_ctx);
         }
     }
-    fr->read_offset += size;
-
-    return buffer ? G_MEMCHUNK(buffer, size) : G_MEMCHUNK(fr->buffer, r);
+    fr->read_offset += r;
+    return (buffer ? G_MEMCHUNK(buffer, r) : G_MEMCHUNK(fr->buffer, r));
 }
 
 bool ufile_reader_has_next(const ufile_reader_t *fr)
