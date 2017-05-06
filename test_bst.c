@@ -111,8 +111,19 @@ void test_pop(void)
     ufree(buf.data);
 }
 
+bool _find_2(ugeneric_t k, ugeneric_t v, void *data)
+{
+    (void)v;
+    uvector_t *keys = data;
+    uvector_append(keys, k);
+
+    // Stop when 2 is found.
+    return (G_AS_INT(k) == 2) ? true : false;
+}
 void test_traverse(void)
 {
+    char *str;
+
     ubst_t *b = ubst_create();
     ubst_put(b, G_INT(1), G_INT(-1));
     ubst_put(b, G_INT(2), G_INT(-2));
@@ -151,7 +162,6 @@ void test_traverse(void)
     uvector_append(kv, G_VECTOR(keys));
     uvector_append(kv, G_VECTOR(values));
 
-    char *str;
     ubst_traverse(b, UBST_INORDER, cb, kv);
     str = uvector_as_str(keys); UASSERT_STR_EQ(str, inorder_keys); ufree(str);
     str = uvector_as_str(values); UASSERT_STR_EQ(str, inorder_values); ufree(str);
@@ -170,18 +180,31 @@ void test_traverse(void)
     uvector_clear(keys);
     uvector_clear(values);
 
-    //ubst_dump_to_dot(b, "UBST", false, stdout);
-    //ubst_pop(b, G_INT(123));
-
-    /*
-    ubst_dump_to_dot(b, "UBST2", false, stdout);
-    ubst_delete(b, G_INT(0));
-    ubst_dump_to_dot(b, "UBST3", false, stdout);
-    ubst_delete(b, G_INT(2));
-    ubst_dump_to_dot(b, "UBST4", false, stdout);
-    */
-
     uvector_destroy(kv);
+    ubst_destroy(b);
+
+    // Test iteration stop
+    b = _create_test_tree();
+    uvector_t *k = uvector_create();
+    ubst_traverse(b, UBST_POSTORDER, _find_2, k);
+    str = uvector_as_str(k);
+    UASSERT_STR_EQ(str, "[2]");
+    uvector_clear(k);
+    ufree(str);
+
+    ubst_traverse(b, UBST_PREORDER, _find_2, k);
+    str = uvector_as_str(k);
+    UASSERT_STR_EQ(str, "[3, 1, 2]");
+    uvector_clear(k);
+    ufree(str);
+
+    ubst_traverse(b, UBST_INORDER, _find_2, k);
+    str = uvector_as_str(k);
+    UASSERT_STR_EQ(str, "[1, 2]");
+    uvector_clear(k);
+    ufree(str);
+
+    uvector_destroy(k);
     ubst_destroy(b);
 }
 
@@ -256,7 +279,6 @@ void test_ubst_iterator(void)
 
 void test_rb_put(void)
 {
-
     ubst_t *b = ubst_create();
     ubst_put(b, G_INT(8), G_INT(8));
     ubst_put(b, G_INT(1), G_INT(1));
@@ -283,32 +305,6 @@ void test_rb_put(void)
     ubst_put(b, G_INT(-1000), G_INT(-1000));
     ubst_put(b, G_INT(-500), G_INT(-500));
 
-    ubst_destroy(b);
-
-}
-
-void test_rotate(void)
-{
-    ubst_t *b = ubst_create();
-
-    ubst_put(b, G_INT(5), G_INT(5));
-    ubst_put(b, G_INT(3), G_INT(3));
-    ubst_put(b, G_INT(2), G_INT(2));
-    ubst_put(b, G_INT(4), G_INT(4));
-    ubst_put(b, G_INT(6), G_INT(6));
-    rotate_right(b);
-//    ubst_dump_to_dot(b, "bst", false, stdout);
-    /*
-    rotate_right(b);
-    rotate_right(b);
-    rotate_right(b);
-    rotate_right(b);
-    rotate_left(b);
-    //rotate_right(b);
-    ubst_dump_to_dot(b, "bst", false, stdout);
-    //
-
-*/
     ubst_destroy(b);
 }
 
@@ -342,8 +338,6 @@ int main(int argc, char **argv)
     {
         goto cli_parse_error;
     }
-
-    //test_rotate();
 
     test_ubst_iterator();
     test_traverse();

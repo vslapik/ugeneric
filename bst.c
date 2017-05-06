@@ -19,6 +19,7 @@ struct ubst_node {
     ubst_color_t color;
 };
 typedef struct ubst_node ubst_node_t;
+typedef bool (*ubst_node_cb_t)(ubst_node_t *node, void *data);
 
 struct ubst_opaq {
     ubst_node_t *root;
@@ -35,8 +36,6 @@ struct ubst_iterator_opaq {
     ustack_t *stack;
     ubst_node_t *node;
 };
-
-typedef bool (*ubst_node_cb_t)(ubst_node_t *node, void *data);
 
 static ubst_balancing_mode_t _default_balancing_mode = UBST_NO_BALANCING;
 
@@ -178,56 +177,60 @@ void _ubst_nodes_destroy(ubst_t *b, ubst_node_t *node)
     }
 }
 
-void _iterate_kv(const ubst_node_t *node, ubst_traverse_mode_t mode,
+bool _iterate_kv(const ubst_node_t *node, ubst_traverse_mode_t mode,
                  ugeneric_kv_iter_t cb, void *data)
 {
     if (node)
     {
         if (mode == UBST_PREORDER)
         {
-            if (cb(node->k, node->v, data)) return;
-            _iterate_kv(node->left, mode, cb, data);
-            _iterate_kv(node->right, mode, cb, data);
+            if (cb(node->k, node->v, data)) return true;
+            if (_iterate_kv(node->left, mode, cb, data)) return true;
+            if (_iterate_kv(node->right, mode, cb, data)) return true;
         }
         else if (mode == UBST_POSTORDER)
         {
-            _iterate_kv(node->left, mode, cb, data);
-            _iterate_kv(node->right, mode, cb, data);
-            if (cb(node->k, node->v, data)) return;
+            if (_iterate_kv(node->left, mode, cb, data)) return true;
+            if (_iterate_kv(node->right, mode, cb, data)) return true;
+            if (cb(node->k, node->v, data)) return true;
         }
         else if (mode == UBST_INORDER)
         {
-            _iterate_kv(node->left, mode, cb, data);
-            if (cb(node->k, node->v, data)) return;
-            _iterate_kv(node->right, mode, cb, data);
+            if (_iterate_kv(node->left, mode, cb, data)) return true;
+            if (cb(node->k, node->v, data)) return true;
+            if (_iterate_kv(node->right, mode, cb, data)) return true;
         }
     }
+
+    return false;
 }
 
-void _iterate_nodes(ubst_node_t *node, ubst_traverse_mode_t mode,
+bool _iterate_nodes(ubst_node_t *node, ubst_traverse_mode_t mode,
                     ubst_node_cb_t cb, void *data)
 {
     if (node)
     {
         if (mode == UBST_PREORDER)
         {
-            if (cb(node, data)) return;
-            _iterate_nodes(node->left, mode, cb, data);
-            _iterate_nodes(node->right, mode, cb, data);
+            if (cb(node, data)) return true;
+            if (_iterate_nodes(node->left, mode, cb, data)) return true;
+            if (_iterate_nodes(node->right, mode, cb, data)) return true;
         }
         else if (mode == UBST_POSTORDER)
         {
-            _iterate_nodes(node->left, mode, cb, data);
-            _iterate_nodes(node->right, mode, cb, data);
-            if (cb(node, data)) return;
+            if (_iterate_nodes(node->left, mode, cb, data)) return true;
+            if (_iterate_nodes(node->right, mode, cb, data)) return true;
+            if (cb(node, data)) return true;
         }
         else if (mode == UBST_INORDER)
         {
-            _iterate_nodes(node->left, mode, cb, data);
-            if (cb(node, data)) return;
-            _iterate_nodes(node->right, mode, cb, data);
+            if (_iterate_nodes(node->left, mode, cb, data)) return true;
+            if (cb(node, data)) return true;
+            if (_iterate_nodes(node->right, mode, cb, data)) return true;
         }
     }
+
+    return false;
 }
 
 static inline bool _is_black(ubst_node_t *node)

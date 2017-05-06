@@ -6,6 +6,7 @@
 typedef struct ubst_opaq ubst_t;
 typedef struct ubst_iterator_opaq ubst_iterator_t;
 
+
 typedef enum {
     UBST_PREORDER,
     UBST_POSTORDER,
@@ -39,22 +40,21 @@ ugeneric_t ubst_get_max(ubst_t *b);
 size_t ubst_get_size(ubst_t *b);
 bool ubst_is_empty(ubst_t *b);
 void ubst_clear(ubst_t *b);
-ugeneric_t ubst_get_inorder_predecessor(ubst_t *b, ugeneric_t k, ugeneric_t vdef);
-ugeneric_t ubst_get_inorder_successor(ubst_t *b, ugeneric_t k, ugeneric_t vdef);
+ugeneric_t ubst_get_inorder_predecessor(ubst_t *b,
+                                        ugeneric_t k, ugeneric_t vdef);
+ugeneric_t ubst_get_inorder_successor(ubst_t *b,
+                                      ugeneric_t k, ugeneric_t vdef);
 bool ubst_is_balanced(const ubst_t *b);
 
 void ubst_traverse(const ubst_t *b, ubst_traverse_mode_t mode,
-                  ugeneric_kv_iter_t iter, void *data);
+                   ugeneric_kv_iter_t iter, void *data);
 void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values,
-                     FILE *out);
+                      FILE *out);
 
 char *ubst_as_str(const ubst_t *b);
 void ubst_serialize(const ubst_t *b, ubuffer_t *buf);
 int ubst_fprint(const ubst_t *b, FILE *out);
 int ubst_print(const ubst_t *b);
-
-void rotate_left(ubst_t *b);
-void rotate_right(ubst_t *b);
 
 ubst_iterator_t *ubst_iterator_create(const ubst_t *b);
 ugeneric_kv_t ubst_iterator_get_next(ubst_iterator_t *bi);
