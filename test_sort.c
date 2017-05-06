@@ -22,6 +22,8 @@ void test_sort(sort_func sort)
     long int f[] = {3, 2, 1, 0, -1};
     long int g[] = {-1};
     double h[] = {-0.7, 0.9, 0.3, -0.1};
+    long int i[] = {3, 2, 1};
+    char *j[] = {"3", "2", "1"};
 
     const char *va = "[2, 4]";
     const char *vb = "[1, 2, 4]";
@@ -31,6 +33,8 @@ void test_sort(sort_func sort)
     const char *vf = "[-1, 0, 1, 2, 3]";
     const char *vg = "[-1]";
     const char *vh = "[-0.7, -0.1, 0.3, 0.9]";
+    const char *vi = "[1, 2, 3]";
+    const char *vj = "[\"1\", \"2\", \"3\"]";
 
     #define check_on_array(arr, sort, type) {                          \
         /*puts("sorting "#arr); */                                     \
@@ -50,6 +54,8 @@ void test_sort(sort_func sort)
     check_on_array(f, sort, G_INT_T);
     check_on_array(g, sort, G_INT_T);
     check_on_array(h, sort, G_REAL_T);
+    check_on_array(i, sort, G_INT_T);
+    check_on_array(j, sort, G_CSTR_T);
 }
 
 void test_count_iversions()

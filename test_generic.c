@@ -13,7 +13,7 @@ void test_types(void)
     ugeneric_t g_integer = G_INT(333);
     ugeneric_t g_real = G_REAL(33.33);
     ugeneric_t g_string = G_STR(ustring_dup("hello ugeneric"));
-    ugeneric_t g_cstring = G_STR("hello constant ugeneric");
+    ugeneric_t g_cstring = G_CSTR("hello constant ugeneric");
     ugeneric_t g_size = G_SIZE(123412341);
     ugeneric_t g_null = G_NULL;
     ugeneric_t g_true = G_TRUE;

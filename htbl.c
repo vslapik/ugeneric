@@ -433,3 +433,33 @@ bool uhtbl_has_key(const uhtbl_t *h, ugeneric_t k)
     UASSERT_INPUT(h);
     return *_find_by_key(h, k) != NULL;
 }
+
+uvector_t *uhtbl_get_keys(const uhtbl_t *h)
+{
+    uhtbl_iterator_t *hi = uhtbl_iterator_create(h);
+    uvector_t *v = uvector_create();
+    uvector_reserve_capacity(v, h->number_of_records);
+    uvector_drop_data_ownership(v);
+    while (uhtbl_iterator_has_next(hi))
+    {
+        uvector_append(v, uhtbl_iterator_get_next(hi).k);
+    }
+    uhtbl_iterator_destroy(hi);
+
+    return v;
+}
+
+uvector_t *uhtbl_get_values(const uhtbl_t *h)
+{
+    uhtbl_iterator_t *hi = uhtbl_iterator_create(h);
+    uvector_t *v = uvector_create();
+    uvector_reserve_capacity(v, h->number_of_records);
+    uvector_drop_data_ownership(v);
+    while (uhtbl_iterator_has_next(hi))
+    {
+        uvector_append(v, uhtbl_iterator_get_next(hi).v);
+    }
+    uhtbl_iterator_destroy(hi);
+
+    return v;
+}

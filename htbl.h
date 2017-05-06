@@ -2,6 +2,7 @@
 #define UHTBL_H__
 
 #include "generic.h"
+#include "vector.h"
 
 typedef struct uhtbl_opaq uhtbl_t;
 typedef struct uhtbl_iterator_opaq uhtbl_iterator_t;
@@ -34,4 +35,6 @@ bool uhtbl_iterator_has_next(const uhtbl_iterator_t *hi);
 void uhtbl_iterator_reset(uhtbl_iterator_t *hi);
 void uhtbl_iterator_destroy(uhtbl_iterator_t *hi);
 
+uvector_t *uhtbl_get_keys(const uhtbl_t *h);
+uvector_t *uhtbl_get_values(const uhtbl_t *h);
 #endif

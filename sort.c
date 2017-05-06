@@ -11,64 +11,9 @@ static size_t _merge(ugeneric_t *lbase, size_t lsize, ugeneric_t *rbase,
 static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb,
                           void_cmp_t cmp);
 
-size_t count_inversions(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
-{
-    UASSERT_INPUT(base);
-
-    size_t inv = 0;
-    if (nmemb > 1)
-    {
-        ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
-        inv = _merge_sort(base, aux, nmemb, cmp);
-        ufree(aux);
-    }
-
-    return inv;
-}
-
-void quick_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
-{
-    UASSERT_INPUT(base);
-
-    if (nmemb)
-    {
-        _quick_sort(base, 0, nmemb - 1, cmp);
-    }
-}
-
-void selection_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
-{
-    UASSERT_INPUT(base);
-    (void)nmemb;
-    (void)cmp;
-    UASSERT(0);
-}
-
-void merge_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
-{
-    UASSERT_INPUT(base);
-
-    if (nmemb > 1)
-    {
-        ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
-         _merge_sort(base, aux, nmemb, cmp);
-        ufree(aux);
-    }
-}
-
-void insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
-{
-    UASSERT_INPUT(base);
-
-    if (nmemb > 1)
-    {
-        _insertion_sort(base, nmemb, cmp);
-    }
-}
-
 static void _quick_sort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
 {
-    if (r > l)
+    if (l < r)
     {
         size_t p = _partition(base, l, r, cmp);
         _quick_sort(base, l, (p > 0) ? p - 1 : 0, cmp);
@@ -160,4 +105,58 @@ static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb, void_
     }
 
     return inv;
+}
+size_t count_inversions(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
+{
+    UASSERT_INPUT(base);
+
+    size_t inv = 0;
+    if (nmemb > 1)
+    {
+        ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
+        inv = _merge_sort(base, aux, nmemb, cmp);
+        ufree(aux);
+    }
+
+    return inv;
+}
+
+void quick_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
+{
+    UASSERT_INPUT(base);
+
+    if (nmemb)
+    {
+        _quick_sort(base, 0, nmemb - 1, cmp);
+    }
+}
+
+void selection_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
+{
+    UASSERT_INPUT(base);
+    (void)nmemb;
+    (void)cmp;
+    UASSERT(0);
+}
+
+void merge_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
+{
+    UASSERT_INPUT(base);
+
+    if (nmemb > 1)
+    {
+        ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
+         _merge_sort(base, aux, nmemb, cmp);
+        ufree(aux);
+    }
+}
+
+void insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
+{
+    UASSERT_INPUT(base);
+
+    if (nmemb > 1)
+    {
+        _insertion_sort(base, nmemb, cmp);
+    }
 }

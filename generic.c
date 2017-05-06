@@ -31,14 +31,19 @@ void ugeneric_swap(ugeneric_t *g1, ugeneric_t *g2)
 
 int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
+    double f1, f2;
+
     if (G_IS_ERROR(g1) || G_IS_ERROR(g2))
     {
         UABORT("attempt to compare G_ERROR object");
     }
 
-    // Generics of different types are always not equal.
-    int ret = (ugeneric_get_type(g1) - ugeneric_get_type(g2));
-    double f1, f2;
+    // Generics of different types are always not equal except G_STR and G_CSTR.
+    int ret = 0;
+    if (!(G_IS_STRING(g1) && G_IS_STRING(g2)))
+    {
+        ret = (ugeneric_get_type(g1) - ugeneric_get_type(g2));
+    }
 
     if (ret == 0)
     {
