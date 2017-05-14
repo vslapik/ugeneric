@@ -19,16 +19,6 @@ static inline void _skip_whitespaces(const char **str)
     }
 }
 
-void ugeneric_swap(ugeneric_t *g1, ugeneric_t *g2)
-{
-    UASSERT_INPUT(g1);
-    UASSERT_INPUT(g2);
-
-    ugeneric_t t = *g2;
-    *g2 = *g1;
-    *g1 = t;
-}
-
 int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
     double f1, f2;
@@ -47,7 +37,7 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 
     if (ret == 0)
     {
-        switch (ugeneric_get_type(g1))
+        switch (g1.type.type)
         {
             case G_NULL_T:
                 ret = 0;
@@ -95,19 +85,16 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 UASSERT(0); // not yet implemented
                 break;
 
-            case G_MEMCHUNK_T:
-                UASSERT(G_AS_MEMCHUNK_SIZE(g1) == G_AS_MEMCHUNK_SIZE(g2));
-                ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
-                             G_AS_MEMCHUNK_SIZE(g1));
-                break;
-
             case G_STR_T:
             case G_CSTR_T:
                 ret = strcmp(G_AS_STR(g1), G_AS_STR(g2));
                 break;
 
-            default:
-                UASSERT(0);
+            default: // G_MEMCHUNK_T:
+                UASSERT(G_AS_MEMCHUNK_SIZE(g1) == G_AS_MEMCHUNK_SIZE(g2));
+                ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
+                             G_AS_MEMCHUNK_SIZE(g1));
+                break;
         }
     }
 
@@ -118,7 +105,7 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
 {
     double d;
 
-    switch (ugeneric_get_type(g))
+    switch (g.type.type)
     {
         case G_PTR_T:
             UASSERT_MSG(dtr, "don't know how to destroy void pointer");
@@ -149,10 +136,6 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
             udict_destroy(G_AS_PTR(g));
             break;
 
-        case G_MEMCHUNK_T:
-            ufree(G_AS_MEMCHUNK_DATA(g));
-            break;
-
         case G_STR_T:
             ufree(G_AS_STR(g));
             break;
@@ -161,8 +144,9 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
             UABORT("attempt to destroy G_ERROR object");
             break;
 
-        default:
-            UASSERT(0);
+        default: // G_MEMCHUNK_T:
+            ufree(G_AS_MEMCHUNK_DATA(g));
+            break;
     }
 }
 
@@ -192,7 +176,7 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
     void *p;
     double d;
 
-    switch (ugeneric_get_type(g))
+    switch (g.type.type)
     {
         case G_PTR_T:
             UASSERT_MSG(cpy, "don't know how to copy void pointer");
@@ -221,13 +205,6 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
             ret = G_DICT(udict_deep_copy(G_AS_PTR(g)));
             break;
 
-        case G_MEMCHUNK_T:
-            size = G_AS_MEMCHUNK_SIZE(g);
-            p = umalloc(size);
-            memcpy(p, G_AS_MEMCHUNK_DATA(g), size);
-            ret = G_MEMCHUNK(p, size);
-            break;
-
         case G_STR_T:
         case G_CSTR_T:
             ret = G_STR(ustring_dup(G_AS_STR(g)));
@@ -237,8 +214,12 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
             UABORT("attempt to copy G_ERROR object");
             break;
 
-        default:
-            UASSERT(0);
+        default: // G_MEMCHUNK_T:
+            size = G_AS_MEMCHUNK_SIZE(g);
+            p = umalloc(size);
+            memcpy(p, G_AS_MEMCHUNK_DATA(g), size);
+            ret = G_MEMCHUNK(p, size);
+            break;
     }
 
     return ret;
@@ -277,7 +258,7 @@ void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer
     char tmp[32];
     umemchunk_t m;
 
-    switch (ugeneric_get_type(g))
+    switch (g.type.type)
     {
         case G_NULL_T:
             ubuffer_append_string(buf, "null");
@@ -339,10 +320,6 @@ void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer
             udict_serialize(G_AS_PTR(g), buf);
             break;
 
-        case G_MEMCHUNK_T:
-            umemchunk_serialize(G_AS_MEMCHUNK(g), buf);
-            break;
-
         case G_BOOL_T:
             ubuffer_append_string(buf, G_AS_BOOL(g) ? "true" : "false");
             break;
@@ -351,8 +328,9 @@ void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer
             UABORT("attempt to serialize G_ERROR object");
             break;
 
-        default:
-            UASSERT(0);
+        default: // G_MEMCHUNK_T:
+            umemchunk_serialize(G_AS_MEMCHUNK(g), buf);
+            break;
     }
 }
 
@@ -617,24 +595,24 @@ ugeneric_t ugeneric_parse(const char *str)
     return g;
 }
 
-void ugeneric_array_reverse(ugeneric_t *base, size_t nmembs, size_t l, size_t r)
+void ugeneric_array_reverse(ugeneric_t *base, size_t nmemb, size_t l, size_t r)
 {
-    UASSERT_INPUT(l < nmembs);
-    UASSERT_INPUT(r < nmembs);
+    UASSERT_INPUT(l < nmemb);
+    UASSERT_INPUT(r < nmemb);
     UASSERT_INPUT(l <= r); // when l == r do nothing
 
     while (l < r)
         ugeneric_swap(&base[l++], &base[r--]);
 }
 
-bool ugeneric_next_permutation(ugeneric_t *base, size_t nmembs, void_cmp_t cmp)
+bool ugeneric_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
     UASSERT_INPUT(base);
 
-    if (!nmembs)
+    if (!nmemb)
         return false;
 
-    size_t i = nmembs - 1;
+    size_t i = nmemb - 1;
     while (i > 0 && ugeneric_compare(base[i - 1], base[i], cmp) >= 0)
     {
        i--;
@@ -645,14 +623,14 @@ bool ugeneric_next_permutation(ugeneric_t *base, size_t nmembs, void_cmp_t cmp)
         return false;
     }
 
-    size_t j = nmembs - 1;
+    size_t j = nmemb - 1;
     while (ugeneric_compare(base[j], base[i - 1], cmp) <= 0)
     {
         j--;
     }
 
     ugeneric_swap(&base[i - 1], &base[j]);
-    ugeneric_array_reverse(base, nmembs, i, nmembs - 1);
+    ugeneric_array_reverse(base, nmemb, i, nmemb - 1);
 
     return true;
 }
@@ -682,12 +660,12 @@ static size_t _bsearch(ugeneric_t base[], size_t l, size_t r,
     }
 }
 
-size_t ugeneric_bsearch(ugeneric_t *base, size_t nmembs, ugeneric_t e,
+size_t ugeneric_bsearch(ugeneric_t *base, size_t nmemb, ugeneric_t e,
                        void_cmp_t cmp)
 {
     UASSERT_INPUT(base);
-    UASSERT_INPUT(nmembs < SIZE_MAX);
-    return (nmembs) ? _bsearch(base, 0, nmembs - 1, e, cmp) : SIZE_MAX;
+    UASSERT_INPUT(nmemb < SIZE_MAX);
+    return (nmemb) ? _bsearch(base, 0, nmemb - 1, e, cmp) : SIZE_MAX;
 }
 
 /*
@@ -742,7 +720,7 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
     void *data;
     size_t size;
 
-    switch (ugeneric_get_type(g))
+    switch (g.type.type)
     {
         case G_NULL_T:
             return 0;
@@ -756,7 +734,6 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
             size = strlen(G_AS_STR(g));
             break;
 
-
         case G_INT_T:
             return G_AS_INT(g);
 
@@ -768,22 +745,18 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
         case G_SIZE_T:
             return G_AS_SIZE(g);
 
-        case G_MEMCHUNK_T:
-            data = G_AS_MEMCHUNK_DATA(g);
-            size = G_AS_MEMCHUNK_SIZE(g);
-            break;
-
         case G_BOOL_T:
             return G_AS_BOOL(g);
 
-        default:
-            UASSERT(0);
+        default: // G_MEMCHUNK_T:
+            data = G_AS_MEMCHUNK_DATA(g);
+            size = G_AS_MEMCHUNK_SIZE(g);
+            break;
     }
 
     UASSERT(size < INT_MAX);
     return _hash(data, size, 0xbaadf00d);
 }
-
 
 /*
  * Generate random number in range [l, h].

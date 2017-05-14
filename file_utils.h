@@ -21,6 +21,7 @@ ugeneric_t ufile_open(const char *path, const char *mode);
 ugeneric_t ufile_close(FILE *f);
 ugeneric_t ufile_get_size(const char *path);
 ugeneric_t ufile_read_to_string(const char *path);
+ugeneric_t ufile_read_to_memchunk(const char *path);
 ugeneric_t ufile_read_lines(const char *path);
 
 ugeneric_t ufile_reader_create(const char *path, size_t buffer_size);

@@ -130,6 +130,13 @@ static inline bool G_IS_VECTOR(ugeneric_t g){return g.type.type == G_VECTOR_T;}
 static inline bool G_IS_DICT(ugeneric_t g)  {return g.type.type == G_UDICT_T;}
 static inline bool G_IS_MEMCHUNK(ugeneric_t g){return g.type.type > G_MEMCHUNK_T;}
 
+static inline void ugeneric_swap(ugeneric_t *g1, ugeneric_t *g2)
+{
+    ugeneric_t t = *g2;
+    *g2 = *g1;
+    *g1 = t;
+}
+
 typedef int (*void_cmp_t)(const void *ptr1, const void *ptr2);
 typedef void *(*void_cpy_t)(const void *ptr);
 typedef void (*void_dtr_t)(void *ptr);
@@ -153,9 +160,9 @@ int ugeneric_print(ugeneric_t g, void_s8r_t void_serializer);
 
 ugeneric_t ugeneric_parse(const char *str);
 
-void ugeneric_array_reverse(ugeneric_t *base, size_t nmembs, size_t l, size_t r);
-bool ugeneric_next_permutation(ugeneric_t *base, size_t nmembs, void_cmp_t cmp);
-size_t ugeneric_bsearch(ugeneric_t *base, size_t nmembs, ugeneric_t e,
+void ugeneric_array_reverse(ugeneric_t *base, size_t nmemb, size_t l, size_t r);
+bool ugeneric_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
+size_t ugeneric_bsearch(ugeneric_t *base, size_t nmemb, ugeneric_t e,
                        void_cmp_t cmp);
 
 int random_from_range(int start, int stop);

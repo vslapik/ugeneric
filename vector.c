@@ -386,7 +386,20 @@ void uvector_reverse(uvector_t *v, size_t l, size_t r)
 void uvector_sort(uvector_t *v)
 {
     UASSERT_INPUT(v);
-    quick_sort(v->cells, v->size, v->cmp);
+    hybrid_sort(v->cells, v->size, v->cmp);
+}
+
+bool uvector_is_sorted(const uvector_t *v)
+{
+    for (size_t i = 0; i < v->size - 1; i++)
+    {
+        if (ugeneric_compare(v->cells[i], v->cells[i + 1], v->cmp) > 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 uvector_t *uvector_copy(const uvector_t *v)

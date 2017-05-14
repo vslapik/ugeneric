@@ -13,30 +13,58 @@ static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb,
 
 static void _quick_sort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
 {
-    if (l < r)
+    if (r - l > 1) // terminate if [l, r) defines a single element
     {
-        size_t p = _partition(base, l, r, cmp);
-        _quick_sort(base, l, (p > 0) ? p - 1 : 0, cmp);
-        _quick_sort(base, (p < r) ? p + 1 : r, r, cmp);
+        size_t pi = _partition(base, l, r, cmp);
+        _quick_sort(base, l, pi, cmp);
+        _quick_sort(base, pi + 1, r, cmp);
     }
 }
 
 static size_t _partition(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
 {
-    ugeneric_t p = base[r];
-    size_t pi = l;
+    /* Choosing a good pivot is a black magic, use median-of-three pivoting
+     * here, attributes to Robert Sedgewick.
+     */
+    size_t i = l;
+    size_t j = r - 1;
+    size_t m = l + (r - l) / 2;
 
-    for (size_t i = l; i < r; i++)
+    if (ugeneric_compare(base[m], base[i], cmp) < 0)
     {
-        if (ugeneric_compare(base[i], p, cmp) <= 0)
+        ugeneric_swap(base + m, base + i);
+    }
+    if (ugeneric_compare(base[j], base[m], cmp) < 0)
+    {
+        ugeneric_swap(base + m, base + j);
+        if (ugeneric_compare(base[m], base[i], cmp) < 0)
         {
-            ugeneric_swap(&base[pi], &base[i]);
-            pi++;
+            ugeneric_swap(base + m, base + i);
         }
     }
-    ugeneric_swap(&base[pi], &base[r]);
+    ugeneric_t p = base[m];
+    i++;
+    j--;
 
-    return pi;
+    for (;;)
+    {
+        while (ugeneric_compare(base[i], p, cmp) < 0)
+        {
+            i++;
+        }
+        while (ugeneric_compare(p, base[j], cmp) < 0)
+        {
+            j--;
+        }
+
+        if (i >= j)
+        {
+            return j;
+        }
+        ugeneric_swap(base + i, base + j);
+        i++;
+        j--;
+    }
 }
 
 static size_t _insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
@@ -59,8 +87,8 @@ static size_t _insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
     return inv;
 }
 
-static size_t _merge(ugeneric_t *lbase, size_t lsize, ugeneric_t *rbase, size_t rsize,
-                     ugeneric_t *aux, void_cmp_t cmp)
+static size_t _merge(ugeneric_t *lbase, size_t lsize, ugeneric_t *rbase,
+                     size_t rsize, ugeneric_t *aux, void_cmp_t cmp)
 {
     size_t i, j, k, inv;
 
@@ -90,7 +118,8 @@ static size_t _merge(ugeneric_t *lbase, size_t lsize, ugeneric_t *rbase, size_t 
     return inv;
 }
 
-static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb, void_cmp_t cmp)
+static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb,
+                          void_cmp_t cmp)
 {
     size_t inv = 0;
     size_t j;
@@ -106,6 +135,7 @@ static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb, void_
 
     return inv;
 }
+
 size_t count_inversions(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
     UASSERT_INPUT(base);
@@ -127,7 +157,7 @@ void quick_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 
     if (nmemb)
     {
-        _quick_sort(base, 0, nmemb - 1, cmp);
+      _quick_sort(base, 0, nmemb, cmp);
     }
 }
 
@@ -160,3 +190,29 @@ void insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
         _insertion_sort(base, nmemb, cmp);
     }
 }
+
+static void _hsort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
+{
+    /* Uses quick sort as base algorithm, switches to insertion
+     * sort on small arrays which is expected to be faster.
+     */
+    if (r - l > 1) // terminate if [l, r) defines a single element
+    {
+        if ((r - l) >= USORT_SWITCH_METHOD_THRESHOLD)
+        {
+            size_t pi = _partition(base, l, r, cmp);
+            _hsort(base, l, pi, cmp);
+            _hsort(base, pi + 1, r, cmp);
+        }
+        else
+        {
+            _insertion_sort(base + l, r - l, cmp);
+        }
+    }
+}
+
+void hybrid_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
+{
+    _hsort(base, 0, nmemb, cmp);
+}
+

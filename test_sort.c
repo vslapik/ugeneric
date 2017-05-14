@@ -24,6 +24,11 @@ void test_sort(sort_func sort)
     double h[] = {-0.7, 0.9, 0.3, -0.1};
     long int i[] = {3, 2, 1};
     char *j[] = {"3", "2", "1"};
+    long int k[] = {1, 2};
+    long int l[] = {2, 1};
+    long int m[] = {1, 2, 3};
+    long int n[] = {2};
+    long int o[] = {2, 2, 2, 2, 1};
 
     const char *va = "[2, 4]";
     const char *vb = "[1, 2, 4]";
@@ -35,6 +40,11 @@ void test_sort(sort_func sort)
     const char *vh = "[-0.7, -0.1, 0.3, 0.9]";
     const char *vi = "[1, 2, 3]";
     const char *vj = "[\"1\", \"2\", \"3\"]";
+    const char *vk = "[1, 2]";
+    const char *vl = "[1, 2]";
+    const char *vm = "[1, 2, 3]";
+    const char *vn = "[2]";
+    const char *vo = "[1, 2, 2, 2, 2]";
 
     #define check_on_array(arr, sort, type) {                          \
         /*puts("sorting "#arr); */                                     \
@@ -42,6 +52,7 @@ void test_sort(sort_func sort)
         sort(uvector_get_cells(v), ARR_LEN(arr), NULL);                \
         char *str = uvector_as_str(v);                                 \
         UASSERT_STR_EQ(str, v##arr);                                   \
+        UASSERT(uvector_is_sorted(v));                                 \
         uvector_destroy(v);                                            \
         ufree(str);                                                    \
     }
@@ -56,6 +67,11 @@ void test_sort(sort_func sort)
     check_on_array(h, sort, G_REAL_T);
     check_on_array(i, sort, G_INT_T);
     check_on_array(j, sort, G_CSTR_T);
+    check_on_array(k, sort, G_INT_T);
+    check_on_array(l, sort, G_INT_T);
+    check_on_array(m, sort, G_INT_T);
+    check_on_array(n, sort, G_INT_T);
+    check_on_array(o, sort, G_INT_T);
 }
 
 void test_count_iversions()
@@ -96,10 +112,24 @@ void test_count_iversions()
 int main(void)
 {
     test_count_iversions();
-    test_sort(quick_sort);
     test_sort(merge_sort);
     test_sort(insertion_sort);
+    test_sort(quick_sort);
+    test_sort(hybrid_sort);
     //test_sort(selection_sort);
+
+    /*
+    const char *path = "test.file";
+    ugeneric_t g = ufile_read_to_memchunk(path);
+    UASSERT_NO_ERROR(g);
+
+    size_t asize = G_AS_MEMCHUNK_SIZE(g);
+    void *adata = G_AS_MEMCHUNK_DATA(g);
+    uvector_t *v = uvector_create_from_array(adata, asize, 1, G_INT_T);
+    hybrid_sort(uvector_get_cells(v), asize, NULL);
+    uvector_destroy(v);
+    ufree(adata);
+    */
 }
 
 void print_array(ugeneric_t *base, size_t nmemb)

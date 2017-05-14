@@ -104,7 +104,7 @@ ugeneric_t ufile_get_size(const char *path)
     return g;
 }
 
-ugeneric_t ufile_read_to_string(const char *path)
+ugeneric_t ufile_read_to_memchunk(const char *path)
 {
     UASSERT_INPUT(path);
 
@@ -134,7 +134,17 @@ ugeneric_t ufile_read_to_string(const char *path)
         return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
-    return G_STR(t);
+    return G_MEMCHUNK(t, fsize);
+}
+
+ugeneric_t ufile_read_to_string(const char *path)
+{
+    ugeneric_t g = ufile_read_to_memchunk(path);
+    if (G_IS_ERROR(g))
+    {
+        return g;
+    }
+    return G_STR(G_AS_MEMCHUNK_DATA(g));
 }
 
 ugeneric_t ufile_read_lines(const char *path)
