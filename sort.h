@@ -3,7 +3,7 @@
 
 #include "generic.h"
 
-#define USORT_SWITCH_METHOD_THRESHOLD 4
+#define USORT_HYBRID_THRESHOLD 4
 
 void quick_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
 void merge_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);

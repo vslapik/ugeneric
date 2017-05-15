@@ -73,15 +73,15 @@ static size_t _insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 
     for (size_t i = 1; i < nmemb; i++)
     {
-        int j = i - 1;
+        size_t j = i;
         ugeneric_t t = base[i];
-        while (j >= 0 && (ugeneric_compare(base[j], t, cmp) > 0))
+        while (j > 0 && (ugeneric_compare(base[j - 1], t, cmp) > 0))
         {
-            base[j + 1] = base[j];
+            base[j] = base[j - 1];
             inv++;
             j--;
         }
-        base[j + 1] = t;
+        base[j] = t;
     }
 
     return inv;
@@ -136,6 +136,26 @@ static size_t _merge_sort(ugeneric_t *base, ugeneric_t *aux, size_t nmemb,
     return inv;
 }
 
+static void _hsort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
+{
+    /* Uses quick sort as base algorithm, switches to insertion
+     * sort on small arrays which is expected to be faster.
+     */
+    if (r - l > 1) // terminate if [l, r) defines a single element
+    {
+        if ((r - l) > USORT_HYBRID_THRESHOLD)
+        {
+            size_t pi = _partition(base, l, r, cmp);
+            _hsort(base, l, pi, cmp);
+            _hsort(base, pi + 1, r, cmp);
+        }
+        else
+        {
+            _insertion_sort(base + l, r - l, cmp);
+        }
+    }
+}
+
 size_t count_inversions(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
     UASSERT_INPUT(base);
@@ -164,9 +184,19 @@ void quick_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 void selection_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
     UASSERT_INPUT(base);
-    (void)nmemb;
-    (void)cmp;
-    UASSERT(0);
+
+    for (size_t i = 0; i < nmemb - 1; i++) // the very last element intentionally omitted
+    {
+        size_t min = i;
+        for (size_t j = i + 1; j < nmemb; j++)
+        {
+            if (ugeneric_compare(base[min], base[j], cmp) > 0)
+            {
+                min = j;
+            }
+        }
+        ugeneric_swap(base + min, base + i);
+    }
 }
 
 void merge_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
@@ -191,28 +221,7 @@ void insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
     }
 }
 
-static void _hsort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
-{
-    /* Uses quick sort as base algorithm, switches to insertion
-     * sort on small arrays which is expected to be faster.
-     */
-    if (r - l > 1) // terminate if [l, r) defines a single element
-    {
-        if ((r - l) >= USORT_SWITCH_METHOD_THRESHOLD)
-        {
-            size_t pi = _partition(base, l, r, cmp);
-            _hsort(base, l, pi, cmp);
-            _hsort(base, pi + 1, r, cmp);
-        }
-        else
-        {
-            _insertion_sort(base + l, r - l, cmp);
-        }
-    }
-}
-
 void hybrid_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
     _hsort(base, 0, nmemb, cmp);
 }
-
