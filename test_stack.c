@@ -2,6 +2,7 @@
 #include <string.h>
 #include "stack.h"
 #include "asserts.h"
+#include "ut_utils.h"
 
 #define N 129
 
@@ -87,7 +88,9 @@ void test_uqueue_on_two_stacks(void)
         */
 }
 
-int calc(const char *exp)
+// Dijkstra's shunting-yard algo, only integers (one digit wide), no
+// operator precedence (should be explicitely defined by braces).
+long int calc(const char *exp)
 {
     int a1;
     int a2;
@@ -104,31 +107,39 @@ int calc(const char *exp)
             case '-':
             case '/':
             case '*':
+            case '(':
                 ustack_push(op_stack, G_INT(exp[i]));
                 break;
             case ' ':
                 break;
             case ')':
-                a1 = G_AS_INT(ustack_pop(arg_stack)) - 0x30;
-                a2 = G_AS_INT(ustack_pop(arg_stack)) - 0x30;
-                op = G_AS_INT(ustack_pop(op_stack));
-                switch (op)
+                while (G_AS_INT(ustack_peek(op_stack)) != '(')
                 {
-                    case '+':
-                        ustack_push(arg_stack, G_INT((a1 + a2)));
-                        break;
-                    case '-':
-                        ustack_push(arg_stack, G_INT((a1 - a2)));
-                        break;
-                    case '/':
-                        ustack_push(arg_stack, G_INT((a1 / a2)));
-                        break;
-                    case '*':
-                        ustack_push(arg_stack, G_INT((a1 * a2)));
-                        break;
+                    a1 = G_AS_INT(ustack_pop(arg_stack));
+                    a2 = G_AS_INT(ustack_pop(arg_stack));
+                    op = G_AS_INT(ustack_pop(op_stack));
+                    switch (op)
+                    {
+                        case '+':
+                            ustack_push(arg_stack, G_INT((a1 + a2)));
+                            break;
+                        case '-':
+                            ustack_push(arg_stack, G_INT((a1 - a2)));
+                            break;
+                        case '/':
+                            ustack_push(arg_stack, G_INT((a1 / a2)));
+                            break;
+                        case '*':
+                            ustack_push(arg_stack, G_INT((a1 * a2)));
+                            break;
+                        default:
+                            UABORT("parse error");
+                    }
                 }
+                ustack_pop(op_stack);
+                break;
             default:
-                continue;
+                ustack_push(arg_stack, G_INT(exp[i] - '0'));
         }
     }
     while (!ustack_is_empty(op_stack))
@@ -150,18 +161,28 @@ int calc(const char *exp)
             case '*':
                 ustack_push(arg_stack, G_INT((a1 * a2)));
                 break;
+            default:
+                UABORT("parse error");
         }
     }
 
+    ugeneric_t result = ustack_pop(arg_stack);
     ustack_destroy(arg_stack);
     ustack_destroy(op_stack);
 
-    return G_AS_INT(ustack_pop(arg_stack));
+    return G_AS_INT(result);
 }
 
 void test_calc(void)
 {
-    //printf("%d", calc("2 + 3"));
+    #define C(exp) printf("%s = %ld\n", #exp, calc(exp));
+    //printf("%ld\n", calc("2 + 3"));
+    //C("2 + 3");
+    //C("2 * 3");
+    //C("(2 * 3) + 4");
+    //C("(2 + 1 + 1) * 3");
+    //C("((2 + 1 + 1) * 3) + (1 * 2)");
+    UASSERT_INT_EQ(calc("((2 + 1 + 1) * 3) + (1 * 2)"), 14);
 }
 
 void test_ustack_api(void)
