@@ -15,6 +15,7 @@ struct uvector_opaq {
     void_cmp_t cmp;
     void_dtr_t dtr;
     void_s8r_t void_serializer;
+    ugeneric_sorter_t sorter;
 };
 
 static uvector_t *_vcpy(const uvector_t *v, bool deep)
@@ -54,6 +55,7 @@ static uvector_t *_allocate_vector(void)
     v->cmp = NULL;
     v->dtr = NULL;
     v->void_serializer = NULL;
+    v->sorter = hybrid_sort;
 
     return v;
 }
@@ -386,7 +388,7 @@ void uvector_reverse(uvector_t *v, size_t l, size_t r)
 void uvector_sort(uvector_t *v)
 {
     UASSERT_INPUT(v);
-    hybrid_sort(v->cells, v->size, v->cmp);
+    v->sorter(v->cells, v->size, v->cmp);
 }
 
 bool uvector_is_sorted(const uvector_t *v)

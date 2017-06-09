@@ -143,6 +143,7 @@ typedef void (*void_dtr_t)(void *ptr);
 typedef char *(*void_s8r_t)(const void *ptr, size_t *output_size);
 typedef size_t (*void_hasher_t)(const void *ptr);
 typedef bool (*ugeneric_kv_iter_t)(ugeneric_t k, ugeneric_t v, void *data);
+typedef void(*ugeneric_sorter_t)(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
 
 ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy);
 int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp);

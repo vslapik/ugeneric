@@ -195,6 +195,7 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
             {
                 UABORT("copying NAN");
             }
+            ret = g;
             break;
 
         case G_VECTOR_T:

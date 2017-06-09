@@ -141,8 +141,7 @@ static void _rehash(uhtbl_t *h)
 uhtbl_t *uhtbl_create(void)
 {
     uhtbl_t *h = umalloc(sizeof(*h));
-    h->buckets = ucalloc(HTBL_INITIAL_NUM_OF_BUCKETS,
-                         sizeof(h->buckets[0]));
+    h->buckets = ucalloc(HTBL_INITIAL_NUM_OF_BUCKETS, sizeof(h->buckets[0]));
     h->number_of_buckets = HTBL_INITIAL_NUM_OF_BUCKETS;
     h->number_of_records = 0;
     h->is_data_owner = true;

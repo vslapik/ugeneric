@@ -9,10 +9,7 @@
 - queue on top of deque or list or circullar buffer (current implementation)
 - queue/dequeue iterators
 - implement multiset (on BST)
-- implement vector iterator
-- improve MCHUNK functions (load/store from/to file)
 - improve parse/serialize compatibilities with JSON spec
-- implement vector vtable for different sort methods
 - different types of assert (input check, logic erros, internal sanity checks) with option to disable them
 - verify all getters/settes naming, should be in form xxx_{action}[_noun]
 - mutating and const iterators for list/vector
@@ -29,3 +26,4 @@
 - overwrite mode for queue
 - implement missing methods for void* data management for all containers (only vector contains all as for now)
 - ugeneric_serialize for void*
+- add UTs for file writers (deal with fs garbage)

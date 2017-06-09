@@ -48,7 +48,7 @@ static ugeneric_t _set_position(FILE *f, size_t position)
 
 static ugeneric_t _get_file_size(FILE *f, bool save_pos)
 {
-    long saved_pos;
+    long saved_pos = 0; // just to shut up stupid gcc warning
     long fsize;
     ugeneric_t g;
 
@@ -102,6 +102,32 @@ ugeneric_t ufile_get_size(const char *path)
     }
 
     return g;
+}
+
+ugeneric_t ufile_create_from_memchunk(const char *path, umemchunk_t mchunk)
+{
+    UASSERT_INPUT(path);
+
+    ugeneric_t g;
+    if (G_IS_ERROR(g = ufile_open(path, "w")))
+    {
+        return g;
+    }
+    FILE *f = G_AS_PTR(g);
+    size_t size = fwrite(mchunk.data, 1, mchunk.size, f);
+
+    // Short write, either EOF reached or I/O error.
+    if (size < mchunk.size)
+    {
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
+    }
+
+    if (fclose(f) != 0)
+    {
+        return _error_handler(G_ERROR_IO, _error_handler_ctx);
+    }
+
+    return G_NULL;
 }
 
 ugeneric_t ufile_read_to_memchunk(const char *path)

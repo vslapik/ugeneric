@@ -895,6 +895,7 @@ bool _dump2dot(ubst_node_t *node, void *data)
 
     return false;
 }
+
 void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values, FILE *out)
 {
     UASSERT_INPUT(b);
@@ -906,13 +907,4 @@ void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values, FILE 
     _dump2dot_data_t d = {.out = out, .nullcnt = 0, .dump_values = dump_values};
     _iterate_nodes(b->root, UBST_INORDER, _dump2dot, &d);
     fprintf(out, "}\n");
-}
-
-void rotate_left(ubst_t *b)
-{
-    b->root = _rotate_left_once(b->root);
-}
-void rotate_right(ubst_t *b)
-{
-    b->root = _rotate_right_once(b->root);
 }

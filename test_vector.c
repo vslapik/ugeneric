@@ -56,8 +56,8 @@ void test_uvector_bsearch(void)
     uvector_t *v = uvector_create();
     uvector_append(v, G_INT(1));
     uvector_append(v, G_INT(2));
-    uvector_append(v, G_INT(3));
     uvector_append(v, G_INT(4));
+    uvector_append(v, G_INT(3));
 
     uvector_sort(v); // [1, 2, 3, 4]]
     UASSERT_INT_EQ(uvector_bsearch(v, G_INT(1)), 0);
