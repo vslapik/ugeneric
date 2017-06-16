@@ -137,6 +137,21 @@ void test_ufile_api(void)
     UASSERT_SIZE_EQ(G_AS_SIZE(g), 0);
 }
 
+void test_open_dir(void)
+{
+    // I/O error at file_utils.c:226:ufile_open(): Is a directory.
+
+    ugeneric_t g = ufile_reader_create("utdata", 100);
+    UASSERT(G_IS_ERROR(g));
+//    ugeneric_error_print(g);
+    ugeneric_error_destroy(g);
+
+    g = ufile_writer_create("utdata");
+    UASSERT(G_IS_ERROR(g));
+//    ugeneric_error_print(g);
+    ugeneric_error_destroy(g);
+}
+
 int main(int argc, char **argv)
 {
     (void)argc;
@@ -145,6 +160,7 @@ int main(int argc, char **argv)
     test_ufile_api();
     test_ufile_reader();
     //test_ufile_writer(atoi(argv[1]));
+    test_open_dir();
 
     return 0;
 }

@@ -16,7 +16,7 @@ struct ufile_writer_opaq {
     FILE *file;
 };
 
-// Default handler does nothing besides propogating error up.
+// Default handler does nothing besides propagating error up.
 static ugeneric_t _default_error_handler(ugeneric_t io_error, void *ctx)
 {
     (void)ctx;
@@ -87,7 +87,7 @@ ugeneric_t ufile_get_size(const char *path)
 {
     UASSERT_INPUT(path);
 
-    ugeneric_t g = ufile_open(path, "r");
+    ugeneric_t g = ufile_open(path, "rb+");
     if (G_IS_ERROR(g))
     {
         return g;
@@ -109,7 +109,7 @@ ugeneric_t ufile_create_from_memchunk(const char *path, umemchunk_t mchunk)
     UASSERT_INPUT(path);
 
     ugeneric_t g;
-    if (G_IS_ERROR(g = ufile_open(path, "w")))
+    if (G_IS_ERROR(g = ufile_open(path, "wb")))
     {
         return g;
     }
@@ -141,7 +141,7 @@ ugeneric_t ufile_read_to_memchunk(const char *path)
     }
     size_t fsize = G_AS_SIZE(g);
 
-    g = ufile_open(path, "r");
+    g = ufile_open(path, "rb+");
     if (G_IS_ERROR(g))
     {
         return g;
@@ -199,6 +199,22 @@ ugeneric_t ufile_read_lines(const char *path)
     return G_PTR(v);
 }
 
+/* Some functions in this files use ufile_open internally
+ * and mode flags needs some explanations:
+ * 'b' -  On POSIX systems does nothing and just ignored, on some other
+ *        systems (MS Windows) it can affect the way how the file is
+ *        processed, it doesn't hurt to pass it all the time as all the
+ *        function from this file assume binary files.
+ * 'r+' - this combination is tricky. In those places where the
+ *        file is opened for reading the '+' is still passed pretending
+ *        that file will be modified further. In this library it serves
+ *        just one purpose: POSIX states that passing directory path to fopen
+ *        with mode which requires write access should trigger EISDIR.
+ *        It seems there is no other portable way (using only standard
+ *        C functions) to distinguish files and directories when you fopen it.
+ *        This is actually an issue because fopen silently opens directory and
+ *        return valid file descriptor but further fseek/ftell calls lead to UB.
+ */
 ugeneric_t ufile_open(const char *path, const char *mode)
 {
     UASSERT_INPUT(path);
@@ -231,22 +247,24 @@ ugeneric_t ufile_reader_create(const char *path, size_t buffer_size)
     UASSERT_INPUT(buffer_size);
 
     ugeneric_t g;
-    if (G_IS_ERROR(g = ufile_open(path, "r")))
+    if (G_IS_ERROR(g = ufile_open(path, "rb+")))
     {
         return g;
     }
+    FILE *file = G_AS_PTR(g);
+
+    if (G_IS_ERROR(g = _get_file_size(file, true)))
+    {
+        return g;
+    }
+    size_t file_size = G_AS_SIZE(g);
+
     ufile_reader_t *fr = umalloc(sizeof(*fr));
     fr->buffer = umalloc(buffer_size);
     fr->buffer_size = buffer_size;
-    fr->file = G_AS_PTR(g);
+    fr->file = file;
     fr->read_offset = 0;
-
-    if (G_IS_ERROR(g = _get_file_size(fr->file, true)))
-    {
-        return g;
-    }
-
-    fr->file_size = G_AS_SIZE(g);
+    fr->file_size = file_size;
 
     return G_PTR(fr);
 }
@@ -338,7 +356,7 @@ ugeneric_t ufile_writer_create(const char *path)
     UASSERT_INPUT(path);
 
     ugeneric_t g;
-    if (G_IS_ERROR(g = ufile_open(path, "w")))
+    if (G_IS_ERROR(g = ufile_open(path, "wb")))
     {
         return g;
     }
