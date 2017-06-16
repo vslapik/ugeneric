@@ -43,6 +43,26 @@ uvector_t *ustring_split(const char *str, const char *sep)
     return v;
 }
 
+char *ustring_replace_char(const char *str, char from, char to)
+{
+    char *t, *out = NULL;
+
+    if (str)
+    {
+        t = out = ustring_dup(str);
+        while (*t)
+        {
+            if (*t == from)
+            {
+                *t = to;
+            }
+            t++;
+        }
+    }
+
+    return out;
+}
+
 /*
  * Analog of POSIX strdup().
  */

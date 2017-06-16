@@ -5,6 +5,7 @@
 #include "mem.h"
 
 uvector_t *ustring_split(const char *str, const char *sep);
+char *ustring_replace_char(const char *str, char from, char to);
 char *ustring_dup(const char *str);
 char *ustring_ndup(const char *str, size_t n);
 char *ustring_fmt(const char *fmt, ...);

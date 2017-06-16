@@ -2,7 +2,7 @@ lib = libugeneric.a
 #CC = gcc
 #CC = clang
 #PFALGS = -fprofile-arcs -ftest-coverage
-CFLAGS_COMMON=-I. -g -std=c11 -Wall -Wextra -Winline -pedantic -Wno-missing-field-initializers -Wno-missing-braces
+CFLAGS_COMMON=-I. -g -std=c99 -Wall -Wextra -Winline -pedantic -Wno-missing-field-initializers -Wno-missing-braces
 #CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT
 CFLAGS = $(CFLAGS_COMMON) -Ofast
 VFLAGS = -q --child-silent-after-fork=yes --leak-check=full --error-exitcode=3

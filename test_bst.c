@@ -253,7 +253,7 @@ void test_large_bst(void)
        ubst_put(b, G_INT(N - i), G_INT(N - i));
        ubst_put(b, G_INT(i), G_INT(i));
     }
-    ubst_dump_to_dot(b, "large_bst", false, stdout);
+    //ubst_dump_to_dot(b, "large_bst", false, stdout);
     ubst_destroy(b);
 }
 

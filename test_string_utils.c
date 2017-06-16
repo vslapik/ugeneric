@@ -65,10 +65,24 @@ void test_ustring_fmt(void)
     */
 }
 
+void test_ustring_replace_char(void)
+{
+    char *out;
+
+    out = ustring_replace_char("123", '1', '2');
+    UASSERT_STR_EQ(out, "223");
+    ufree(out);
+
+    out = ustring_replace_char("---", '-', '*');
+    UASSERT_STR_EQ(out, "***");
+    ufree(out);
+}
+
 int main(void)
 {
     test_ustring_split();
     test_ustring_fmt();
+    test_ustring_replace_char();
 
     return EXIT_SUCCESS;
 }
