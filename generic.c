@@ -2,6 +2,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <limits.h>
+#include <inttypes.h>
 #include <errno.h>
 #include "generic.h"
 #include "mem.h"
@@ -413,6 +414,25 @@ static ugeneric_t _parse_number(const char **str)
     {
         long int l = strtol(*str, &endptr, 10);
         g = G_INT(l);
+        if (errno == ERANGE && **str != '-')
+        {
+            // Tooken looks like a huge positive integer number
+            // which doesn't fit to long int, let's try to parse
+            // it as size_t.
+            errno = 0;
+            endptr = 0;
+            uintmax_t t = strtoumax(*str, &endptr, 10);
+            g = G_SIZE(t);
+            if (errno != ERANGE)
+            {
+                if (t != (size_t)t)
+                {
+                    // Check for the case when size_t and uintmax_t
+                    // are different in width.
+                    errno = ERANGE;
+                }
+            }
+        }
     }
     if (errno == ERANGE)
     {
@@ -420,7 +440,7 @@ static ugeneric_t _parse_number(const char **str)
     }
     if (endptr == *str)
     {
-        return G_ERROR(ustring_fmt("cannot parse the numerical value"));
+        return G_ERROR(ustring_dup("cannot parse the numerical value"));
     }
 
     *str += (endptr - *str);

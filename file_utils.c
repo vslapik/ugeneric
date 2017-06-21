@@ -204,14 +204,14 @@ ugeneric_t ufile_read_lines(const char *path)
  * 'b' -  On POSIX systems does nothing and just ignored, on some other
  *        systems (MS Windows) it can affect the way how the file is
  *        processed, it doesn't hurt to pass it all the time as all the
- *        function from this file assume binary files.
- * 'r+' - this combination is tricky. In those places where the
+ *        functions from this file assume binary files.
+ * 'r+' - This combination is tricky. In those places where the
  *        file is opened for reading the '+' is still passed pretending
  *        that file will be modified further. In this library it serves
  *        just one purpose: POSIX states that passing directory path to fopen
  *        with mode which requires write access should trigger EISDIR.
  *        It seems there is no other portable way (using only standard
- *        C functions) to distinguish files and directories when you fopen it.
+ *        C functions) to distinguish files and directories when you fopen them.
  *        This is actually an issue because fopen silently opens directory and
  *        return valid file descriptor but further fseek/ftell calls lead to UB.
  */

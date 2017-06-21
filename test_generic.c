@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include "generic.h"
 #include "dict.h"
 #include "vector.h"
@@ -233,6 +234,38 @@ void test_serialize(void)
     udict_destroy(d);
 }
 
+void test_parse_size(void)
+{
+    char *integer = ustring_fmt("%ld", LONG_MAX);
+    char *size = ustring_fmt("%zu", ULONG_MAX); // don't fit to long int
+    char *over_size1 = ustring_fmt("-%s", size); // don't fit anywhere
+    char *over_size2 = ustring_fmt("1%s", size); // don't fit anywhere
+
+    ugeneric_t i = ugeneric_parse(integer);
+    UASSERT_NO_ERROR(i);
+    UASSERT(G_IS_INT(i));
+    UASSERT_INT_EQ(G_AS_INT(i), LONG_MAX);
+
+    ugeneric_t s = ugeneric_parse(size);
+    UASSERT_NO_ERROR(s);
+    UASSERT(G_IS_SIZE(s));
+    UASSERT_SIZE_EQ(G_AS_SIZE(s), ULONG_MAX);
+
+    ugeneric_t os1 = ugeneric_parse(over_size1);
+    UASSERT(G_IS_ERROR(os1));
+    ugeneric_error_destroy(os1);
+
+    ugeneric_t os2 = ugeneric_parse(over_size2);
+    UASSERT(G_IS_ERROR(os2));
+    ugeneric_error_destroy(os2);
+
+    ufree(integer);
+    ufree(size);
+    ufree(over_size1);
+    ufree(over_size2);
+
+}
+
 int main(int argc, char **argv)
 {
     if (argc > 1)
@@ -262,4 +295,5 @@ int main(int argc, char **argv)
     test_parse();
     test_large_parse();
     test_serialize();
+    test_parse_size();
 }
