@@ -101,7 +101,7 @@ void test_udict_api(udict_backend_t backend)
 void test_large_dict(udict_backend_t backend)
 {
     udict_t *d = udict_create_with_backend(backend);
-    const char *path = "utdata/udict_data.txt";
+    const char *path = "utdata/dict_data.txt";
     ugeneric_t g = ufile_read_lines(path);
     UASSERT_NO_ERROR(g);
     uvector_t *v = G_AS_PTR(g);
@@ -149,18 +149,6 @@ void test_udict_serialize(udict_backend_t backend)
     udict_put(d, G_CSTR("138586783"), G_INT(2));
 
     udict_destroy(d);
-}
-
-void test_cfg(udict_backend_t backend)
-{
-    (void)backend;
-    ugeneric_t g = ufile_read_to_string("cfg");
-    UASSERT_NO_ERROR(g);
-    char *cfg = G_AS_PTR(g);
-    g = ugeneric_parse(cfg);
-    //ugeneric_print(g);
-    ufree(cfg);
-    ugeneric_destroy(g, NULL);
 }
 
 void test_singe(udict_backend_t backend)
@@ -246,8 +234,10 @@ int main(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return 0;
-    for (int i = 0; i < UDICT_BACKENDS_COUNT; i++)
+
+    int i;
+    //for (int i = 0; i < UDICT_BACKENDS_COUNT; i++)
+    i = UDICT_BACKEND_HTBL;
     {
         test_udict_iterator(i);
         test_udict_const_str(i);
@@ -255,7 +245,17 @@ int main(int argc, char **argv)
         test_udict_api(i);
         test_udict_serialize(i);
         test_large_dict(i);
-        test_cfg(i);
+        test_singe(i);
+    }
+
+    i = UDICT_BACKEND_UBST_PLAIN;
+    {
+        test_udict_iterator(i);
+        test_udict_const_str(i);
+        test_udict_pop(i);
+        test_udict_api(i);
+        test_udict_serialize(i);
+        test_large_dict(i);
         test_singe(i);
     }
 }

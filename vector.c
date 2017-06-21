@@ -393,15 +393,8 @@ void uvector_sort(uvector_t *v)
 
 bool uvector_is_sorted(const uvector_t *v)
 {
-    for (size_t i = 0; i < v->size - 1; i++)
-    {
-        if (ugeneric_compare(v->cells[i], v->cells[i + 1], v->cmp) > 0)
-        {
-            return false;
-        }
-    }
-
-    return true;
+    UASSERT_INPUT(v);
+    return ugeneric_array_is_sorted(v->cells, v->size, v->cmp);
 }
 
 uvector_t *uvector_copy(const uvector_t *v)
@@ -465,11 +458,11 @@ int uvector_fprint(const uvector_t *v, FILE *out)
 size_t uvector_bsearch(const uvector_t *v, ugeneric_t e)
 {
     UASSERT_INPUT(v);
-    return ugeneric_bsearch(v->cells, v->size, e, v->cmp);
+    return ugeneric_array_bsearch(v->cells, v->size, e, v->cmp);
 }
 
 bool uvector_next_permutation(uvector_t *v)
 {
     UASSERT_INPUT(v);
-    return ugeneric_next_permutation(v->cells, v->size, v->cmp);
+    return ugeneric_array_next_permutation(v->cells, v->size, v->cmp);
 }

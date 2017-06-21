@@ -49,6 +49,7 @@ void test_sort(sort_func sort)
     long int D23[] = {4, 3, 1, 2};
     long int D24[] = {4, 3, 2, 1};
 
+    long int b[] = {2, 3, 3, 2, 1, 3, 2, 1, 1, 1, 3, 4, 2, 1, 2, 4, 1, 3};
     long int c[] = {2, 63, 3, 4, 5};
     long int d[] = {1, 3, 4, 10, 15, 16, 100, 32, 11, 2, 63, 3, 4};
     long int e[] = {1, 1, 1, 2, 2};
@@ -61,6 +62,7 @@ void test_sort(sort_func sort)
     long int q[] = {4, 3, 3, 1};
     long int r[] = {1, 3, 3, 4};
     long int s[] = {3, 1, 4, 3};
+    long int t[] = {0, -6, -5, -4, -3, -2, 6};
 
     const char *vA1 = "[1]";
     const char *vB1 = "[1, 2]";
@@ -97,6 +99,7 @@ void test_sort(sort_func sort)
     const char *vD23 = "[1, 2, 3, 4]";
     const char *vD24 = "[1, 2, 3, 4]";
 
+    const char *vb = "[1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4]";
     const char *vc = "[2, 3, 4, 5, 63]";
     const char *vd = "[1, 2, 3, 3, 4, 4, 10, 11, 15, 16, 32, 63, 100]";
     const char *ve = "[1, 1, 1, 2, 2]";
@@ -109,6 +112,7 @@ void test_sort(sort_func sort)
     const char *vq = "[1, 3, 3, 4]";
     const char *vr = "[1, 3, 3, 4]";
     const char *vs = "[1, 3, 3, 4]";
+    const char *vt = "[-6, -5, -4, -3, -2, 0, 6]";
 
     #define _check(arr, sort, type) {                                  \
         /*puts("sorting "#arr); */                                     \
@@ -157,6 +161,7 @@ void test_sort(sort_func sort)
     _check(D23, sort, G_INT_T);
     _check(D24, sort, G_INT_T);
 
+    _check(b, sort, G_INT_T);
     _check(c, sort, G_INT_T);
     _check(d, sort, G_INT_T);
     _check(e, sort, G_INT_T);
@@ -169,9 +174,30 @@ void test_sort(sort_func sort)
     _check(q, sort, G_INT_T);
     _check(r, sort, G_INT_T);
     _check(s, sort, G_INT_T);
+    _check(t, sort, G_INT_T);
+
+    if (sort == quick_sort || sort == hybrid_sort)
+    {
+        static ugeneric_t fff[10000];
+        const char *path = "utdata/array.txt";
+        ugeneric_t t = ufile_open(path, "r");
+        UASSERT_NO_ERROR(t);
+        FILE *fd = G_AS_PTR(t);
+        UASSERT(fd);
+        for (size_t i = 0; i < ARR_LEN(fff); i++)
+        {
+            int tmp;
+            UASSERT_INT_EQ(fscanf(fd, "%d", &tmp), 1);
+            fff[i] = G_INT(tmp);
+        }
+        t = ufile_close(fd);
+        UASSERT_NO_ERROR(t);
+        sort(fff, ARR_LEN(fff), NULL);
+        ugeneric_array_is_sorted(fff, ARR_LEN(fff), NULL);
+    }
 }
 
-void test_count_iversions()
+void test_count_iversions(void)
 {
     ugeneric_t a[] = {G_INT(4), G_INT(2)};
     ugeneric_t b[] = {G_INT(2), G_INT(63), G_INT(3), G_INT(4), G_INT(5)};
@@ -214,19 +240,6 @@ int main(void)
     test_sort(quick_sort);
     test_sort(hybrid_sort);
     test_sort(selection_sort);
-
-    /*
-    const char *path = "test.file";
-    ugeneric_t g = ufile_read_to_memchunk(path);
-    UASSERT_NO_ERROR(g);
-
-    size_t asize = G_AS_MEMCHUNK_SIZE(g);
-    void *adata = G_AS_MEMCHUNK_DATA(g);
-    uvector_t *v = uvector_create_from_array(adata, asize, 1, G_INT_T);
-    hybrid_sort(uvector_get_cells(v), asize, NULL);
-    uvector_destroy(v);
-    ufree(adata);
-    */
 }
 
 void print_array(ugeneric_t *base, size_t nmemb)

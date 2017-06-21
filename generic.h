@@ -162,9 +162,10 @@ int ugeneric_print(ugeneric_t g, void_s8r_t void_serializer);
 ugeneric_t ugeneric_parse(const char *str);
 
 void ugeneric_array_reverse(ugeneric_t *base, size_t nmemb, size_t l, size_t r);
-bool ugeneric_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
-size_t ugeneric_bsearch(ugeneric_t *base, size_t nmemb, ugeneric_t e,
-                       void_cmp_t cmp);
+bool ugeneric_array_is_sorted(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
+bool ugeneric_array_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
+size_t ugeneric_array_bsearch(ugeneric_t *base, size_t nmemb, ugeneric_t e,
+                              void_cmp_t cmp);
 
 int random_from_range(int start, int stop);
 

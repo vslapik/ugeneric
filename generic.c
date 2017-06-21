@@ -606,7 +606,20 @@ void ugeneric_array_reverse(ugeneric_t *base, size_t nmemb, size_t l, size_t r)
         ugeneric_swap(&base[l++], &base[r--]);
 }
 
-bool ugeneric_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
+bool ugeneric_array_is_sorted(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
+{
+    for (size_t i = 0; i < nmemb - 1; i++)
+    {
+        if (ugeneric_compare(base[i], base[i + 1], cmp) > 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+bool ugeneric_array_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
     UASSERT_INPUT(base);
 
@@ -661,8 +674,8 @@ static size_t _bsearch(ugeneric_t base[], size_t l, size_t r,
     }
 }
 
-size_t ugeneric_bsearch(ugeneric_t *base, size_t nmemb, ugeneric_t e,
-                       void_cmp_t cmp)
+size_t ugeneric_array_bsearch(ugeneric_t *base, size_t nmemb, ugeneric_t e,
+                              void_cmp_t cmp)
 {
     UASSERT_INPUT(base);
     UASSERT_INPUT(nmemb < SIZE_MAX);
