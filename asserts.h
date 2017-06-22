@@ -39,6 +39,16 @@
     }                                                                       \
 } while (0)
 
+#define UASSERT_PERROR(cond) do {                                           \
+    if (!(cond))                                                            \
+    {                                                                       \
+        const char *msg = "Assertion \"%s\" at %s:%d failed: %s\n";         \
+        fprintf(stderr, msg, #cond, __FILE__, __LINE__, strerror(errno));   \
+        utrace_print();                                                     \
+        abort();                                                            \
+    }                                                                       \
+} while (0)
+
 #define UABORT(msg) do {                                                    \
     fprintf(stderr, "%s:%d %s.\n", __FILE__, __LINE__, msg);                \
     utrace_print();                                                         \
