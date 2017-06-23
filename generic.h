@@ -45,7 +45,6 @@ typedef union {
     const char *cstr;
     long integer;
     double real;
-    char chr;
     size_t size;
     bool boolean;
 } ugeneric_value_t;
@@ -71,31 +70,31 @@ static inline ugeneric_type_e ugeneric_get_type(ugeneric_t g)
     return (g.type.type >= G_MEMCHUNK_T) ? G_MEMCHUNK_T : g.type.type;
 }
 
-#define G_NULL         ((ugeneric_t){.type.type = G_NULL_T})
 
 #define G_ERROR(v)     ((ugeneric_t){.type.type = G_ERROR_T,            \
-                                    .value = {.str = (v)}})
+                                     .value = {.str = (v)}})
 #define G_PTR(v)       ((ugeneric_t){.value = {.ptr = (v)},             \
-                                    .type.type = G_PTR_T})
+                                     .type.type = G_PTR_T})
 #define G_STR(v)       ((ugeneric_t){.value = {.str = (v)},             \
-                                    .type.type = G_STR_T})
+                                     .type.type = G_STR_T})
 #define G_CSTR(v)      ((ugeneric_t){.value = {.cstr = (v)},            \
-                                    .type.type = G_CSTR_T})
+                                     .type.type = G_CSTR_T})
 #define G_INT(v)       ((ugeneric_t){.value = {.integer = (v)},         \
-                                    .type.type = G_INT_T})
+                                     .type.type = G_INT_T})
 #define G_REAL(v)      ((ugeneric_t){.value = {.real = (v)},            \
-                                    .type.type = G_REAL_T})
+                                     .type.type = G_REAL_T})
 #define G_SIZE(v)      ((ugeneric_t){.value = {.size = (v)},            \
-                                    .type.type = G_SIZE_T})
+                                     .type.type = G_SIZE_T})
 #define G_VECTOR(v)    ((ugeneric_t){.value = {.ptr = (v)},             \
-                                    .type.type = G_VECTOR_T})
+                                     .type.type = G_VECTOR_T})
 #define G_DICT(v)      ((ugeneric_t){.value = {.ptr = (v)},             \
-                                    .type.type = G_UDICT_T})
+                                     .type.type = G_UDICT_T})
 
+#define G_NULL         ((ugeneric_t){.type.type = G_NULL_T})
 #define G_TRUE         ((ugeneric_t){.type.type = G_BOOL_T,             \
-                                    .value = {.boolean = true}})
+                                     .value = {.boolean = true}})
 #define G_FALSE        ((ugeneric_t){.type.type = G_BOOL_T,             \
-                                    .value = {.boolean = false}})
+                                     .value = {.boolean = false}})
 
 #define G_AS_INT(g)    ((g).value.integer)
 #define G_AS_REAL(g)   ((g).value.real)
@@ -143,7 +142,7 @@ typedef void (*void_dtr_t)(void *ptr);
 typedef char *(*void_s8r_t)(const void *ptr, size_t *output_size);
 typedef size_t (*void_hasher_t)(const void *ptr);
 typedef bool (*ugeneric_kv_iter_t)(ugeneric_t k, ugeneric_t v, void *data);
-typedef void(*ugeneric_sorter_t)(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
+typedef void (*ugeneric_sorter_t)(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
 
 ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy);
 int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp);

@@ -2,6 +2,7 @@
 #include <limits.h>
 #include "mem.h"
 #include "vector.h"
+#include "ut_utils.h"
 
 /* to disable linux overcommit "sysctl vm.overcommit_memory=2" */
 
@@ -18,6 +19,13 @@ bool oom(void *data)
     // true means retry allocation again
     //return true;
     return false;
+}
+
+void test_umemdup(void)
+{
+    char *str = umemdup("string", 5);
+    UASSERT_STR_EQ(str, "string");
+    ufree(str);
 }
 
 int main(void)

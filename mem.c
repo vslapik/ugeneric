@@ -20,6 +20,12 @@ void libugeneric_set_oom_handler(oom_handler_t handler, void *ctx)
 
 void *umalloc(size_t size)
 {
+    /*
+     * Allocating zero bytes summons implementation
+     * defined behavior, better to bail out with assert.
+     */
+    UASSERT_INPUT(size);
+
     void *p = malloc(size);
 
     if (!p)
@@ -42,6 +48,12 @@ void *umalloc(size_t size)
 
 void *ucalloc(size_t nmemb, size_t size)
 {
+    /*
+     * Allocating zero bytes summons implementation
+     * defined behavior, better to bail out with assert.
+     */
+    UASSERT_INPUT(nmemb && size);
+
     void *p = calloc(nmemb, size);
 
     if (!p)
@@ -64,6 +76,14 @@ void *ucalloc(size_t nmemb, size_t size)
 
 void *urealloc(void *ptr, size_t size)
 {
+    /* Standard guarantees that:
+     *     realloc(ptr, 0)  - behaves like the free
+     *     realloc(0, size) - behaves like malloc
+     * Re-allocating NULL pointer to zero bytes summons implementation
+     * defined behavior, better to bail out with assert.
+     */
+    UASSERT_INPUT(ptr || size);
+
     void *p = realloc(ptr, size);
 
     if (!p)
@@ -87,6 +107,13 @@ void *urealloc(void *ptr, size_t size)
 void ufree(void *ptr)
 {
     free(ptr);
+}
+
+void *umemdup(const void *src, size_t n)
+{
+    UASSERT_INPUT(src);
+    UASSERT_INPUT(n);
+    return memcpy(umalloc(n), src, n);
 }
 
 static void _reserve_capacity(ubuffer_t *buf, size_t new_capacity)
@@ -133,6 +160,7 @@ void ubuffer_append_byte(ubuffer_t *buf, char byte)
 void ubuffer_append_string(ubuffer_t *buf, const char *str)
 {
     UASSERT_INPUT(buf);
+    UASSERT_INPUT(str);
 
     size_t slen = strlen(str);
     _reserve_capacity(buf, buf->data_size + slen);
@@ -143,7 +171,6 @@ void ubuffer_append_string(ubuffer_t *buf, const char *str)
 void ubuffer_null_terminate(ubuffer_t *buf)
 {
     UASSERT_INPUT(buf);
-
     if (buf->data_size && (((char *)buf->data)[buf->data_size - 1] != '\0'))
     {
         ubuffer_append_byte(buf, '\0');
@@ -153,7 +180,6 @@ void ubuffer_null_terminate(ubuffer_t *buf)
 void ubuffer_reset(ubuffer_t *buf)
 {
     UASSERT_INPUT(buf);
-
     buf->data_size = 0;
 }
 

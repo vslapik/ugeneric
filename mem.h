@@ -12,7 +12,9 @@ void libugeneric_set_oom_handler(oom_handler_t handler, void *ctx);
 void *umalloc(size_t size);
 void *ucalloc(size_t nmemb, size_t size);
 void *urealloc(void *uptr, size_t nmemb);
+void *umemdup(const void *src, size_t n);
 void ufree(void *ptr);
+
 static inline void *uzalloc(size_t size) { return ucalloc(size, 1); }
 
 #define BUFFER_INITIAL_CAPACITY 16
