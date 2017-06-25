@@ -153,11 +153,6 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher);
 void ugeneric_error_destroy(ugeneric_t g);
 void ugeneric_error_print(ugeneric_t g);
 
-char *ugeneric_as_str(ugeneric_t g, void_s8r_t serializer);
-void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer);
-int ugeneric_fprint(ugeneric_t g, void_s8r_t void_serializer, FILE *out);
-int ugeneric_print(ugeneric_t g, void_s8r_t void_serializer);
-
 ugeneric_t ugeneric_parse(const char *str);
 
 void ugeneric_array_reverse(ugeneric_t *base, size_t nmemb, size_t l, size_t r);
@@ -175,5 +170,15 @@ int random_from_range(int start, int stop);
 #define ARR_LEN(a) sizeof(a)/sizeof(a[0])
 
 #define SCALE_FACTOR 2
+
+char *ugeneric_as_str_v(ugeneric_t g, void_s8r_t void_serializer);
+void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer);
+int ugeneric_fprint_v(ugeneric_t g, FILE *out, void_s8r_t void_serializer);
+
+static inline void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf) {ugeneric_serialize_v(g, buf, NULL);}
+static inline char *ugeneric_as_str(ugeneric_t g)          {return ugeneric_as_str_v(g, NULL);}
+static inline int ugeneric_print_v(ugeneric_t g, void_s8r_t void_serializer) {return ugeneric_fprint_v(g, stdout, void_serializer);}
+static inline int ugeneric_print(ugeneric_t g)             {return ugeneric_print_v(g, NULL);}
+static inline int ugeneric_fprint(ugeneric_t g, FILE *out) {return ugeneric_fprint_v(g, out, NULL);}
 
 #endif

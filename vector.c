@@ -417,7 +417,7 @@ void uvector_serialize(const uvector_t *v, ubuffer_t *buf)
     ubuffer_append_byte(buf, '[');
     for (size_t i = 0; i < v->size; i++)
     {
-        ugeneric_serialize(v->cells[i], buf, v->void_serializer);
+        ugeneric_serialize_v(v->cells[i], buf, v->void_serializer);
         if (i < v->size - 1)
         {
             ubuffer_append_data(buf, ", ", 2);

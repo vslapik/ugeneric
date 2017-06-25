@@ -30,7 +30,7 @@ bool _tree_keys_to_str(ugeneric_t k, ugeneric_t v, void *data)
 {
     (void)v;
     ubuffer_t *buf = data;
-    ugeneric_serialize(k, buf, NULL);
+    ugeneric_serialize(k, buf);
 
     return false;
 }

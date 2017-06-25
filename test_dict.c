@@ -221,7 +221,7 @@ void test_udict_iterator(udict_backend_t backend)
         uvector_append(v, (udict_iterator_get_next(di).k));
     }
     uvector_sort(v);
-    char *str = ugeneric_as_str(G_VECTOR(v), NULL);
+    char *str = ugeneric_as_str(G_VECTOR(v));
     UASSERT_STR_EQ("[-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6]", str);
 
     udict_iterator_destroy(di);

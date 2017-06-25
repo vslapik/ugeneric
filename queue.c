@@ -11,6 +11,7 @@ struct uqueue_opaq {
     size_t t; // tail
     size_t size;
     size_t capacity;
+    void_s8r_t void_serializer;
 };
 
 uqueue_t *uqueue_create(void)
@@ -137,7 +138,7 @@ void uqueue_serialize(const uqueue_t *q, ubuffer_t *buf)
     ubuffer_append_byte(buf, '[');
     for (size_t i = 0; i < q->size; i++)
     {
-        ugeneric_serialize(q->data[(q->h + i) % q->capacity], buf, NULL);
+        ugeneric_serialize_v(q->data[(q->h + i) % q->capacity], buf, q->void_serializer);
         if (i < q->size - 1)
         {
             ubuffer_append_data(buf, ", ", 2);

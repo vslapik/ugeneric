@@ -344,7 +344,7 @@ void ulist_serialize(const ulist_t *l, ubuffer_t *buf)
     ubuffer_append_byte(buf, '[');
     while (li)
     {
-        ugeneric_serialize(li->data, buf, l->void_serializer);
+        ugeneric_serialize_v(li->data, buf, l->void_serializer);
         li = li->next;
         if (i++ < l->size - 1)
         {

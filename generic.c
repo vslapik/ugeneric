@@ -227,33 +227,28 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
     return ret;
 }
 
-int ugeneric_fprint(ugeneric_t g, void_s8r_t void_serializer, FILE *out)
+int ugeneric_fprint_v(ugeneric_t g, FILE *out, void_s8r_t void_serializer)
 {
     UASSERT_INPUT(out);
 
-    char *str = ugeneric_as_str(g, void_serializer);
+    char *str = ugeneric_as_str_v(g, void_serializer);
     int ret = fprintf(out, "%s\n", str);
     ufree(str);
 
     return ret;
 }
 
-int ugeneric_print(ugeneric_t g, void_s8r_t void_serializer)
-{
-    return ugeneric_fprint(g, void_serializer, stdout);
-}
-
-char *ugeneric_as_str(ugeneric_t g, void_s8r_t void_serializer)
+char *ugeneric_as_str_v(ugeneric_t g, void_s8r_t void_serializer)
 {
     ubuffer_t buf = {0};
 
-    ugeneric_serialize(g, &buf, void_serializer);
+    ugeneric_serialize_v(g, &buf, void_serializer);
     ubuffer_null_terminate(&buf);
 
     return buf.data;
 }
 
-void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer)
+void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer)
 {
     UASSERT_INPUT(buf);
 

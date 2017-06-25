@@ -279,9 +279,9 @@ void uhtbl_serialize(const uhtbl_t *h, ubuffer_t *buf)
     while (uhtbl_iterator_has_next(hi))
     {
         ugeneric_kv_t kv = uhtbl_iterator_get_next(hi);
-        ugeneric_serialize(kv.k, buf, NULL);
+        ugeneric_serialize_v(kv.k, buf, NULL);
         ubuffer_append_data(buf, ": ", 2);
-        ugeneric_serialize(kv.v, buf, NULL);
+        ugeneric_serialize_v(kv.v, buf, NULL);
         if (uhtbl_iterator_has_next(hi))
         {
             ubuffer_append_data(buf, ", ", 2);
@@ -347,8 +347,8 @@ void uhtbl_dump_to_dot(const uhtbl_t *h, FILE *out)
             fprintf(out, "\n");
             while (hr)
             {
-                char *k = ugeneric_as_str(hr->k, NULL);
-                char *v = ugeneric_as_str(hr->v, NULL);
+                char *k = ugeneric_as_str_v(hr->k, NULL);
+                char *v = ugeneric_as_str_v(hr->v, NULL);
                 fprintf(out, "    node%zu [label = \"{ <data> '%s':'%s' | <ref> }\"];\n",
                         j++, k, v);
                 hr = hr->next;

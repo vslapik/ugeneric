@@ -715,9 +715,9 @@ bool _serialize(ubst_node_t *node, void *data)
     _serialize_data_t *d = data;
 
     d->nodes_left -= 1;
-    ugeneric_serialize(node->k, d->buf, NULL);
+    ugeneric_serialize_v(node->k, d->buf, NULL);
     ubuffer_append_data(d->buf, ": ", 2);
-    ugeneric_serialize(node->v, d->buf, NULL);
+    ugeneric_serialize_v(node->v, d->buf, NULL);
     if (d->nodes_left)
     {
         ubuffer_append_data(d->buf, ", ", 2);
@@ -855,8 +855,8 @@ bool _dump2dot(ubst_node_t *node, void *data)
 {
     _dump2dot_data_t *d = data;
 
-    char *kstr = ugeneric_as_str(node->k, NULL);
-    char *vstr = d->dump_values ? ugeneric_as_str(node->v, NULL) : NULL;
+    char *kstr = ugeneric_as_str_v(node->k, NULL);
+    char *vstr = d->dump_values ? ugeneric_as_str_v(node->v, NULL) : NULL;
     char *str = ustring_fmt("\"%08" PRIxPTR "\"", node);
 
     char *lstr;
