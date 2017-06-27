@@ -13,7 +13,7 @@ ugeneric_t gen_random_generic(int depth)
         switch(gtype)
         {
             case G_NULL_T:     g = G_NULL; break;
-            case G_PTR_T:      break;
+            case G_PTR_T:      g = gen_random_void_data(depth - 1); break;
             case G_STR_T:      g = gen_random_string(depth); break;
             case G_CSTR_T:     break;
             case G_INT_T:      g = G_INT(ugeneric_random_from_range(INT_MIN, RAND_MAX)); break;
@@ -21,14 +21,18 @@ ugeneric_t gen_random_generic(int depth)
             case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(0, RAND_MAX)); break;
             case G_BOOL_T:     g = G_BOOL(ugeneric_random_from_range(0, 2)); break;
             case G_VECTOR_T:   g = gen_random_vector(depth - 1); break;
-            case G_DICT_T:     g =  gen_random_dict(depth - 1); break;
+            case G_DICT_T:     g = gen_random_dict(depth - 1); break;
             case G_MEMCHUNK_T: g = gen_random_memchunk(depth - 1); break;
-                default:
-                    ;
+            default: ;
         }
     }
 
     return g;
+}
+
+int _void_cmp(const void *ptr1, const void *ptr2)
+{
+    return (uintptr_t)ptr1 - (uintptr_t)ptr2;
 }
 
 ugeneric_t gen_random_vector(int depth)
@@ -37,7 +41,9 @@ ugeneric_t gen_random_vector(int depth)
     if (depth > 1)
     {
         uvector_t *v = uvector_create();
-        int size = ugeneric_random_from_range(1, 100);
+        uvector_set_destroyer(v, ufree);
+        uvector_set_comparator(v, _void_cmp);
+        int size = ugeneric_random_from_range(0, 100);
         printf("[%02d] Generate vector of size %d\n", depth, size);
         for (int i = 0; i < size; i++)
         {
@@ -68,11 +74,12 @@ ugeneric_t gen_random_string(int depth)
 
 ugeneric_t gen_random_dict(int depth)
 {
-    // TODO: random backends
-    udict_t *d = udict_create();
+    udict_backend_t backend = ugeneric_random_from_range(UDICT_BACKEND_DEFAULT + 1, UDICT_BACKENDS_COUNT - 1);
+    udict_t *d = udict_create_with_backend(backend);
+    udict_set_destroyer(d, ufree);
+    udict_set_comparator(d, _void_cmp);
 
-    //int size = ugeneric_random_from_range(0, 20);
-    int size = ugeneric_random_from_range(1, 20);
+    int size = ugeneric_random_from_range(0, 20);
     printf("[%02d] Generate dict of size %d\n", depth, size);
     for (int i = 0; i < size; i++)
     {
@@ -96,4 +103,10 @@ ugeneric_t gen_random_memchunk(int depth)
         ((uint8_t *)ptr)[i] = ugeneric_random_from_range(0, 255);
     }
     return G_MEMCHUNK(ptr, size);
+}
+
+ugeneric_t gen_random_void_data(int depth)
+{
+    ugeneric_t gm = gen_random_memchunk(depth);
+    return G_PTR(G_AS_MEMCHUNK_DATA(gm));
 }

@@ -1,4 +1,4 @@
-- implement dict resize (lazy resize, i.e. resize gradually)
+- implement dict lazy resize
 - in case of collision in hash table append a new element to beginning of the chain
 - improve Makefile
 - improve print_trace() to show output similar to GDB (addr2line functionality)
@@ -19,7 +19,7 @@
 - deque shrink_to_size
 - vector slice
 - insert vector into vector
-- dict compare (for all backends)
+- dict compare (for all backends) !!
 - hide RB tree color inside one of the links
 - xxx_set_destroyer,xxx_set_comparator and xxx_set_copier should return the old handler for being able to restore it
 - uqueue_is_full
@@ -27,3 +27,4 @@
 - implement missing methods for void* data management for all containers (only vector contains all as for now)
 - ugeneric_serialize for void*
 - add UTs for file writers (deal with fs garbage)
+- _Genric c11 macros for putting scalars to containers

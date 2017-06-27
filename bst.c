@@ -525,6 +525,9 @@ ubst_t *ubst_create_ext(ubst_balancing_mode_t mode)
     b->root = NULL;
     b->size = 0;
     b->is_data_owner = true;
+    b->cpy = NULL;
+    b->cmp = NULL;
+    b->dtr = NULL;
 
     if (mode == UBST_DEFAULT_BALANCING)
     {

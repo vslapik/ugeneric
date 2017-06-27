@@ -16,8 +16,14 @@ int main(int argc, char **argv)
     printf("==================== %u ======================\n", seed);
     ugeneric_t rv = gen_random_vector(10);
     printf("Generation done ================== %u ==============================\n", seed);
+
+    uvector_sort(G_AS_PTR(rv));
+    uvector_is_sorted(G_AS_PTR(rv));
+    printf("Sorting done ===================== %u ==============================\n", seed);
+
     ugeneric_print(rv);
     printf("Printing done ==================== %u ==============================\n", seed);
+
     ugeneric_destroy(rv, NULL);
     printf("Destoyed ========================= %u ==============================\n", seed);
 }

@@ -16,6 +16,7 @@ ugeneric_t gen_random_vector(int depth);
 ugeneric_t gen_random_dict(int depth);
 ugeneric_t gen_random_string(int depth);
 ugeneric_t gen_random_memchunk(int depth);
+ugeneric_t gen_random_void_data(int depth);
 
 #define UASSERT_STR_EQ(s1, s2) do {                                         \
     const char *__s1 = (s1); if (!__s1) __s1 = "null";                      \
