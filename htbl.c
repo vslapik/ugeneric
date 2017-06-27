@@ -106,37 +106,59 @@ static float _get_load_factor(const uhtbl_t *h)
 {
     return (float)h->number_of_records / h->number_of_buckets;
 }
-/*
-static void _rehash(uhtbl_t *h)
+
+void _put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
 {
-    size_t new_number_of_buckets;
-    uhtbl_record_t **new_buckets;
+    uhtbl_record_t **hr = _find_by_key(h, k);
 
-    new_number_of_buckets = HTBL_SCALE_FACTOR * d->number_of_buckets;
-    new_buckets = ucalloc(new_number_of_buckets,
-                          sizeof(d->buckets[0]));
-
-    for (size_t i = 0; i < d->number_of_buckets; i++)
+    if (*hr)
     {
-        uhtbl_record_t *hr = d->buckets[i];
-        while (dr)
+        // Update existing.
+        if (h->is_data_owner)
         {
-            uhtbl_record_t *hr_next = dr->next;
-            if (d->is_data_owner)
-            {
-                ugeneric_destroy(dr->k, d->dtr);
-                ugeneric_destroy(dr->v, d->dtr);
-            }
-            ufree(dr);
-            dr = dr_next;
+            ugeneric_destroy((*hr)->k, h->dtr);
+            ugeneric_destroy((*hr)->v, h->dtr);
+        }
+        (*hr)->k = k;
+        (*hr)->v = v;
+    }
+    else
+    {
+        // Insert a new one.
+        *hr = umalloc(sizeof(uhtbl_record_t));
+        (*hr)->k = k;
+        (*hr)->v = v;
+        (*hr)->next = NULL;
+        h->number_of_records += 1;
+    }
+}
+
+static void _resize(uhtbl_t *h)
+{
+    uhtbl_t new_table;
+
+    memcpy(&new_table, h, sizeof(*h));
+    new_table.number_of_buckets = HTBL_SCALE_FACTOR * h->number_of_buckets;
+    new_table.buckets = ucalloc(new_table.number_of_buckets,
+                                sizeof(new_table.buckets[0]));
+    new_table.number_of_records = 0;
+
+    for (size_t i = 0; i < h->number_of_buckets; i++)
+    {
+        uhtbl_record_t *hr = h->buckets[i];
+        while (hr)
+        {
+            uhtbl_record_t *t = hr->next;
+            _put(&new_table, hr->k, hr->v);
+            ufree(hr);
+            hr = t;
         }
     }
+    UASSERT(new_table.number_of_records == h->number_of_records);
 
-    //_destroy_buckets(
-
-    d->buckets = new_buckets;
+    ufree(h->buckets);
+    memcpy(h, &new_table, sizeof(*h));
 }
-*/
 
 uhtbl_t *uhtbl_create(void)
 {
@@ -191,33 +213,12 @@ void uhtbl_set_hasher(uhtbl_t *h, void_hasher_t hasher)
 void uhtbl_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
 {
     UASSERT_INPUT(h);
-    uhtbl_record_t **hr = _find_by_key(h, k);
+
+    _put(h, k, v);
 
     if (_get_load_factor(h) >= REHASH_THRESHOLD)
     {
-        //_rehash(d);
-        // todo: implement me
-    }
-
-    if (*hr)
-    {
-        // Update existing.
-        if (h->is_data_owner)
-        {
-            ugeneric_destroy((*hr)->k, h->dtr);
-            ugeneric_destroy((*hr)->v, h->dtr);
-        }
-        (*hr)->k = k;
-        (*hr)->v = v;
-    }
-    else
-    {
-        // Insert a new one.
-        *hr = umalloc(sizeof(uhtbl_record_t));
-        (*hr)->k = k;
-        (*hr)->v = v;
-        (*hr)->next = NULL;
-        h->number_of_records += 1;
+        _resize(h);
     }
 }
 

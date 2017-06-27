@@ -119,6 +119,7 @@ void test_parse(void)
     } tcase_t;
 
     tcase_t tc[] = {
+//        {"\"str\0ing\"", "\"string\"", NULL},
         {"[]", "[]", NULL},
         {"{}", "{}", NULL},
         {"[{}]", "[{}]", NULL},

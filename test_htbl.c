@@ -4,8 +4,27 @@
 #include "string_utils.h"
 #include "ut_utils.h"
 
+void test_resize(void)
+{
+    uhtbl_t *h = uhtbl_create();
+    for (size_t i = 0; i < 1000; i++)
+    {
+        uhtbl_put(h, G_INT(i), G_INT(500 + i));
+    }
+
+    for (size_t i = 0; i < 1000; i++)
+    {
+        ugeneric_t g = uhtbl_get(h, G_INT(i), G_NULL);
+        UASSERT_INT_EQ(i + 500, G_AS_INT(g));
+    }
+
+    uhtbl_destroy(h);
+}
+
 int main(void)
 {
+    test_resize();
+
     uhtbl_t *h = uhtbl_create();
     uhtbl_put(h, G_STR(ustring_dup("one")), G_STR(ustring_dup("one")));
     ugeneric_t g = uhtbl_pop(h, G_STR("one"), G_NULL);
