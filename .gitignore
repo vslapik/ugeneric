@@ -27,3 +27,4 @@ test_sort
 test_stack
 test_string_utils
 test_vector
+test_fuzz

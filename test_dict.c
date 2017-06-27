@@ -64,6 +64,20 @@ void test_udict_const_str(udict_backend_t backend)
     udict_destroy(d);
 }
 
+void test_udict_put(udict_backend_t backend)
+{
+    udict_t *d = udict_create_with_backend(backend);
+    ugeneric_t k = G_STR(ustring_dup("k"));
+    ugeneric_t v = G_STR(ustring_dup("v"));
+
+    udict_put(d, ugeneric_copy(k, NULL), ugeneric_copy(v, NULL));
+    udict_put(d, ugeneric_copy(k, NULL), ugeneric_copy(v, NULL));
+
+    ugeneric_destroy(k, NULL);
+    ugeneric_destroy(v, NULL);
+    udict_destroy(d);
+}
+
 void test_udict_api(udict_backend_t backend)
 {
     udict_t *d = udict_create_with_backend(backend);
@@ -246,9 +260,10 @@ int main(int argc, char **argv)
         test_udict_serialize(i);
         test_large_dict(i);
         test_singe(i);
+        test_udict_put(i);
     }
 
-    i = UDICT_BACKEND_UBST_PLAIN;
+    i = UDICT_BACKEND_BST_PLAIN;
     {
         test_udict_iterator(i);
         test_udict_const_str(i);
@@ -257,5 +272,6 @@ int main(int argc, char **argv)
         test_udict_serialize(i);
         test_large_dict(i);
         test_singe(i);
+        test_udict_put(i);
     }
 }

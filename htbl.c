@@ -269,6 +269,14 @@ void uhtbl_clear(uhtbl_t *h)
     h->number_of_records = 0;
 }
 
+int uhtbl_compare(const uhtbl_t *h1, const uhtbl_t *h2, void_cmp_t cmp)
+{
+    UASSERT_INPUT(h1);
+    UASSERT_INPUT(h2);
+    (void)cmp;
+    UABORT("not implemented");
+}
+
 void uhtbl_serialize(const uhtbl_t *h, ubuffer_t *buf)
 {
     UASSERT_INPUT(h);

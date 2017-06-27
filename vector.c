@@ -22,7 +22,10 @@ static uvector_t *_vcpy(const uvector_t *v, bool deep)
 {
     uvector_t *copy = uvector_create();
     memcpy(copy, v, sizeof(*v));
-    copy->cells = umalloc(v->size * sizeof(copy->cells[0]));
+    if (v->size)
+    {
+        copy->cells = umalloc(v->size * sizeof(copy->cells[0]));
+    }
 
     if (deep)
     {
@@ -38,7 +41,10 @@ static uvector_t *_vcpy(const uvector_t *v, bool deep)
         copy->cpy = 0;
         copy->cmp = 0;
         copy->dtr = 0;
-        memcpy(copy->cells, v->cells, v->size * sizeof(copy->cells[0]));
+        if (v->size)
+        {
+            memcpy(copy->cells, v->cells, v->size * sizeof(copy->cells[0]));
+        }
     }
 
     return copy;
@@ -207,7 +213,7 @@ ugeneric_t uvector_get_at(const uvector_t *v, size_t i)
 ugeneric_t uvector_get_at_random(const uvector_t *v)
 {
     UASSERT_INPUT(v);
-    return v->cells[random_from_range(0, v->size - 1)];
+    return v->cells[ugeneric_random_from_range(0, v->size - 1)];
 }
 
 void uvector_set_at(uvector_t *v, size_t i, ugeneric_t e)

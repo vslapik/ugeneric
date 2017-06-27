@@ -11,6 +11,7 @@
 
 void test_types(void)
 {
+    char *m = ustring_dup("memchunk");
     ugeneric_t g_integer = G_INT(333);
     ugeneric_t g_real = G_REAL(33.33);
     ugeneric_t g_string = G_STR(ustring_dup("hello ugeneric"));
@@ -21,6 +22,7 @@ void test_types(void)
     ugeneric_t g_false = G_FALSE;
     ugeneric_t g_vector = G_VECTOR(uvector_create());
     ugeneric_t g_dict = G_DICT(udict_create());
+    ugeneric_t g_memchunk = G_MEMCHUNK(m, strlen(m));
 
     UASSERT(G_IS_INT(g_integer));
     UASSERT(G_IS_REAL(g_real));
@@ -34,19 +36,61 @@ void test_types(void)
     UASSERT(G_IS_FALSE(g_false));
     UASSERT(G_IS_VECTOR(g_vector));
     UASSERT(G_IS_DICT(g_dict));
+    UASSERT(G_IS_MEMCHUNK(g_memchunk));
+    UASSERT(G_AS_MEMCHUNK_DATA(g_memchunk) == m);
+    UASSERT(G_AS_MEMCHUNK_SIZE(g_memchunk) == strlen(m));
 
-    ugeneric_t g = G_MEMCHUNK(&g, sizeof(g));
-    UASSERT(G_IS_MEMCHUNK(g));
-    UASSERT(G_AS_MEMCHUNK_DATA(g) == &g);
-    UASSERT(G_AS_MEMCHUNK_SIZE(g) == sizeof(g));
-    umemchunk_t t = {.size = 5, .data = "1234\xff"};
-    char *str = umemchunk_as_str(t);
-    UASSERT_STR_EQ("31323334ff", str);
-    ufree(str);
+    ugeneric_t g_integer_copy = ugeneric_copy(g_integer, NULL);
+    ugeneric_t g_real_copy = ugeneric_copy(g_real, NULL);
+    ugeneric_t g_string_copy = ugeneric_copy(g_string, NULL);
+    ugeneric_t g_cstring_copy = ugeneric_copy(g_cstring, NULL);
+    ugeneric_t g_size_copy = ugeneric_copy(g_size, NULL);
+    ugeneric_t g_null_copy = ugeneric_copy(g_null, NULL);
+    ugeneric_t g_true_copy = ugeneric_copy(g_true, NULL);
+    ugeneric_t g_false_copy = ugeneric_copy(g_false, NULL);
+    ugeneric_t g_vector_copy = ugeneric_copy(g_vector, NULL);
+    //ugeneric_t g_dict_copy = ugeneric_copy(g_dict, NULL); TODO: implement
+    ugeneric_t g_memchunk_copy = ugeneric_copy(g_memchunk, NULL);
 
+    UASSERT(G_IS_INT(g_integer_copy));
+    UASSERT(G_IS_REAL(g_real_copy));
+    UASSERT(G_IS_STR(g_string_copy));
+    UASSERT(G_IS_STR(g_cstring_copy)); // copying G_CSTR creates G_STR
+    UASSERT(G_IS_STRING(g_cstring_copy));
+    UASSERT(G_IS_STRING(g_string_copy));
+    UASSERT(G_IS_SIZE(g_size_copy));
+    UASSERT(G_IS_NULL(g_null_copy));
+    UASSERT(G_IS_TRUE(g_true_copy));
+    UASSERT(G_IS_FALSE(g_false_copy));
+    UASSERT(G_IS_VECTOR(g_vector_copy));
+    //UASSERT(G_IS_DICT(g_dict_copy));
+    UASSERT(G_IS_MEMCHUNK(g_memchunk_copy));
+    UASSERT(G_AS_MEMCHUNK_DATA(g_memchunk_copy) != m);
+    UASSERT(G_AS_MEMCHUNK_SIZE(g_memchunk_copy) == strlen(m));
+
+    ugeneric_destroy(g_integer, NULL);
+    ugeneric_destroy(g_real, NULL);
+    ugeneric_destroy(g_string, NULL);
+    ugeneric_destroy(g_cstring, NULL);
+    ugeneric_destroy(g_size, NULL);
+    ugeneric_destroy(g_null, NULL);
+    ugeneric_destroy(g_true, NULL);
+    ugeneric_destroy(g_false, NULL);
     ugeneric_destroy(g_vector, NULL);
     ugeneric_destroy(g_dict, NULL);
-    ugeneric_destroy(g_string, NULL);
+    ugeneric_destroy(g_memchunk, NULL);
+
+    ugeneric_destroy(g_integer_copy, NULL);
+    ugeneric_destroy(g_real_copy, NULL);
+    ugeneric_destroy(g_string_copy, NULL);
+    ugeneric_destroy(g_cstring_copy, NULL);
+    ugeneric_destroy(g_size_copy, NULL);
+    ugeneric_destroy(g_null_copy, NULL);
+    ugeneric_destroy(g_true_copy, NULL);
+    ugeneric_destroy(g_false_copy, NULL);
+    ugeneric_destroy(g_vector_copy, NULL);
+    //ugeneric_destroy(g_dict_copy, NULL);
+    ugeneric_destroy(g_memchunk_copy, NULL);
 }
 
 void test_generic(void)
@@ -62,7 +106,7 @@ void test_random(void)
 {
     while (true)
     {
-        printf("%d\n", random_from_range(0, 20));
+        printf("%d\n", ugeneric_random_from_range(0, 20));
     }
 }
 
@@ -155,7 +199,7 @@ void test_parse(void)
     };
 
     // We need to have the dict to be sorted
-    libugeneric_udict_set_default_backend(UDICT_BACKEND_UBST_RB);
+    libugeneric_udict_set_default_backend(UDICT_BACKEND_BST_RB);
 
     tcase_t *t = tc;
     while (t->in)
@@ -268,6 +312,7 @@ void test_parse_size(void)
 
 int main(int argc, char **argv)
 {
+
     if (argc > 1)
     {
         ugeneric_t g = ufile_read_to_string(argv[1]);

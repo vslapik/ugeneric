@@ -23,6 +23,8 @@ static inline void _skip_whitespaces(const char **str)
 int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
     double f1, f2;
+    size_t s1, s2;
+    int ret = 0;
 
     if (G_IS_ERROR(g1) || G_IS_ERROR(g2))
     {
@@ -30,7 +32,6 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
     }
 
     // Generics of different types are always not equal except G_STR and G_CSTR.
-    int ret = 0;
     if (!(G_IS_STRING(g1) && G_IS_STRING(g2)))
     {
         ret = (ugeneric_get_type(g1) - ugeneric_get_type(g2));
@@ -47,6 +48,11 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
             case G_PTR_T:
                 UASSERT_MSG(cmp, "don't know how to compare void pointers");
                 ret = cmp(G_AS_PTR(g1), G_AS_PTR(g2));
+                break;
+
+            case G_STR_T:
+            case G_CSTR_T:
+                ret = strcmp(G_AS_STR(g1), G_AS_STR(g2));
                 break;
 
             case G_INT_T:
@@ -78,23 +84,23 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 ret = G_AS_SIZE(g1) - G_AS_SIZE(g2);
                 break;
 
+            case G_BOOL_T:
+                ret = G_AS_BOOL(g1) - G_AS_BOOL(g2);
+                break;
+
             case G_VECTOR_T:
                 ret = uvector_compare(G_AS_PTR(g1), G_AS_PTR(g2), cmp);
                 break;
 
-            case G_UDICT_T:
-                UASSERT(0); // not yet implemented
-                break;
-
-            case G_STR_T:
-            case G_CSTR_T:
-                ret = strcmp(G_AS_STR(g1), G_AS_STR(g2));
+            case G_DICT_T:
+                ret = udict_compare(G_AS_PTR(g1), G_AS_PTR(g2), cmp);
                 break;
 
             default: // G_MEMCHUNK_T:
-                UASSERT(G_AS_MEMCHUNK_SIZE(g1) == G_AS_MEMCHUNK_SIZE(g2));
+                s1 = G_AS_MEMCHUNK_SIZE(g1);
+                s2 = G_AS_MEMCHUNK_SIZE(g2);
                 ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
-                             G_AS_MEMCHUNK_SIZE(g1));
+                             MIN(s1, s2));
                 break;
         }
     }
@@ -133,7 +139,7 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
             uvector_destroy(G_AS_PTR(g));
             break;
 
-        case G_UDICT_T:
+        case G_DICT_T:
             udict_destroy(G_AS_PTR(g));
             break;
 
@@ -174,7 +180,7 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
 {
     ugeneric_t ret;
     size_t size;
-    void *p;
+    void *data;
     double d;
 
     switch (g.type.type)
@@ -187,6 +193,7 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
         case G_NULL_T:
         case G_INT_T:
         case G_SIZE_T:
+        case G_BOOL_T:
             ret = g;
             break;
 
@@ -203,7 +210,7 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
             ret = G_VECTOR(uvector_deep_copy(G_AS_PTR(g)));
             break;
 
-        case G_UDICT_T:
+        case G_DICT_T:
             ret = G_DICT(udict_deep_copy(G_AS_PTR(g)));
             break;
 
@@ -218,9 +225,8 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
 
         default: // G_MEMCHUNK_T:
             size = G_AS_MEMCHUNK_SIZE(g);
-            p = umalloc(size);
-            memcpy(p, G_AS_MEMCHUNK_DATA(g), size);
-            ret = G_MEMCHUNK(p, size);
+            data = G_AS_MEMCHUNK_DATA(g);
+            ret = G_MEMCHUNK(umemdup(data, size), size);
             break;
     }
 
@@ -313,7 +319,7 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             uvector_serialize(G_AS_PTR(g), buf);
             break;
 
-        case G_UDICT_T:
+        case G_DICT_T:
             udict_serialize(G_AS_PTR(g), buf);
             break;
 
@@ -787,22 +793,44 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
     return _hash(data, size, 0xbaadf00d);
 }
 
+static bool _rand_is_initialized = false;
+
 /*
- * Generate random number in range [l, h].
- * TODO: quality of this randomness is an open question.
+ * When the thing crashed the seed value should be preserved in core dump.
  */
-int random_from_range(int l, int h)
+static unsigned int _rand_seed = 0;
+
+unsigned int ugeneric_random_init(void)
 {
-    UASSERT_INPUT(l < h);
-    UASSERT_INPUT(h < RAND_MAX);
+    time_t t = time(NULL);
+    // &t returns address of stack variable, stack is subject to ASLR
+    unsigned int seed = (unsigned int)t * (uintptr_t)&t;
+    ugeneric_random_init_with_seed(seed);
+    _rand_seed = seed;
+    return seed;
+}
 
-    static bool rand_is_initialized = false;
+void ugeneric_random_init_with_seed(unsigned int seed)
+{
+    _rand_seed = seed;
+    srand(seed);
+    _rand_is_initialized = true;
+}
 
-    if (!rand_is_initialized)
+/*
+ * Generate random number from range. Range is inclusive, [l, h],
+ * similar to library call rand(), where range is [0, RAND_MAX].
+ */
+int ugeneric_random_from_range(int l, int h)
+{
+    UASSERT_INPUT(l <= h);
+    UASSERT_INPUT(h <= RAND_MAX);
+
+    if (!_rand_is_initialized)
     {
-        srand((unsigned int)time(NULL) * (uintptr_t)&l);
-        rand_is_initialized = true;
+        ugeneric_random_init();
     }
 
+    /* TODO: quality of this randomness is an open question. */
     return l + rand() / ((double)RAND_MAX / (h - l + 1));
 }

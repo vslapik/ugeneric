@@ -15,6 +15,7 @@ void uhtbl_take_data_ownership(uhtbl_t *h);
 void uhtbl_drop_data_ownership(uhtbl_t *h);
 void uhtbl_destroy(uhtbl_t *h);
 void uhtbl_clear(uhtbl_t *h);
+int uhtbl_compare(const uhtbl_t *h1, const uhtbl_t *h2, void_cmp_t cmp);
 void uhtbl_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v);
 ugeneric_t uhtbl_get(const uhtbl_t *h, ugeneric_t k, ugeneric_t vdef);
 ugeneric_t uhtbl_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t vdef);

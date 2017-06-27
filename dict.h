@@ -5,9 +5,9 @@
 
 typedef enum {
     UDICT_BACKEND_DEFAULT,
-    UDICT_BACKEND_UBST_PLAIN,
-    UDICT_BACKEND_UBST_RB,
-    //UDICT_BACKEND_UBST_SPLAY,
+    UDICT_BACKEND_BST_PLAIN,
+    UDICT_BACKEND_BST_RB,
+    //UDICT_BACKEND_BST_SPLAY,
     UDICT_BACKEND_HTBL,
     UDICT_BACKENDS_COUNT, // keep it last
 } udict_backend_t;
@@ -23,6 +23,7 @@ typedef void         (*f_udict_clear)(void *d);
 typedef void         (*f_udict_put)(void *d, ugeneric_t k, ugeneric_t v);
 typedef ugeneric_t   (*f_udict_get)(const void *d, ugeneric_t k, ugeneric_t vdef);
 typedef ugeneric_t   (*f_udict_pop)(void *d, ugeneric_t k, ugeneric_t vdef);
+typedef int          (*f_udict_compare)(const void *d1, const void *d2, void_cmp_t cmp);
 typedef bool         (*f_udict_has_key)(const void *d, ugeneric_t k);
 typedef size_t       (*f_udict_get_size)(const void *d);
 typedef bool         (*f_udict_is_empty)(const void *d);
@@ -45,6 +46,7 @@ typedef struct {
     f_udict_put                 put;
     f_udict_get                 get;
     f_udict_pop                 pop;
+    f_udict_compare             compare;
     f_udict_has_key             has_key;
     f_udict_get_size            get_size;
     f_udict_is_empty            is_empty;
@@ -83,6 +85,7 @@ static inline void udict_clear(udict_t *d) {d->vtable->clear(d->vobj);}
 static inline void udict_put(udict_t *d, ugeneric_t k, ugeneric_t v) {d->vtable->put(d->vobj, k, v);}
 static inline ugeneric_t udict_get(const udict_t *d, ugeneric_t k, ugeneric_t vdef) {return d->vtable->get(d->vobj, k, vdef);}
 static inline ugeneric_t udict_pop(udict_t *d, ugeneric_t k, ugeneric_t vdef) {return d->vtable->pop(d->vobj, k, vdef);}
+static inline int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp) {return d1->vtable->compare(d1, d2, cmp);}
 static inline bool udict_has_key(const udict_t *d, ugeneric_t k) {return d->vtable->has_key(d->vobj, k);}
 static inline size_t udict_get_size(const udict_t *d) {return d->vtable->get_size(d->vobj);}
 static inline bool udict_is_empty(const udict_t *d) {return d->vtable->is_empty(d->vobj);}

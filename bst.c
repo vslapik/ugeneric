@@ -597,6 +597,14 @@ ugeneric_t ubst_pop(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 
 }
 
+int ubst_compare(const ubst_t *b1, const ubst_t *b2, void_cmp_t cmp)
+{
+    UASSERT_INPUT(b1);
+    UASSERT_INPUT(b2);
+    (void)cmp;
+    UABORT("not implemented");
+}
+
 ugeneric_t ubst_get(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 {
     UASSERT_INPUT(b);

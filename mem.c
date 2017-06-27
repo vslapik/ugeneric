@@ -118,6 +118,7 @@ void *umemdup(const void *src, size_t n)
 
 static void _reserve_capacity(ubuffer_t *buf, size_t new_capacity)
 {
+    UASSERT(buf->data_size <= buf->capacity); //TODO: make it internal error
     if (buf->capacity < new_capacity)
     {
         new_capacity = MAX(new_capacity * BUFFER_SCALE_FACTOR,
@@ -207,7 +208,7 @@ void umemchunk_serialize(umemchunk_t m, ubuffer_t *buf)
 
     const char *hex = "0123456789abcdef";
 
-    _reserve_capacity(buf, 2 * m.size);
+    _reserve_capacity(buf, buf->data_size + 2 * m.size);
     for (size_t i = 0; i < m.size; i++)
     {
         unsigned char d = ((unsigned char *)m.data)[i];

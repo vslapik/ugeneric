@@ -15,7 +15,7 @@ checks = $(patsubst test_%, check_%, $(texe))
 hdr = ${src:.c=.h}
 obj = ${src:.c=.o}
 
-all: $(lib) tags test
+all: $(lib) tags test test_fuzz
 
 lib: $(lib)
 
@@ -29,6 +29,11 @@ $(lib): $(obj) tags $(hdr)
 
 tags: $(src) $(hdr)
 	ctags -R .
+
+test_fuzz: $(lib) ut_utils.c test_fuzz.c
+	$(CC) $(CFLAGS) -c ut_utils.c -o ut_utils.o
+	$(CC) $(CFLAGS) -c test_fuzz.c -o test_fuzz.o
+	$(CC) $(CFLAGS) ut_utils.o test_fuzz.o $(lib) -o $@ -lgcov
 
 .PHONY: clean
 clean:

@@ -128,7 +128,7 @@ static uvector_t *_min_cut(const ugraph_t *g)
     udsu_t *d = udsu_create(vertex_count);
     while (vertex_count > 2)
     {
-        size_t i = random_from_range(0, uvector_get_size(edgestmp) - 1);
+        size_t i = ugeneric_random_from_range(0, uvector_get_size(edgestmp) - 1);
         ugraph_edge_t *ge = G_AS_PTR(uvector_get_at(edgestmp, i));
         if (!udsu_is_united(d, ge->f, ge->t))
         {

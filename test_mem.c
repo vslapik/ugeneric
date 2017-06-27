@@ -2,6 +2,7 @@
 #include <limits.h>
 #include "mem.h"
 #include "vector.h"
+#include "string_utils.h"
 #include "ut_utils.h"
 
 /* to disable linux overcommit "sysctl vm.overcommit_memory=2" */
@@ -10,8 +11,6 @@ bool oom(void *data)
 {
     uvector_t *v = data;
     uvector_destroy(v);
-
-    exit(0);
 
     fprintf(stderr, "tryint to clean up things out ...\n");
     uvector_clear(v);
@@ -23,12 +22,12 @@ bool oom(void *data)
 
 void test_umemdup(void)
 {
-    char *str = umemdup("string", 5);
+    char *str = umemdup("string", sizeof("string"));
     UASSERT_STR_EQ(str, "string");
     ufree(str);
 }
 
-int main(void)
+void test_oom(void)
 {
     size_t i = 0;
 
@@ -50,5 +49,28 @@ int main(void)
         }
         printf("%zu\n", i++);
     }
+}
 
+void test_memchunk(void)
+{
+    char *data = ustring_dup("1234\xff");
+    uvector_t *v = uvector_create();
+    umemchunk_t t = {.size = 5, .data = data};
+    ugeneric_t gm = G_MEMCHUNK(t.data, t.size);
+    uvector_append(v, gm);
+    uvector_append(v, ugeneric_copy(gm, NULL));
+    uvector_append(v, G_VECTOR(uvector_copy(v)));
+
+    char *str = uvector_as_str(v);
+    UASSERT_STR_EQ(str, "[31323334ff, 31323334ff, [31323334ff, 31323334ff]]");
+    ufree(str);
+    uvector_destroy(v);
+}
+
+int main(void)
+{
+    test_umemdup();
+    test_memchunk();
+
+//    test_oom();
 }

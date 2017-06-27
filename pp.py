@@ -21,7 +21,6 @@ class GenericsPrettyPrinter:
                 "G_CSTR_T":  str(v['cstr']),
                 "G_INT_T":   str(v['integer']),
                 "G_REAL_T":  str(v['real']),
-                "G_CHR_T":   str(v['chr']),
                 "G_SIZE_T":  str(v['size']),
                 "G_BOOL_T":  str(v['boolean']),
                 "G_VECTOR_T": str(v['ptr']),

@@ -6,10 +6,18 @@
 #include <sys/resource.h>
 #include <errno.h>
 #include <string.h>
-
+#include "generic.h"
+#include "vector.h"
+#include "dict.h"
 #include "backtrace.h"
 
-#define UASSERT_STR_EQ(s1, s2) do {                                          \
+ugeneric_t gen_random_generic(int depth);
+ugeneric_t gen_random_vector(int depth);
+ugeneric_t gen_random_dict(int depth);
+ugeneric_t gen_random_string(int depth);
+ugeneric_t gen_random_memchunk(int depth);
+
+#define UASSERT_STR_EQ(s1, s2) do {                                         \
     const char *__s1 = (s1); if (!__s1) __s1 = "null";                      \
     const char *__s2 = (s2); if (!__s2) __s2 = "null";                      \
     if (strcmp(__s1, __s2) != 0)                                            \
@@ -21,7 +29,7 @@
     }                                                                       \
 } while (0)
 
-#define UASSERT_INT_EQ(i1, i2) do {                                          \
+#define UASSERT_INT_EQ(i1, i2) do {                                         \
     long __i1 = (i1);                                                       \
     long __i2 = (i2);                                                       \
     if (__i1 != __i2)                                                       \
@@ -33,7 +41,7 @@
     }                                                                       \
 } while (0)
 
-#define UASSERT_SIZE_EQ(sz1, sz2) do {                                       \
+#define UASSERT_SIZE_EQ(sz1, sz2) do {                                      \
     size_t __sz1 = (sz1);                                                   \
     size_t __sz2 = (sz2);                                                   \
     if (__sz1 != __sz2)                                                     \
@@ -45,7 +53,7 @@
     }                                                                       \
 } while (0)
 
-#define UASSERT_UABORTS(s) do {                                               \
+#define UASSERT_UABORTS(s) do {                                             \
     pid_t pid = fork();                                                     \
     if (pid == 0)                                                           \
     {                                                                       \
@@ -83,7 +91,7 @@
             if (!WIFSIGNALED(status) ||                                     \
                 WTERMSIG(status) != 6)                                      \
             {                                                               \
-                printf("Expected UABORT at %s:%u didn't happen.\n",          \
+                printf("Expected UABORT at %s:%u didn't happen.\n",         \
                         __FILE__, __LINE__);                                \
                 return EXIT_FAILURE;                                        \
             }                                                               \

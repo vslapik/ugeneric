@@ -15,6 +15,7 @@ static const udict_vtable_t _uhtbl_vtable = {
     .put                 = (f_udict_put)uhtbl_put,
     .get                 = (f_udict_get)uhtbl_get,
     .pop                 = (f_udict_pop)uhtbl_pop,
+    .compare             = (f_udict_compare)uhtbl_compare,
     .has_key             = (f_udict_has_key)uhtbl_has_key,
     .get_size            = (f_udict_get_size)uhtbl_get_size,
     .is_empty            = (f_udict_is_empty)uhtbl_is_empty,
@@ -33,6 +34,7 @@ static const udict_vtable_t _ubst_vtable = {
     .put                 = (f_udict_put)ubst_put,
     .get                 = (f_udict_get)ubst_get,
     .pop                 = (f_udict_pop)ubst_pop,
+    .compare             = (f_udict_compare)ubst_compare,
     .has_key             = (f_udict_has_key)ubst_has_key,
     .get_size            = (f_udict_get_size)ubst_get_size,
     .is_empty            = (f_udict_is_empty)ubst_is_empty,
@@ -54,7 +56,7 @@ static const udict_iterator_vtable_t _ubst_iterator_vtable = {
     .reset               = (f_udict_iterator_reset)ubst_iterator_reset,
 };
 
-static udict_backend_t _default_backend = UDICT_BACKEND_HTBL;
+static udict_backend_t _default_backend = UDICT_BACKEND_BST_PLAIN;
 
 void libugeneric_udict_set_default_backend(udict_backend_t backend)
 {
@@ -86,11 +88,11 @@ udict_t *udict_create_with_backend(udict_backend_t backend)
             d->vobj = uhtbl_create();
             d->vtable = &_uhtbl_vtable;
             break;
-        case UDICT_BACKEND_UBST_PLAIN:
+        case UDICT_BACKEND_BST_PLAIN:
             d->vobj = ubst_create_ext(UBST_NO_BALANCING);
             d->vtable = &_ubst_vtable;
             break;
-        case UDICT_BACKEND_UBST_RB:
+        case UDICT_BACKEND_BST_RB:
             d->vobj = ubst_create_ext(UBST_RB_BALANCING);
             d->vtable = &_ubst_vtable;
             break;
@@ -109,8 +111,8 @@ void udict_destroy(udict_t *d)
         case UDICT_BACKEND_HTBL:
             uhtbl_destroy(d->vobj);
             break;
-        case UDICT_BACKEND_UBST_PLAIN:
-        case UDICT_BACKEND_UBST_RB:
+        case UDICT_BACKEND_BST_PLAIN:
+        case UDICT_BACKEND_BST_RB:
             ubst_destroy(d->vobj);
             break;
         default:
@@ -131,8 +133,8 @@ udict_iterator_t *udict_iterator_create(const udict_t *d)
             di->vobj = uhtbl_iterator_create(d->vobj);
             di->vtable = &_uhtbl_iterator_vtable;
             break;
-        case UDICT_BACKEND_UBST_PLAIN:
-        case UDICT_BACKEND_UBST_RB:
+        case UDICT_BACKEND_BST_PLAIN:
+        case UDICT_BACKEND_BST_RB:
             di->vobj = ubst_iterator_create(d->vobj);
             di->vtable = &_ubst_iterator_vtable;
             break;
@@ -152,8 +154,8 @@ void udict_iterator_destroy(udict_iterator_t *di)
             case UDICT_BACKEND_HTBL:
                 uhtbl_iterator_destroy(di->vobj);
                 break;
-            case UDICT_BACKEND_UBST_PLAIN:
-            case UDICT_BACKEND_UBST_RB:
+            case UDICT_BACKEND_BST_PLAIN:
+            case UDICT_BACKEND_BST_RB:
                 ubst_iterator_destroy(di->vobj);
                 break;
             default:
@@ -165,6 +167,6 @@ void udict_iterator_destroy(udict_iterator_t *di)
 
 udict_t *udict_deep_copy(const udict_t *d)
 {
-    (void)d;
+    UASSERT_INPUT(d);
     UABORT("not implemented");
 }
