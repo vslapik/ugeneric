@@ -9,13 +9,13 @@
 static const udict_vtable_t _uhtbl_vtable = {
     .set_destroyer       = (f_udict_set_destroyer)uhtbl_set_destroyer,
     .set_comparator      = (f_udict_set_comparator)uhtbl_set_comparator,
+    .set_copier          = (f_udict_set_copier)uhtbl_set_copier,
     .take_data_ownership = (f_udict_take_data_ownership)uhtbl_take_data_ownership,
     .drop_data_ownership = (f_udict_drop_data_ownership)uhtbl_drop_data_ownership,
     .clear               = (f_udict_clear)uhtbl_clear,
     .put                 = (f_udict_put)uhtbl_put,
     .get                 = (f_udict_get)uhtbl_get,
     .pop                 = (f_udict_pop)uhtbl_pop,
-    .compare             = (f_udict_compare)uhtbl_compare,
     .has_key             = (f_udict_has_key)uhtbl_has_key,
     .get_size            = (f_udict_get_size)uhtbl_get_size,
     .is_empty            = (f_udict_is_empty)uhtbl_is_empty,
@@ -28,13 +28,13 @@ static const udict_vtable_t _uhtbl_vtable = {
 static const udict_vtable_t _ubst_vtable = {
     .set_destroyer       = (f_udict_set_destroyer)ubst_set_destroyer,
     .set_comparator      = (f_udict_set_comparator)ubst_set_comparator,
+    .set_copier          = (f_udict_set_copier)ubst_set_copier,
     .take_data_ownership = (f_udict_take_data_ownership)ubst_take_data_ownership,
     .drop_data_ownership = (f_udict_drop_data_ownership)ubst_drop_data_ownership,
     .clear               = (f_udict_clear)ubst_clear,
     .put                 = (f_udict_put)ubst_put,
     .get                 = (f_udict_get)ubst_get,
     .pop                 = (f_udict_pop)ubst_pop,
-    .compare             = (f_udict_compare)ubst_compare,
     .has_key             = (f_udict_has_key)ubst_has_key,
     .get_size            = (f_udict_get_size)ubst_get_size,
     .is_empty            = (f_udict_is_empty)ubst_is_empty,
@@ -165,8 +165,56 @@ void udict_iterator_destroy(udict_iterator_t *di)
     }
 }
 
-udict_t *udict_deep_copy(const udict_t *d)
+#define UDICT_ON_BST(d) ((d->backend == UDICT_BACKEND_BST_PLAIN) || \
+                         (d->backend == UDICT_BACKEND_BST_RB))
+
+int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
+{
+    UASSERT_INPUT(d1);
+    UASSERT_INPUT(d2);
+
+    if (d1 == d2)
+    {
+        return 0;
+    }
+
+    if ((d1->backend == UDICT_BACKEND_HTBL) && (d2->backend == UDICT_BACKEND_HTBL))
+    {
+        return uhtbl_compare(d1->vobj, d2->vobj, cmp);
+    }
+    else if (UDICT_ON_BST(d1) && UDICT_ON_BST(d2))
+    {
+        return ubst_compare(d1->vobj, d2->vobj, cmp);
+    }
+    else
+    {
+        //UABORT("not implemented");
+        return 0;
+    }
+}
+
+void *udict_copy(const udict_t *d)
 {
     UASSERT_INPUT(d);
     UABORT("not implemented");
+}
+
+void *udict_deep_copy(const udict_t *d)
+{
+    UASSERT_INPUT(d);
+    UABORT("not implemented");
+}
+
+void udict_set_hasher(udict_t *d, void_hasher_t hasher)
+{
+    UASSERT_INPUT(d);
+    UASSERT_INPUT(d->backend == UDICT_BACKEND_HTBL);
+    uhtbl_set_hasher(d->vobj, hasher);
+}
+
+void udict_set_key_comparator(udict_t *d, void_cmp_t cmp)
+{
+    UASSERT_INPUT(d);
+    UASSERT_INPUT(d->backend == UDICT_BACKEND_HTBL);
+    uhtbl_set_key_comparator(d->vobj, cmp);
 }

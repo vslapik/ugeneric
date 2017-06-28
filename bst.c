@@ -597,15 +597,53 @@ ugeneric_t ubst_pop(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
     }
 
     return ret;
-
 }
 
 int ubst_compare(const ubst_t *b1, const ubst_t *b2, void_cmp_t cmp)
 {
     UASSERT_INPUT(b1);
     UASSERT_INPUT(b2);
-    (void)cmp;
-    UABORT("not implemented");
+
+    int ret = 0;
+    ubst_iterator_t *bi1 = ubst_iterator_create(b1);
+    ubst_iterator_t *bi2 = ubst_iterator_create(b2);
+
+    while (ubst_iterator_has_next(bi1) && ubst_iterator_has_next(bi2))
+    {
+        ugeneric_kv_t kv1 = ubst_iterator_get_next(bi1);
+        ugeneric_kv_t kv2 = ubst_iterator_get_next(bi2);
+        ret = ugeneric_compare(kv1.k, kv2.k, cmp);
+        if (ret != 0)
+        {
+            break;
+        }
+        ret = ugeneric_compare(kv1.v, kv2.v, cmp);
+        if (ret != 0)
+        {
+            break;
+        }
+    }
+
+    if (ret == 0)
+    {
+        if (ubst_iterator_has_next(bi1) && !ubst_iterator_has_next(bi2))
+        {
+            ret = 1;
+        }
+        else if (!ubst_iterator_has_next(bi1) && ubst_iterator_has_next(bi2))
+        {
+            ret = -1;
+        }
+        else
+        {
+            ret = 0;
+        }
+    }
+
+    ubst_iterator_destroy(bi1);
+    ubst_iterator_destroy(bi2);
+
+    return ret;
 }
 
 ugeneric_t ubst_get(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
@@ -714,6 +752,12 @@ void ubst_set_comparator(ubst_t *b, void_cmp_t cmp)
 {
     UASSERT_INPUT(b);
     b->cmp = cmp;
+}
+
+void ubst_set_copier(ubst_t *b, void_cpy_t cpy)
+{
+    UASSERT_INPUT(b);
+    b->cpy = cpy;
 }
 
 typedef struct {
@@ -854,6 +898,50 @@ void ubst_iterator_destroy(ubst_iterator_t *bi)
         ustack_destroy(bi->stack);
         ufree(bi);
     }
+}
+
+uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind)
+{
+    UASSERT_INPUT(b);
+
+    ubst_iterator_t *bi = ubst_iterator_create(b);
+    uvector_t *v = uvector_create();
+    uvector_reserve_capacity(v, b->size);
+    while (ubst_iterator_has_next(bi))
+    {
+        ugeneric_kv_t item = ubst_iterator_get_next(bi);
+        ugeneric_kv_t *kv;
+        switch (kind)
+        {
+            case UDICT_KEYS:
+                uvector_append(v, item.k);
+                break;
+            case UDICT_VALUES:
+                uvector_append(v, item.v);
+                break;
+            case UDICT_KV:
+                kv = umalloc(sizeof(*kv));
+                *kv = item;
+                uvector_append(v, G_PTR(kv));
+                break;
+            default:
+                UABORT("internal error");
+        }
+    }
+    ubst_iterator_destroy(bi);
+
+    uvector_set_comparator(v, b->cmp); // vector sort should use original cmp
+    uvector_shrink_to_size(v);
+    if (kind == UDICT_KV)
+    {
+        uvector_set_destroyer(v, ufree);
+    }
+    else
+    {
+        uvector_drop_data_ownership(v);
+    }
+
+    return v;
 }
 
 typedef struct {

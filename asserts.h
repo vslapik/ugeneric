@@ -19,6 +19,20 @@
     #define UASSERT_INPUT(cond) (void)(cond)
 #endif
 
+#ifndef DISABLE_UASSERT_INTERNAL
+    #define UASSERT_INTERNAL(cond) do {                                     \
+        if (!(cond))                                                        \
+        {                                                                   \
+            fprintf(stderr, "Sanity violation at %s:%d, the \"impossible\" happened.\n", \
+                    __FILE__, __LINE__);                                    \
+            utrace_print();                                                 \
+            abort();                                                        \
+        }                                                                   \
+    } while (0)
+#else
+    #define UASSERT_INTERNAL(cond) (void)(cond)
+#endif
+
 #define UASSERT(cond) do {                                                  \
     if (!(cond))                                                            \
     {                                                                       \

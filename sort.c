@@ -154,11 +154,11 @@ static void _hsort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
 
 size_t count_inversions(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    UASSERT_INPUT(base);
 
     size_t inv = 0;
     if (nmemb > 1)
     {
+        UASSERT_INPUT(base);
         ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
         inv = _merge_sort(base, aux, nmemb, cmp);
         ufree(aux);
@@ -169,37 +169,38 @@ size_t count_inversions(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 
 void quick_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    UASSERT_INPUT(base);
-    if (nmemb)
+    if (nmemb > 1)
     {
-      _quick_sort(base, 0, nmemb, cmp);
+        UASSERT_INPUT(base);
+        _quick_sort(base, 0, nmemb, cmp);
     }
 }
 
 void selection_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    UASSERT_INPUT(base);
-
-    for (size_t i = 0; i < nmemb - 1; i++) // the very last element intentionally omitted
+    if (nmemb > 1)
     {
-        size_t min = i;
-        for (size_t j = i + 1; j < nmemb; j++)
+        UASSERT_INPUT(base);
+        for (size_t i = 0; i < nmemb - 1; i++) // the very last element intentionally omitted
         {
-            if (ugeneric_compare(base[min], base[j], cmp) > 0)
+            size_t min = i;
+            for (size_t j = i + 1; j < nmemb; j++)
             {
-                min = j;
+                if (ugeneric_compare(base[min], base[j], cmp) > 0)
+                {
+                    min = j;
+                }
             }
+            ugeneric_swap(base + min, base + i);
         }
-        ugeneric_swap(base + min, base + i);
     }
 }
 
 void merge_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    UASSERT_INPUT(base);
-
     if (nmemb > 1)
     {
+        UASSERT_INPUT(base);
         ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
          _merge_sort(base, aux, nmemb, cmp);
         ufree(aux);
@@ -208,15 +209,18 @@ void merge_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 
 void insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    UASSERT_INPUT(base);
     if (nmemb > 1)
     {
+        UASSERT_INPUT(base);
         _insertion_sort(base, nmemb, cmp);
     }
 }
 
 void hybrid_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    UASSERT_INPUT(base);
-    _hsort(base, 0, nmemb, cmp);
+    if (nmemb > 1)
+    {
+        UASSERT_INPUT(base);
+        _hsort(base, 0, nmemb, cmp);
+    }
 }

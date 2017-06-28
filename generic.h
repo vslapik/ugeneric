@@ -181,6 +181,12 @@ static inline int ugeneric_print_v(ugeneric_t g, void_s8r_t void_serializer) {re
 static inline int ugeneric_print(ugeneric_t g)             {return ugeneric_print_v(g, NULL);}
 static inline int ugeneric_fprint(ugeneric_t g, FILE *out) {return ugeneric_fprint_v(g, out, NULL);}
 
+typedef enum {
+    UDICT_KEYS,
+    UDICT_VALUES,
+    UDICT_KV,
+} udict_items_kind_t;
+
 // MAX and MIN are not side-effect free, be cautious.
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))

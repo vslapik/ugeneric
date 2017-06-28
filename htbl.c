@@ -206,6 +206,18 @@ void uhtbl_set_hasher(uhtbl_t *h, void_hasher_t hasher)
     h->hasher = hasher;
 }
 
+void uhtbl_set_key_comparator(uhtbl_t *h, void_cmp_t cmp)
+{
+    UASSERT_INPUT(h);
+    h->key_cmp = cmp;
+}
+
+void uhtbl_set_copier(uhtbl_t *h, void_cpy_t cpy)
+{
+    UASSERT_INPUT(h);
+    h->cpy = cpy;
+}
+
 /*
  * Puts without copy, keys and values which contains pointers
  * may cause issue if you forget who owns the data.
@@ -274,8 +286,42 @@ int uhtbl_compare(const uhtbl_t *h1, const uhtbl_t *h2, void_cmp_t cmp)
 {
     UASSERT_INPUT(h1);
     UASSERT_INPUT(h2);
-    (void)cmp;
-    UABORT("not implemented");
+
+    if (h1 == h2)
+    {
+        return 0;
+    }
+
+    int diff = 0;
+    uvector_t *vkeys1 = uhtbl_get_keys(h1);
+    uvector_t *vkeys2 = uhtbl_get_keys(h2);
+    uvector_sort(vkeys1);
+    uvector_sort(vkeys2);
+
+    ugeneric_t *keys1 = uvector_get_cells(vkeys1);
+    ugeneric_t *keys2 = uvector_get_cells(vkeys2);
+    size_t keys1_len = uvector_get_size(vkeys1);
+    size_t keys2_len = uvector_get_size(vkeys2);
+    size_t len = MIN(keys1_len, keys2_len);
+
+    for (size_t i = 0; i < len; i++)
+    {
+        diff = ugeneric_compare(keys1[i], keys2[i], cmp);
+        if (diff)
+        {
+            break;
+        }
+    }
+
+    if (!diff)
+    {
+        diff = keys1_len - keys2_len;
+    }
+
+    uvector_destroy(vkeys1);
+    uvector_destroy(vkeys2);
+
+    return diff;
 }
 
 void uhtbl_serialize(const uhtbl_t *h, ubuffer_t *buf)
@@ -442,32 +488,46 @@ bool uhtbl_has_key(const uhtbl_t *h, ugeneric_t k)
     return *_find_by_key(h, k) != NULL;
 }
 
-uvector_t *uhtbl_get_keys(const uhtbl_t *h)
+uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind)
 {
+    UASSERT_INPUT(h);
+
     uhtbl_iterator_t *hi = uhtbl_iterator_create(h);
     uvector_t *v = uvector_create();
     uvector_reserve_capacity(v, h->number_of_records);
-    uvector_drop_data_ownership(v);
     while (uhtbl_iterator_has_next(hi))
     {
-        uvector_append(v, uhtbl_iterator_get_next(hi).k);
+        ugeneric_kv_t item = uhtbl_iterator_get_next(hi);
+        ugeneric_kv_t *kv;
+        switch (kind)
+        {
+            case UDICT_KEYS:
+                uvector_append(v, item.k);
+                break;
+            case UDICT_VALUES:
+                uvector_append(v, item.v);
+                break;
+            case UDICT_KV:
+                kv = umalloc(sizeof(*kv));
+                *kv = item;
+                uvector_append(v, G_PTR(kv));
+                break;
+            default:
+                UABORT("internal error");
+        }
     }
     uhtbl_iterator_destroy(hi);
 
-    return v;
-}
-
-uvector_t *uhtbl_get_values(const uhtbl_t *h)
-{
-    uhtbl_iterator_t *hi = uhtbl_iterator_create(h);
-    uvector_t *v = uvector_create();
-    uvector_reserve_capacity(v, h->number_of_records);
-    uvector_drop_data_ownership(v);
-    while (uhtbl_iterator_has_next(hi))
+    uvector_set_comparator(v, h->cmp); // vector sort should use original cmp
+    uvector_shrink_to_size(v);
+    if (kind == UDICT_KV)
     {
-        uvector_append(v, uhtbl_iterator_get_next(hi).v);
+        uvector_set_destroyer(v, ufree);
     }
-    uhtbl_iterator_destroy(hi);
+    else
+    {
+        uvector_drop_data_ownership(v);
+    }
 
     return v;
 }

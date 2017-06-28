@@ -24,7 +24,7 @@ class GenericsPrettyPrinter:
                 "G_SIZE_T":  str(v['size']),
                 "G_BOOL_T":  str(v['boolean']),
                 "G_VECTOR_T": str(v['ptr']),
-                "G_UDICT_T":   str(v['ptr']),
+                "G_DICT_T":  str(v['ptr']),
             }.get(str(t['type']), "unknown") + "}"
 
 def print_ugeneric_t(val):

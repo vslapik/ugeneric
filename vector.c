@@ -71,8 +71,13 @@ int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp)
     UASSERT_INPUT(v1);
     UASSERT_INPUT(v2);
 
-    size_t size = MIN(v1->size, v2->size);
-    for (size_t i = 0; i < size; i++)
+    if (v1 == v2)
+    {
+        return 0;
+    }
+
+    size_t len = MIN(v1->size, v2->size);
+    for (size_t i = 0; i < len; i++)
     {
         int diff = ugeneric_compare(v1->cells[i], v2->cells[i], cmp);
         if (diff)
@@ -266,7 +271,7 @@ void uvector_shrink_to_size(uvector_t *v)
 {
     UASSERT_INPUT(v);
 
-    if (v->capacity && v->size)
+    if (v->capacity && v->size && (v->capacity > v->size))
     {
         void *p = urealloc(v->cells, v->size * sizeof(v->cells[0]));
         v->cells = p;

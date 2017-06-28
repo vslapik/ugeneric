@@ -46,7 +46,7 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 break;
 
             case G_PTR_T:
-                UASSERT_MSG(cmp, "don't know how to compare void pointers");
+                UASSERT_MSG(cmp, "don't know how to compare void data");
                 ret = cmp(G_AS_PTR(g1), G_AS_PTR(g2));
                 break;
 
@@ -96,7 +96,8 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 ret = udict_compare(G_AS_PTR(g1), G_AS_PTR(g2), cmp);
                 break;
 
-            default: // G_MEMCHUNK_T:
+            default: // G_MEMCHUNK_T
+                UASSERT_INTERNAL(g1.type.type >= G_MEMCHUNK_T);
                 s1 = G_AS_MEMCHUNK_SIZE(g1);
                 s2 = G_AS_MEMCHUNK_SIZE(g2);
                 ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
@@ -115,7 +116,7 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
     switch (g.type.type)
     {
         case G_PTR_T:
-            UASSERT_MSG(dtr, "don't know how to destroy void pointer");
+            UASSERT_MSG(dtr, "don't know how to destroy void data");
             dtr(G_AS_PTR(g));
             break;
 
@@ -151,7 +152,8 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
             UABORT("attempt to destroy G_ERROR object");
             break;
 
-        default: // G_MEMCHUNK_T:
+        default: // G_MEMCHUNK_T
+            UASSERT_INTERNAL(g.type.type >= G_MEMCHUNK_T);
             ufree(G_AS_MEMCHUNK_DATA(g));
             break;
     }
@@ -186,7 +188,7 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
     switch (g.type.type)
     {
         case G_PTR_T:
-            UASSERT_MSG(cpy, "don't know how to copy void pointer");
+            UASSERT_MSG(cpy, "don't know how to copy void data");
             ret = G_PTR(cpy(G_AS_PTR(g)));
             break;
 
@@ -223,7 +225,8 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
             UABORT("attempt to copy G_ERROR object");
             break;
 
-        default: // G_MEMCHUNK_T:
+        default: // G_MEMCHUNK_T
+            UASSERT_INTERNAL(g.type.type >= G_MEMCHUNK_T);
             size = G_AS_MEMCHUNK_SIZE(g);
             data = G_AS_MEMCHUNK_DATA(g);
             ret = G_MEMCHUNK(umemdup(data, size), size);
@@ -331,7 +334,8 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             UABORT("attempt to serialize G_ERROR object");
             break;
 
-        default: // G_MEMCHUNK_T:
+        default: // G_MEMCHUNK_T
+            UASSERT_INTERNAL(g.type.type >= G_MEMCHUNK_T);
             umemchunk_serialize(G_AS_MEMCHUNK(g), buf);
             break;
     }
@@ -629,11 +633,14 @@ void ugeneric_array_reverse(ugeneric_t *base, size_t nmemb, size_t l, size_t r)
 
 bool ugeneric_array_is_sorted(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    for (size_t i = 0; i < nmemb - 1; i++)
+    if (nmemb > 1)
     {
-        if (ugeneric_compare(base[i], base[i + 1], cmp) > 0)
+        for (size_t i = 0; i < nmemb - 1; i++)
         {
-            return false;
+            if (ugeneric_compare(base[i], base[i + 1], cmp) > 0)
+            {
+                return false;
+            }
         }
     }
     return true;
@@ -642,32 +649,33 @@ bool ugeneric_array_is_sorted(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 
 bool ugeneric_array_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-    UASSERT_INPUT(base);
-
-    if (!nmemb)
-        return false;
-
-    size_t i = nmemb - 1;
-    while (i > 0 && ugeneric_compare(base[i - 1], base[i], cmp) >= 0)
+    if (nmemb > 1)
     {
-       i--;
+        UASSERT_INPUT(base);
+
+        size_t i = nmemb - 1;
+        while (i > 0 && ugeneric_compare(base[i - 1], base[i], cmp) >= 0)
+        {
+           i--;
+        }
+
+        if (i == 0)
+        {
+            return false;
+        }
+
+        size_t j = nmemb - 1;
+        while (ugeneric_compare(base[j], base[i - 1], cmp) <= 0)
+        {
+            j--;
+        }
+
+        ugeneric_swap(&base[i - 1], &base[j]);
+        ugeneric_array_reverse(base, nmemb, i, nmemb - 1);
+
+        return true;
     }
-
-    if (i == 0)
-    {
-        return false;
-    }
-
-    size_t j = nmemb - 1;
-    while (ugeneric_compare(base[j], base[i - 1], cmp) <= 0)
-    {
-        j--;
-    }
-
-    ugeneric_swap(&base[i - 1], &base[j]);
-    ugeneric_array_reverse(base, nmemb, i, nmemb - 1);
-
-    return true;
+    return false;
 }
 
 static size_t _bsearch(ugeneric_t base[], size_t l, size_t r,
@@ -761,6 +769,7 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
             return 0;
 
         case G_PTR_T:
+            UASSERT_MSG(hasher, "don't know how to hash void data");
             return hasher(G_AS_PTR(g));
 
         case G_STR_T:
@@ -783,7 +792,12 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
         case G_BOOL_T:
             return G_AS_BOOL(g);
 
-        default: // G_MEMCHUNK_T:
+        case G_VECTOR_T:
+        case G_DICT_T:
+            UABORT("object is not hashable");
+
+        default: // G_MEMCHUNK_T
+            UASSERT_INTERNAL(g.type.type >= G_MEMCHUNK_T);
             data = G_AS_MEMCHUNK_DATA(g);
             size = G_AS_MEMCHUNK_SIZE(g);
             break;

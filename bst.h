@@ -2,10 +2,10 @@
 #define UBST_H__
 
 #include "generic.h"
+#include "vector.h"
 
 typedef struct ubst_opaq ubst_t;
 typedef struct ubst_iterator_opaq ubst_iterator_t;
-
 
 typedef enum {
     UBST_PREORDER,
@@ -27,6 +27,7 @@ ubst_t *ubst_create(void);
 ubst_t *ubst_create_ext(ubst_balancing_mode_t mode);
 void ubst_set_destroyer(ubst_t *b, void_dtr_t dtr);
 void ubst_set_comparator(ubst_t *b, void_cmp_t cmp);
+void ubst_set_copier(ubst_t *b, void_cpy_t cpy);
 void ubst_destroy(ubst_t *b);
 void ubst_drop_data_ownership(ubst_t *b);
 void ubst_take_data_ownership(ubst_t *b);
@@ -62,5 +63,9 @@ ugeneric_kv_t ubst_iterator_get_next(ubst_iterator_t *bi);
 bool ubst_iterator_has_next(const ubst_iterator_t *bi);
 void ubst_iterator_reset(ubst_iterator_t *bi);
 void ubst_iterator_destroy(ubst_iterator_t *bi);
+
+uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind);
+static inline uvector_t *ubst_get_keys(const ubst_t *b) { return ubst_get_items(b, UDICT_KEYS); }
+static inline uvector_t *ubst_get_values(const ubst_t *b) { return ubst_get_items(b, UDICT_VALUES); }
 
 #endif

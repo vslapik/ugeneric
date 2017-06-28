@@ -6,17 +6,18 @@
 #include <sys/resource.h>
 #include <errno.h>
 #include <string.h>
+#include <stdbool.h>
 #include "generic.h"
 #include "vector.h"
 #include "dict.h"
 #include "backtrace.h"
 
-ugeneric_t gen_random_generic(int depth);
-ugeneric_t gen_random_vector(int depth);
-ugeneric_t gen_random_dict(int depth);
-ugeneric_t gen_random_string(int depth);
-ugeneric_t gen_random_memchunk(int depth);
-ugeneric_t gen_random_void_data(int depth);
+ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable);
+ugeneric_t gen_random_vector(int depth, bool verbose);
+ugeneric_t gen_random_dict(int depth, bool verbose);
+ugeneric_t gen_random_string(int depth, bool verbose);
+ugeneric_t gen_random_memchunk(int depth, bool verbose);
+ugeneric_t gen_random_void_data(int depth, bool verbose);
 
 #define UASSERT_STR_EQ(s1, s2) do {                                         \
     const char *__s1 = (s1); if (!__s1) __s1 = "null";                      \
