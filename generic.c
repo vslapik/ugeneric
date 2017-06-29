@@ -162,13 +162,14 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
 void ugeneric_error_print(ugeneric_t g)
 {
     UASSERT_INPUT(ugeneric_get_type(g) == G_ERROR_T);
+
     if (G_AS_STR(g))
     {
-        puts(G_AS_STR(g));
+        fprintf(stderr, "%s\n", G_AS_STR(g));
     }
     else
     {
-        puts("No error message.");
+        fputs("Unknown error.\n", stderr);
     }
 }
 
