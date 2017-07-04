@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     }
 
     printf("================================== %u ==============================\n", seed);
-    ugeneric_t rv = gen_random_vector(12, verbose);
+    ugeneric_t rv = gen_random_vector(11, verbose);
     printf("Generation done ================== %u ==============================\n", seed);
 
     uvector_sort(G_AS_PTR(rv));
@@ -26,13 +26,16 @@ int main(int argc, char **argv)
 
     char *t1 = ugeneric_as_str(rv);
     printf("Serialization done================ %u ==============================\n", seed);
-/*
+
     ugeneric_t rv_copy = ugeneric_copy(rv, NULL);
     printf("Copy is ready ==================== %u ==============================\n", seed);
+
 
     char *t2 = ugeneric_as_str(rv_copy);
     printf("Copy serialization done=========== %u ==============================\n", seed);
 
+    ugeneric_destroy(rv_copy, NULL);
+/*
     if (strcpy(t1, t2) == 0)
     {
     printf("Copy is OK ======================= %u ==============================\n", seed);
@@ -41,8 +44,10 @@ int main(int argc, char **argv)
     {
         UABORT("fuck reality!");
     }
-    */
+*/
+
     ufree(t1);
+    ufree(t2);
 
     ugeneric_destroy(rv, NULL);
     printf("Destoyed ========================= %u ==============================\n", seed);

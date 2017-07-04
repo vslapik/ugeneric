@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include "heap.h"
 #include "vector.h"
+#include "void.h"
 #include "mem.h"
 #include "string_utils.h"
 
@@ -57,7 +58,7 @@ void uheap_push(uheap_t *h, ugeneric_t e)
     ugeneric_t *a = uvector_get_cells(h->data);
     size_t i = uvector_get_size(h->data) - 1;
 
-    void_cmp_t cmp = uvector_get_comparator(h->data);
+    void_cmp_t cmp = uvector_get_void_comparator(h->data);
     while (i != ROOT_IDX)
     {
         if (h->type * ugeneric_compare(a[i], a[PARENT_IDX(i)], cmp) < 0)
@@ -90,7 +91,7 @@ ugeneric_t uheap_pop(uheap_t *h)
         size_t r = RCHILD_IDX(i);
         a[0] = e1; // copy the last element to the root
 
-        void_cmp_t cmp = uvector_get_comparator(h->data);
+        void_cmp_t cmp = uvector_get_void_comparator(h->data);
         while (l < n || r < n) // percolate the root down to the right position
         {
             if (r < n)
@@ -165,42 +166,6 @@ void uheap_drop_data_ownership(uheap_t *h)
     uvector_drop_data_ownership(h->data);
 }
 
-void uheap_set_destroyer(uheap_t *h, void_dtr_t dtr)
-{
-    UASSERT_INPUT(h);
-    uvector_set_destroyer(h->data, dtr);
-}
-
-void uheap_set_comparator(uheap_t *h, void_cmp_t cmp)
-{
-    UASSERT_INPUT(h);
-    uvector_set_comparator(h->data, cmp);
-}
-
-void uheap_set_copier(uheap_t *h, void_cpy_t cpy)
-{
-    UASSERT_INPUT(h);
-    uvector_set_copier(h->data, cpy);
-}
-
-void_dtr_t uheap_get_destroyer(const uheap_t *h)
-{
-    UASSERT_INPUT(h);
-    return uvector_get_destroyer(h->data);
-}
-
-void_cmp_t uheap_get_comparator(const uheap_t *h)
-{
-    UASSERT_INPUT(h);
-    return uvector_get_comparator(h->data);
-}
-
-void_cpy_t uheap_get_copier(const uheap_t *h)
-{
-    UASSERT_INPUT(h);
-    return uvector_get_copier(h->data);
-}
-
 ugeneric_t *uheap_get_cells(const uheap_t *h)
 {
     UASSERT_INPUT(h);
@@ -240,4 +205,10 @@ void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out)
         ufree(str); ufree(lstr); ufree(rstr); ufree(vstr);
     }
     fprintf(out, "}\n");
+}
+
+uvoid_handlers_t *uheap_get_void_handlers(uheap_t *h)
+{
+    UASSERT_INPUT(h);
+    return uvector_get_void_handlers(h->data);
 }

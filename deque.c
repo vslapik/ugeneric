@@ -7,9 +7,6 @@ struct deque_opaq {
     size_t map_size;
     size_t size;
     bool is_data_owner;
-    void_cpy_t cpy;
-    void_cmp_t cmp;
-    void_dtr_t dtr;
 };
 
 deque_t *deque_create_empty(void)

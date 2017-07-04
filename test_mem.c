@@ -35,7 +35,7 @@ void test_oom(void)
     size_t size = 32LL << 32;
 
     uvector_t *v = uvector_create();
-    uvector_set_destroyer(v, ufree);
+    uvector_set_void_destroyer(v, ufree);
 
     libugeneric_set_oom_handler(oom, v);
 

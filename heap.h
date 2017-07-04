@@ -2,6 +2,7 @@
 #define UHEAP_H__
 
 #include "generic.h"
+#include "void.h"
 
 typedef struct uheap_opaq uheap_t;
 
@@ -31,13 +32,10 @@ ugeneric_t *uheap_get_cells(const uheap_t *h);
 
 void uheap_take_data_ownership(uheap_t *h);
 void uheap_drop_data_ownership(uheap_t *h);
-void uheap_set_destroyer(uheap_t *h, void_dtr_t dtr);
-void uheap_set_comparator(uheap_t *h, void_cmp_t cmp);
-void uheap_set_copier(uheap_t *h, void_cpy_t cpy);
-void_dtr_t uheap_get_destroyer(const uheap_t *h);
-void_cmp_t uheap_get_comparator(const uheap_t *h);
-void_cpy_t uheap_get_copier(const uheap_t *h);
 
 void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out);
+
+uvoid_handlers_t *uheap_get_void_handlers(uheap_t *h);
+DECLARE_VOID_FUNCS(uheap)
 
 #endif

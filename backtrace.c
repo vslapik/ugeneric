@@ -22,7 +22,8 @@ void utrace_print(void)
 
     for (size_t i = 1; i < size; i++)
     {
-        fprintf(stderr, "%s\n", strings[i]);
+        fputs(strings[i], stderr);
+        fputs("\n", stderr);
     }
 
     free(strings);

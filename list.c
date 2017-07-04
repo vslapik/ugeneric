@@ -11,13 +11,10 @@ typedef struct ulist_item {
 } ulist_item_t;
 
 struct ulist_opaq {
+    uvoid_handlers_t void_handlers;
     size_t size;
     ulist_item_t *head;
     bool is_data_owner;
-    void_cpy_t cpy;
-    void_cmp_t cmp;
-    void_dtr_t dtr;
-    void_s8r_t void_serializer;
 };
 
 struct ulist_iterator_opaq {
@@ -44,13 +41,13 @@ static ulist_t *_lcpy(const ulist_t *l, bool deep)
     ulist_item_t *from = l->head;
     ulist_item_t **to = &copy->head;
 
+    copy->is_data_owner = deep;
     if (deep)
     {
-        copy->is_data_owner = true;
         while (from)
         {
             *to = umalloc(sizeof(**to));
-            (*to)->data = ugeneric_copy(from->data, l->cpy);
+            (*to)->data = ugeneric_copy(from->data, l->void_handlers.cpy);
             (*to)->next = NULL;
             to = &(*to)->next;
             from = from->next;
@@ -58,10 +55,6 @@ static ulist_t *_lcpy(const ulist_t *l, bool deep)
     }
     else
     {
-        copy->is_data_owner = false;
-        copy->cpy = 0;
-        copy->cmp = 0;
-        copy->dtr = 0;
         while (from)
         {
             *to = umalloc(sizeof(**to));
@@ -80,9 +73,9 @@ ulist_t *ulist_create(void)
     ulist_t *l = umalloc(sizeof(*l));
 
     l->size = 0;
-    l->is_data_owner = false;
+    l->is_data_owner = true;
     l->head = NULL;
-    l->dtr = NULL;
+    memset(&l->void_handlers, 0, sizeof(l->void_handlers));
 
     return l;
 }
@@ -162,7 +155,7 @@ void ulist_destroy(ulist_t *l)
             while (li)
             {
                 g = li->data;
-                ugeneric_destroy(g, l->dtr);
+                ugeneric_destroy(g, l->void_handlers.dtr);
                 li = li->next;
             }
         }
@@ -259,7 +252,7 @@ bool ulist_contains(const ulist_t *l, ugeneric_t e)
     {
         t = li;
         li = li->next;
-        if (ugeneric_compare(t->data, e, l->cmp) == 0)
+        if (ugeneric_compare(t->data, e, l->void_handlers.cmp) == 0)
         {
             ret = true;
             break;
@@ -344,7 +337,7 @@ void ulist_serialize(const ulist_t *l, ubuffer_t *buf)
     ubuffer_append_byte(buf, '[');
     while (li)
     {
-        ugeneric_serialize_v(li->data, buf, l->void_serializer);
+        ugeneric_serialize_v(li->data, buf, l->void_handlers.s8r);
         li = li->next;
         if (i++ < l->size - 1)
         {
@@ -406,3 +399,8 @@ void ulist_iterator_reset(ulist_iterator_t *li)
     li->next = li->list->head;
 }
 
+uvoid_handlers_t *ulist_get_void_handlers(ulist_t *l)
+{
+    UASSERT_INPUT(l);
+    return &l->void_handlers;
+}

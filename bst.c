@@ -22,13 +22,11 @@ typedef struct ubst_node ubst_node_t;
 typedef bool (*ubst_node_cb_t)(ubst_node_t *node, void *data);
 
 struct ubst_opaq {
+    uvoid_handlers_t void_handlers;
     ubst_node_t *root;
     ubst_balancing_mode_t balancing_mode;
     size_t size;
     bool is_data_owner;
-    void_cpy_t cpy;
-    void_cmp_t cmp;
-    void_dtr_t dtr;
 };
 
 struct ubst_iterator_opaq {
@@ -52,7 +50,7 @@ ubst_node_t **_lookup(ubst_t *b, ubst_node_t **root, ugeneric_t k)
 
     while (*node)
     {
-        int cmp = ugeneric_compare(k, (*node)->k, b->cmp);
+        int cmp = ugeneric_compare(k, (*node)->k, b->void_handlers.cmp);
         if (cmp < 0)
         {
             node = &(*node)->left;
@@ -108,7 +106,7 @@ static ubst_node_t **_get_inorder_predecessor(ubst_t *b, ubst_node_t **node)
         ubst_node_t **pos = &b->root;
         while (*pos)
         {
-            int cmp = ugeneric_compare(k, (*pos)->k, b->cmp);
+            int cmp = ugeneric_compare(k, (*pos)->k, b->void_handlers.cmp);
             if (cmp < 0)
             {
                 pos = &(*pos)->left;
@@ -142,7 +140,7 @@ static ubst_node_t **_get_inorder_successor(ubst_t *b, ubst_node_t **node)
         ubst_node_t **pos = &b->root;
         while (node)
         {
-            int cmp = ugeneric_compare(k, (*pos)->k, b->cmp);
+            int cmp = ugeneric_compare(k, (*pos)->k, b->void_handlers.cmp);
             if (cmp < 0)
             {
                 successor = pos;
@@ -170,8 +168,8 @@ void _ubst_nodes_destroy(ubst_t *b, ubst_node_t *node)
         _ubst_nodes_destroy(b, node->right);
         if (b->is_data_owner)
         {
-            ugeneric_destroy(node->k, b->dtr);
-            ugeneric_destroy(node->v, b->dtr);
+            ugeneric_destroy(node->k, b->void_handlers.dtr);
+            ugeneric_destroy(node->v, b->void_handlers.dtr);
         }
         ufree(node);
     }
@@ -307,8 +305,8 @@ static void _put_not_balanced(ubst_t *b, ugeneric_t k, ugeneric_t v)
     if (*node)
     {
         /* Update case. */
-        ugeneric_destroy((*node)->k, b->dtr);
-        ugeneric_destroy((*node)->v, b->dtr);
+        ugeneric_destroy((*node)->k, b->void_handlers.dtr);
+        ugeneric_destroy((*node)->v, b->void_handlers.dtr);
         (*node)->k = k;
         (*node)->v = v;
     }
@@ -387,7 +385,7 @@ static void _put_red_black(ubst_t *b, ugeneric_t k, ugeneric_t v)
         }
         g = p;
         p = x;
-        int cmp = ugeneric_compare(k, x->k, b->cmp);
+        int cmp = ugeneric_compare(k, x->k, b->void_handlers.cmp);
         if (cmp < 0)
         {
             npos = &x->left;
@@ -403,8 +401,8 @@ static void _put_red_black(ubst_t *b, ugeneric_t k, ugeneric_t v)
         else
         {
             // Found the node to be updated, update and get out of here.
-            ugeneric_destroy(p->k, b->dtr);
-            ugeneric_destroy(p->v, b->dtr);
+            ugeneric_destroy(p->k, b->void_handlers.dtr);
+            ugeneric_destroy(p->v, b->void_handlers.dtr);
             p->k = k;
             p->v = v;
             break;
@@ -452,7 +450,7 @@ static ugeneric_t _pop_not_balanced(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
     while (*pos)
     {
         /* Look up for the node to be deleted */
-        int cmp = ugeneric_compare(k, (*pos)->k, b->cmp);
+        int cmp = ugeneric_compare(k, (*pos)->k, b->void_handlers.cmp);
         if (cmp < 0)
         {
             pos = &(*pos)->left;
@@ -474,7 +472,7 @@ static ugeneric_t _pop_not_balanced(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
             ret = (*pos)->v;
             if (b->is_data_owner)
             {
-                ugeneric_destroy((*pos)->k, b->dtr);
+                ugeneric_destroy((*pos)->k, b->void_handlers.dtr);
             }
             b->size -= 1;
 
@@ -525,9 +523,7 @@ ubst_t *ubst_create_ext(ubst_balancing_mode_t mode)
     b->root = NULL;
     b->size = 0;
     b->is_data_owner = true;
-    b->cpy = NULL;
-    b->cmp = NULL;
-    b->dtr = NULL;
+    memset(&b->void_handlers, 0, sizeof(b->void_handlers));
 
     if (mode == UBST_DEFAULT_BALANCING)
     {
@@ -742,24 +738,6 @@ ugeneric_t ubst_get_inorder_successor(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
     return vdef;
 }
 
-void ubst_set_destroyer(ubst_t *b, void_dtr_t dtr)
-{
-    UASSERT_INPUT(b);
-    b->dtr = dtr;
-}
-
-void ubst_set_comparator(ubst_t *b, void_cmp_t cmp)
-{
-    UASSERT_INPUT(b);
-    b->cmp = cmp;
-}
-
-void ubst_set_copier(ubst_t *b, void_cpy_t cpy)
-{
-    UASSERT_INPUT(b);
-    b->cpy = cpy;
-}
-
 typedef struct {
     size_t nodes_left;
     ubuffer_t *buf;
@@ -930,11 +908,11 @@ uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind)
     }
     ubst_iterator_destroy(bi);
 
-    uvector_set_comparator(v, b->cmp); // vector sort should use original cmp
+    uvector_set_void_comparator(v, b->void_handlers.cmp); // vector sort should use original cmp
     uvector_shrink_to_size(v);
     if (kind == UDICT_KV)
     {
-        uvector_set_destroyer(v, ufree);
+        uvector_set_void_destroyer(v, ufree);
     }
     else
     {
@@ -1006,4 +984,10 @@ void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values, FILE 
     _dump2dot_data_t d = {.out = out, .nullcnt = 0, .dump_values = dump_values};
     _iterate_nodes(b->root, UBST_INORDER, _dump2dot, &d);
     fprintf(out, "}\n");
+}
+
+uvoid_handlers_t *ubst_get_void_handlers(ubst_t *b)
+{
+    UASSERT_INPUT(b);
+    return &b->void_handlers;
 }

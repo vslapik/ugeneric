@@ -10,7 +10,7 @@ struct ustack_opaq {
     uvector_t *data;
 };
 
-ustack_t *ustack_create()
+ustack_t *ustack_create(void)
 {
     ustack_t *s = umalloc(sizeof(*s));
     s->data = uvector_create();
@@ -70,4 +70,10 @@ size_t ustack_get_capacity(const ustack_t *s)
 {
     UASSERT_INPUT(s);
     return uvector_get_capacity(s->data);
+}
+
+uvoid_handlers_t *ustack_get_void_handlers(ustack_t *s)
+{
+    UASSERT_INPUT(s);
+    return uvector_get_void_handlers(s->data);
 }

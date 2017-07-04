@@ -6,12 +6,12 @@
 /* out <-- [h][e][e][...][e][e][t] <-- in */
 
 struct uqueue_opaq {
+    uvoid_handlers_t void_handlers;
     ugeneric_t *data;
     size_t h; // head
     size_t t; // tail
     size_t size;
     size_t capacity;
-    void_s8r_t void_serializer;
 };
 
 uqueue_t *uqueue_create(void)
@@ -22,6 +22,7 @@ uqueue_t *uqueue_create(void)
     q->t = 0;
     q->size = 0;
     q->capacity = 0;
+    memset(&q->void_handlers, 0, sizeof(q->void_handlers));
 
     return q;
 }
@@ -138,7 +139,7 @@ void uqueue_serialize(const uqueue_t *q, ubuffer_t *buf)
     ubuffer_append_byte(buf, '[');
     for (size_t i = 0; i < q->size; i++)
     {
-        ugeneric_serialize_v(q->data[(q->h + i) % q->capacity], buf, q->void_serializer);
+        ugeneric_serialize_v(q->data[(q->h + i) % q->capacity], buf, q->void_handlers.s8r);
         if (i < q->size - 1)
         {
             ubuffer_append_data(buf, ", ", 2);
@@ -174,4 +175,10 @@ int uqueue_print(const uqueue_t *q)
 {
     UASSERT_INPUT(q);
     return uqueue_fprint(q, stdout);
+}
+
+uvoid_handlers_t *uqueue_get_void_handlers(uqueue_t *q)
+{
+    UASSERT_INPUT(q);
+    return &q->void_handlers;
 }

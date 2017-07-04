@@ -270,7 +270,7 @@ void test_serialize(void)
     uvector_append(v, G_REAL(3.4));
     uvector_append(v, G_SIZE(1888888888888881));
     uvector_append(v, G_PTR(NULL));
-    uvector_set_destroyer(v, ufree);
+    uvector_set_void_destroyer(v, ufree);
     udict_put(d, G_CSTR("key"), G_VECTOR(v));
 
     char *str = ugeneric_as_str(G_DICT(d));

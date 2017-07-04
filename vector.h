@@ -2,6 +2,7 @@
 #define UVECTOR_H__
 
 #include "generic.h"
+#include "void.h"
 
 #define VECTOR_INITIAL_CAPACITY 16
 
@@ -47,18 +48,13 @@ bool uvector_next_permutation(uvector_t *v);
 
 void uvector_take_data_ownership(uvector_t *v);
 void uvector_drop_data_ownership(uvector_t *v);
-void uvector_set_destroyer(uvector_t *v, void_dtr_t dtr);
-void uvector_set_comparator(uvector_t *v, void_cmp_t cmp);
-void uvector_set_copier(uvector_t *v, void_cpy_t cpy);
-void uvector_set_void_serializer(uvector_t *v, void_s8r_t serializer);
-void_dtr_t uvector_get_destroyer(const uvector_t *v);
-void_cmp_t uvector_get_comparator(const uvector_t *v);
-void_cpy_t uvector_get_copier(const uvector_t *v);
-void_s8r_t uvector_get_void_serializer(const uvector_t *v);
 
 char *uvector_as_str(const uvector_t *v);
 void uvector_serialize(const uvector_t *v, ubuffer_t *buf);
 int uvector_print(const uvector_t *v);
 int uvector_fprint(const uvector_t *v, FILE *out);
+
+uvoid_handlers_t *uvector_get_void_handlers(uvector_t *v);
+DECLARE_VOID_FUNCS(uvector)
 
 #endif

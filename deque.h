@@ -42,8 +42,4 @@ char *deque_as_str(const deque_t *d);
 void deque_print(const deque_t *d);
 void deque_fprint(const deque_t *d, FILE *out);
 
-void deque_set_destroyer(deque_t *d, void_dtr_t dtr);
-void deque_set_comparator(deque_t *d, void_cmp_t cmp);
-void deque_set_copier(deque_t *d, void_cpy_t cpy);
-
 #endif

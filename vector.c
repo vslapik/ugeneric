@@ -3,18 +3,16 @@
 #include "vector.h"
 #include "mem.h"
 #include "sort.h"
+#include "void.h"
 
 /* [0][1][2][...][size - 1][.][.][...][.][.][capacity - 1] */
 
 struct uvector_opaq {
+    uvoid_handlers_t void_handlers;
     ugeneric_t *cells;
     size_t size;
     size_t capacity;
     bool is_data_owner;
-    void_cpy_t cpy;
-    void_cmp_t cmp;
-    void_dtr_t dtr;
-    void_s8r_t void_serializer;
     ugeneric_sorter_t sorter;
 };
 
@@ -27,20 +25,16 @@ static uvector_t *_vcpy(const uvector_t *v, bool deep)
         copy->cells = umalloc(v->size * sizeof(copy->cells[0]));
     }
 
+    copy->is_data_owner = deep;
     if (deep)
     {
-        copy->is_data_owner = true;
         for (size_t i = 0; i < v->size; i++)
         {
-            copy->cells[i] = ugeneric_copy(v->cells[i], v->cpy);
+            copy->cells[i] = ugeneric_copy(v->cells[i], v->void_handlers.cpy);
         }
     }
     else
     {
-        copy->is_data_owner = false;
-        copy->cpy = 0;
-        copy->cmp = 0;
-        copy->dtr = 0;
         if (v->size)
         {
             memcpy(copy->cells, v->cells, v->size * sizeof(copy->cells[0]));
@@ -53,14 +47,11 @@ static uvector_t *_vcpy(const uvector_t *v, bool deep)
 static uvector_t *_allocate_vector(void)
 {
     uvector_t *v = umalloc(sizeof(*v));
+    memset(&v->void_handlers, 0, sizeof(v->void_handlers));
     v->size = 0;
     v->capacity = 0;
     v->cells = NULL;
     v->is_data_owner = true;
-    v->cpy = NULL;
-    v->cmp = NULL;
-    v->dtr = NULL;
-    v->void_serializer = NULL;
     v->sorter = hybrid_sort;
 
     return v;
@@ -144,54 +135,6 @@ void uvector_drop_data_ownership(uvector_t *v)
     v->is_data_owner = false;
 }
 
-void uvector_set_destroyer(uvector_t *v, void_dtr_t dtr)
-{
-    UASSERT_INPUT(v);
-    v->dtr = dtr;
-}
-
-void uvector_set_comparator(uvector_t *v, void_cmp_t cmp)
-{
-    UASSERT_INPUT(v);
-    v->cmp = cmp;
-}
-
-void uvector_set_copier(uvector_t *v, void_cpy_t cpy)
-{
-    UASSERT_INPUT(v);
-    v->cpy = cpy;
-}
-
-void_dtr_t uvector_get_destroyer(const uvector_t *v)
-{
-    UASSERT_INPUT(v);
-    return v->dtr;
-}
-
-void_cmp_t uvector_get_comparator(const uvector_t *v)
-{
-    UASSERT_INPUT(v);
-    return v->cmp;
-}
-
-void_cpy_t uvector_get_copier(const uvector_t *v)
-{
-    UASSERT_INPUT(v);
-    return v->cpy;
-}
-
-void_s8r_t uvector_get_void_serializer(const uvector_t *v)
-{
-    UASSERT_INPUT(v);
-    return v->void_serializer;
-}
-
-void uvector_set_void_serializer(uvector_t *v, void_s8r_t serializer)
-{
-    UASSERT_INPUT(v);
-    v->void_serializer = serializer;
-}
-
 void uvector_destroy(uvector_t *v)
 {
     if (v)
@@ -200,7 +143,7 @@ void uvector_destroy(uvector_t *v)
         {
             for (size_t i = 0; i < v->size; i++)
             {
-                ugeneric_destroy(v->cells[i], v->dtr);
+                ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
             }
         }
         ufree(v->cells);
@@ -228,7 +171,7 @@ void uvector_set_at(uvector_t *v, size_t i, ugeneric_t e)
 
     if (v->is_data_owner)
     {
-        ugeneric_destroy(v->cells[i], v->dtr);
+        ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
     }
     v->cells[i] = e;
 }
@@ -261,7 +204,7 @@ void uvector_resize(uvector_t *v, size_t new_size, ugeneric_t value)
     {
         for (size_t i = new_size; i < v->size; i++)
         {
-            ugeneric_destroy(v->cells[i], v->dtr);
+            ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
         }
     }
     v->size = new_size;
@@ -327,7 +270,7 @@ void uvector_remove_at(uvector_t *v, size_t i)
 
     if (v->is_data_owner)
     {
-        ugeneric_destroy(v->cells[i], v->dtr);
+        ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
     }
     memmove(v->cells + i, v->cells + i + 1, (v->size - i - 1) * sizeof(v->cells[0]));
     v->size--;
@@ -343,7 +286,7 @@ void uvector_clear(uvector_t *v)
         {
             for (size_t i = 0; i < v->size; i++)
             {
-                ugeneric_destroy(v->cells[i], v->dtr);
+                ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
             }
         }
         ufree(v->cells);
@@ -399,13 +342,13 @@ void uvector_reverse(uvector_t *v, size_t l, size_t r)
 void uvector_sort(uvector_t *v)
 {
     UASSERT_INPUT(v);
-    v->sorter(v->cells, v->size, v->cmp);
+    v->sorter(v->cells, v->size, v->void_handlers.cmp);
 }
 
 bool uvector_is_sorted(const uvector_t *v)
 {
     UASSERT_INPUT(v);
-    return ugeneric_array_is_sorted(v->cells, v->size, v->cmp);
+    return ugeneric_array_is_sorted(v->cells, v->size, v->void_handlers.cmp);
 }
 
 uvector_t *uvector_copy(const uvector_t *v)
@@ -428,7 +371,7 @@ void uvector_serialize(const uvector_t *v, ubuffer_t *buf)
     ubuffer_append_byte(buf, '[');
     for (size_t i = 0; i < v->size; i++)
     {
-        ugeneric_serialize_v(v->cells[i], buf, v->void_serializer);
+        ugeneric_serialize_v(v->cells[i], buf, v->void_handlers.s8r);
         if (i < v->size - 1)
         {
             ubuffer_append_data(buf, ", ", 2);
@@ -469,11 +412,17 @@ int uvector_fprint(const uvector_t *v, FILE *out)
 size_t uvector_bsearch(const uvector_t *v, ugeneric_t e)
 {
     UASSERT_INPUT(v);
-    return ugeneric_array_bsearch(v->cells, v->size, e, v->cmp);
+    return ugeneric_array_bsearch(v->cells, v->size, e, v->void_handlers.cmp);
 }
 
 bool uvector_next_permutation(uvector_t *v)
 {
     UASSERT_INPUT(v);
-    return ugeneric_array_next_permutation(v->cells, v->size, v->cmp);
+    return ugeneric_array_next_permutation(v->cells, v->size, v->void_handlers.cmp);
+}
+
+uvoid_handlers_t *uvector_get_void_handlers(uvector_t *v)
+{
+    UASSERT_INPUT(v);
+    return &v->void_handlers;
 }

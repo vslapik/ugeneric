@@ -2,6 +2,7 @@
 #define UQUEUE_H__
 
 #include "generic.h"
+#include "void.h"
 
 #define QUEUE_INITIAL_CAPACITY 16
 
@@ -22,5 +23,8 @@ char *uqueue_as_str(const uqueue_t *q);
 void uqueue_serialize(const uqueue_t *q, ubuffer_t *buf);
 int uqueue_fprint(const uqueue_t *q, FILE *out);
 int uqueue_print(const uqueue_t *q);
+
+uvoid_handlers_t *uqueue_get_void_handlers(uqueue_t *q);
+DECLARE_VOID_FUNCS(uqueue)
 
 #endif

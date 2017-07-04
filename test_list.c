@@ -83,8 +83,8 @@ void test_ulist_api(void)
     ulist_t *l1 = ulist_create();
     ulist_t *l2;
 
-    ulist_append(l1, G_STR("item1"));
-    ulist_append(l1, G_STR("item2"));
+    ulist_append(l1, G_CSTR("item1"));
+    ulist_append(l1, G_CSTR("item2"));
     l2 = ulist_copy(l1);
 
     char *s1 = ulist_as_str(l1);
@@ -99,8 +99,8 @@ void test_ulist_api(void)
     // List deep copy.
     l1 = ulist_create();
 
-    ulist_append(l1, G_STR("item3"));
-    ulist_append(l1, G_STR("item4"));
+    ulist_append(l1, G_CSTR("item3"));
+    ulist_append(l1, G_CSTR("item4"));
     l2 = ulist_copy(l1);
 
     s1 = ulist_as_str(l1);

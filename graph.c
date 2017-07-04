@@ -18,7 +18,7 @@ ugraph_t *ugraph_create(size_t n, ugraph_type_t type)
 {
     ugraph_t *g = umalloc(sizeof(*g));
     g->nodes = uvector_create_with_size(n, G_PTR(NULL));
-    uvector_set_destroyer(g->nodes, (void_dtr_t)ulist_destroy);
+    uvector_set_void_destroyer(g->nodes, (void_dtr_t)ulist_destroy);
     g->n = n;
     g->m = 0;
     g->type = type;
@@ -97,7 +97,7 @@ uvector_t *ugraph_get_edges(const ugraph_t *g)
     UASSERT_INPUT(g);
 
     uvector_t *v = uvector_create_with_size(g->m, G_NULL);
-    uvector_set_destroyer(v, ufree);
+    uvector_set_void_destroyer(v, ufree);
     size_t j = 0;
     for (size_t i = 0; i < g->n; i++)
     {
@@ -140,7 +140,7 @@ static uvector_t *_min_cut(const ugraph_t *g)
     uvector_destroy(edgestmp);
 
     uvector_t *mincut = uvector_create();
-    uvector_set_destroyer(mincut, free);
+    uvector_set_void_destroyer(mincut, free);
     for (size_t i = 0; i < edges_count; i++)
     {
         ugraph_edge_t *e = G_AS_PTR(uvector_get_at(edges, i));

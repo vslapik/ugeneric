@@ -23,7 +23,7 @@ test: $(texe)
 test_%: test_%.c $(lib)
 	$(CC) $(CFLAGS) test_$*.c $(lib) -o $@ -lgcov
 
-$(lib): $(obj) tags $(hdr) Makefile
+$(lib): $(obj) tags $(hdr) Makefile backtrace.c
 	$(CC) $(CFLAGS) -c backtrace.c -o backtrace.o
 	ar rcs $(lib) $(obj) backtrace.o
 
@@ -37,7 +37,7 @@ test_fuzz: $(lib) ut_utils.c test_fuzz.c
 
 .PHONY: clean
 clean:
-	$(RM) *.o $(lib) tags core.* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.*
+	$(RM) *.o $(lib) tags core.* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s test_fuzz
 
 check_%: test_%
 	@echo "========================================== checking $*"

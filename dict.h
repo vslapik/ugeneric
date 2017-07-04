@@ -2,6 +2,7 @@
 #define UDICT_H__
 
 #include "generic.h"
+#include "void.h"
 
 typedef enum {
     UDICT_BACKEND_DEFAULT,
@@ -15,32 +16,27 @@ typedef enum {
 void libugeneric_udict_set_default_backend(udict_backend_t backend);
 udict_backend_t libugeneric_udict_get_default_backend(void);
 
-typedef void         (*f_udict_set_destroyer)(void *d, void_dtr_t dtr);
-typedef void         (*f_udict_set_comparator)(void *d, void_cmp_t cmp);
-typedef void         (*f_udict_set_copier)(void *d, void_cmp_t cmp);
-typedef void         (*f_udict_take_data_ownership)(void *d);
-typedef void         (*f_udict_drop_data_ownership)(void *d);
-typedef void         (*f_udict_clear)(void *d);
-typedef void         (*f_udict_put)(void *d, ugeneric_t k, ugeneric_t v);
-typedef ugeneric_t   (*f_udict_get)(const void *d, ugeneric_t k, ugeneric_t vdef);
-typedef ugeneric_t   (*f_udict_pop)(void *d, ugeneric_t k, ugeneric_t vdef);
-typedef bool         (*f_udict_has_key)(const void *d, ugeneric_t k);
-typedef size_t       (*f_udict_get_size)(const void *d);
-typedef bool         (*f_udict_is_empty)(const void *d);
-typedef void         (*f_udict_serialize)(const void *d, ubuffer_t *buf);
-typedef char        *(*f_udict_as_str)(const void *d);
-typedef int          (*f_udict_print)(const void *d);
-typedef int          (*f_udict_fprint)(const void *d, FILE *out);
+typedef void       (*f_udict_take_data_ownership)(void *d);
+typedef void       (*f_udict_drop_data_ownership)(void *d);
+typedef void       (*f_udict_clear)(void *d);
+typedef void       (*f_udict_put)(void *d, ugeneric_t k, ugeneric_t v);
+typedef ugeneric_t (*f_udict_get)(const void *d, ugeneric_t k, ugeneric_t vdef);
+typedef ugeneric_t (*f_udict_pop)(void *d, ugeneric_t k, ugeneric_t vdef);
+typedef bool       (*f_udict_has_key)(const void *d, ugeneric_t k);
+typedef size_t     (*f_udict_get_size)(const void *d);
+typedef bool       (*f_udict_is_empty)(const void *d);
+typedef void       (*f_udict_serialize)(const void *d, ubuffer_t *buf);
+typedef char      *(*f_udict_as_str)(const void *d);
+typedef int        (*f_udict_print)(const void *d);
+typedef int        (*f_udict_fprint)(const void *d, FILE *out);
+typedef uvoid_handlers_t *(*f_udict_get_void_handlers)(void *d);
 
 typedef ugeneric_kv_t (*f_udict_iterator_get_next)(void *di);
-typedef bool         (*f_udict_iterator_has_next)(const void *di);
-typedef void         (*f_udict_iterator_reset)(void *di);
+typedef bool          (*f_udict_iterator_has_next)(const void *di);
+typedef void          (*f_udict_iterator_reset)(void *di);
 
 
 typedef struct {
-    f_udict_set_destroyer       set_destroyer;
-    f_udict_set_comparator      set_comparator;
-    f_udict_set_copier          set_copier;
     f_udict_take_data_ownership take_data_ownership;
     f_udict_drop_data_ownership drop_data_ownership;
     f_udict_clear               clear;
@@ -54,6 +50,7 @@ typedef struct {
     f_udict_as_str              as_str;
     f_udict_print               print;
     f_udict_fprint              fprint;
+    f_udict_get_void_handlers   get_void_handlers;
 } udict_vtable_t;
 
 typedef struct {
@@ -77,9 +74,6 @@ typedef struct {
 
 udict_t *udict_create(void);
 udict_t *udict_create_with_backend(udict_backend_t backend);
-static inline void udict_set_destroyer(udict_t *d, void_dtr_t dtr) {d->vtable->set_destroyer(d->vobj, dtr);}
-static inline void udict_set_comparator(udict_t *d, void_cmp_t cmp) {d->vtable->set_comparator(d->vobj, cmp);}
-static inline void udict_set_copier(udict_t *d, void_cmp_t cmp) {d->vtable->set_copier(d->vobj, cmp);}
 static inline void udict_take_data_ownership(udict_t *d) {d->vtable->take_data_ownership(d->vobj);}
 static inline void udict_drop_data_ownership(udict_t *d) {d->vtable->drop_data_ownership(d->vobj);}
 static inline void udict_clear(udict_t *d) {d->vtable->clear(d->vobj);}
@@ -95,8 +89,8 @@ static inline int udict_print(const udict_t *d) {return d->vtable->print(d->vobj
 static inline int udict_fprint(const udict_t *d, FILE *out) {return d->vtable->fprint(d->vobj, out);}
 void udict_destroy(udict_t *d);
 int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp);
-void udict_set_hasher(udict_t *d, void_hasher_t hasher);
-void udict_set_key_comparator(udict_t *d, void_cmp_t cmp);
+void udict_set_void_hasher(udict_t *d, void_hasher_t hasher);
+void udict_set_void_key_comparator(udict_t *d, void_cmp_t cmp);
 
 void *udict_copy(const udict_t *d);
 void *udict_deep_copy(const udict_t *d);
@@ -105,5 +99,8 @@ static inline ugeneric_kv_t udict_iterator_get_next(udict_iterator_t *di) {retur
 static inline bool udict_iterator_has_next(const udict_iterator_t *di) {return di->vtable->has_next(di->vobj);}
 static inline void udict_iterator_reset(udict_iterator_t *di) {di->vtable->reset(di->vobj);}
 void udict_iterator_destroy(udict_iterator_t *di);
+
+static inline uvoid_handlers_t *udict_get_void_handlers(udict_t *d) {return d->vtable->get_void_handlers(d->vobj);}
+DECLARE_VOID_FUNCS(udict)
 
 #endif

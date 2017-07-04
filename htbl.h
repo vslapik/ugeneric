@@ -3,16 +3,16 @@
 
 #include "generic.h"
 #include "vector.h"
+#include "void.h"
 
 typedef struct uhtbl_opaq uhtbl_t;
 typedef struct uhtbl_iterator_opaq uhtbl_iterator_t;
 
 uhtbl_t *uhtbl_create(void);
-void uhtbl_set_destroyer(uhtbl_t *h, void_dtr_t dtr);
-void uhtbl_set_comparator(uhtbl_t *h, void_cmp_t cmp);
-void uhtbl_set_copier(uhtbl_t *h, void_cpy_t cpy);
-void uhtbl_set_key_comparator(uhtbl_t *h, void_cmp_t cmp);
-void uhtbl_set_hasher(uhtbl_t *h, void_hasher_t hasher);
+void uhtbl_set_void_key_comparator(uhtbl_t *h, void_cmp_t cmp);
+void_cmp_t uhtbl_get_void_key_comparator(const uhtbl_t *h);
+void uhtbl_set_void_hasher(uhtbl_t *h, void_hasher_t hasher);
+void_hasher_t uhtbl_get_void_hasher(const uhtbl_t *h);
 void uhtbl_take_data_ownership(uhtbl_t *h);
 void uhtbl_drop_data_ownership(uhtbl_t *h);
 void uhtbl_destroy(uhtbl_t *h);
@@ -41,5 +41,8 @@ void uhtbl_iterator_destroy(uhtbl_iterator_t *hi);
 uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind);
 static inline uvector_t *uhtbl_get_keys(const uhtbl_t *h) { return uhtbl_get_items(h, UDICT_KEYS); }
 static inline uvector_t *uhtbl_get_values(const uhtbl_t *h) { return uhtbl_get_items(h, UDICT_VALUES); }
+
+uvoid_handlers_t *uhtbl_get_void_handlers(uhtbl_t *h);
+DECLARE_VOID_FUNCS(uhtbl)
 
 #endif

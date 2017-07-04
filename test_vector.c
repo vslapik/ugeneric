@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "vector.h"
+#include "void.h"
 #include "mem.h"
 #include "string_utils.h"
 #include "ut_utils.h"
@@ -35,8 +36,8 @@ void test_uvector_copy(bool verbose)
     (void)verbose;
 
     uvector_t *v = uvector_create();
-    uvector_set_destroyer(v, free_nage_t);
-    uvector_set_copier(v, copy_nage_t);
+    uvector_set_void_destroyer(v, free_nage_t);
+    uvector_set_void_copier(v, copy_nage_t);
 
     nage_t *n = umalloc(sizeof(*n));
 

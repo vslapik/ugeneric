@@ -1,5 +1,6 @@
 #include <limits.h>
 #include "ut_utils.h"
+#include "void.h"
 
 ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable)
 {
@@ -54,9 +55,9 @@ ugeneric_t gen_random_vector(int depth, bool verbose)
     if (depth > 1)
     {
         uvector_t *v = uvector_create();
-        uvector_set_destroyer(v, ufree);
-        uvector_set_comparator(v, _void_cmp);
-        uvector_set_copier(v, _void_cpy);
+        uvector_set_void_destroyer(v, ufree);
+        uvector_set_void_comparator(v, _void_cmp);
+        uvector_set_void_copier(v, _void_cpy);
         int size = ugeneric_random_from_range(0, 100);
         if (verbose)
         {
@@ -99,12 +100,13 @@ ugeneric_t gen_random_dict(int depth, bool verbose)
 {
     udict_backend_t backend = ugeneric_random_from_range(UDICT_BACKEND_DEFAULT + 1, UDICT_BACKENDS_COUNT - 1);
     udict_t *d = udict_create_with_backend(backend);
-    udict_set_destroyer(d, ufree);
-    udict_set_comparator(d, _void_cmp);
+    udict_set_void_destroyer(d, ufree);
+    udict_set_void_comparator(d, _void_cmp);
+    udict_set_void_copier(d, _void_cpy);
     if (backend == UDICT_BACKEND_HTBL)
     {
-        udict_set_hasher(d, _void_hash);
-        udict_set_key_comparator(d, _void_cmp);
+        udict_set_void_hasher(d, _void_hash);
+        udict_set_void_key_comparator(d, _void_cmp);
     }
 
     int size = ugeneric_random_from_range(0, 20);

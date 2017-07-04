@@ -3,6 +3,7 @@
 
 #include "generic.h"
 #include "vector.h"
+#include "void.h"
 
 typedef struct ubst_opaq ubst_t;
 typedef struct ubst_iterator_opaq ubst_iterator_t;
@@ -25,9 +26,6 @@ void ubst_set_default_balancing_mode(ubst_balancing_mode_t mode);
 
 ubst_t *ubst_create(void);
 ubst_t *ubst_create_ext(ubst_balancing_mode_t mode);
-void ubst_set_destroyer(ubst_t *b, void_dtr_t dtr);
-void ubst_set_comparator(ubst_t *b, void_cmp_t cmp);
-void ubst_set_copier(ubst_t *b, void_cpy_t cpy);
 void ubst_destroy(ubst_t *b);
 void ubst_drop_data_ownership(ubst_t *b);
 void ubst_take_data_ownership(ubst_t *b);
@@ -67,5 +65,8 @@ void ubst_iterator_destroy(ubst_iterator_t *bi);
 uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind);
 static inline uvector_t *ubst_get_keys(const ubst_t *b) { return ubst_get_items(b, UDICT_KEYS); }
 static inline uvector_t *ubst_get_values(const ubst_t *b) { return ubst_get_items(b, UDICT_VALUES); }
+
+uvoid_handlers_t *ubst_get_void_handlers(ubst_t *b);
+DECLARE_VOID_FUNCS(ubst)
 
 #endif

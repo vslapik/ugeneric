@@ -8,6 +8,8 @@ core
 vgcore.*
 tags
 *.diff
+*.s
+*.i
 
 test_bitmap
 test_bst

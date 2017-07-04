@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "void.h"
 #include "mem.h"
 #include "htbl.h"
 
@@ -15,15 +16,13 @@ struct uhtbl_record {
 typedef struct uhtbl_record uhtbl_record_t;
 
 struct uhtbl_opaq {
+    uvoid_handlers_t void_handlers;
     uhtbl_record_t **buckets;
     size_t number_of_buckets;
     size_t number_of_records;
     bool is_data_owner;
     void_hasher_t hasher;
     void_cmp_t key_cmp;
-    void_cpy_t cpy;
-    void_cmp_t cmp;
-    void_dtr_t dtr;
 };
 
 struct uhtbl_iterator_opaq {
@@ -43,8 +42,8 @@ static void _destroy_buckets(uhtbl_t *h)
             uhtbl_record_t *hr_next = hr->next;
             if (h->is_data_owner)
             {
-                ugeneric_destroy(hr->k, h->dtr);
-                ugeneric_destroy(hr->v, h->dtr);
+                ugeneric_destroy(hr->k, h->void_handlers.dtr);
+                ugeneric_destroy(hr->v, h->void_handlers.dtr);
             }
             ufree(hr);
             hr = hr_next;
@@ -56,8 +55,8 @@ static void _destroy_buckets(uhtbl_t *h)
  * Either a record pointer or NULL when we are at the end of table.
  */
 static uhtbl_record_t *_find_next_record(const uhtbl_t *h,
-                                        uhtbl_record_t *current_dr,
-                                        size_t *bucket)
+                                         uhtbl_record_t *current_dr,
+                                         size_t *bucket)
 {
     uhtbl_record_t *next_record = NULL;
 
@@ -116,8 +115,8 @@ void _put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
         // Update existing.
         if (h->is_data_owner)
         {
-            ugeneric_destroy((*hr)->k, h->dtr);
-            ugeneric_destroy((*hr)->v, h->dtr);
+            ugeneric_destroy((*hr)->k, h->void_handlers.dtr);
+            ugeneric_destroy((*hr)->v, h->void_handlers.dtr);
         }
         (*hr)->k = k;
         (*hr)->v = v;
@@ -166,12 +165,10 @@ uhtbl_t *uhtbl_create(void)
     h->buckets = ucalloc(HTBL_INITIAL_NUM_OF_BUCKETS, sizeof(h->buckets[0]));
     h->number_of_buckets = HTBL_INITIAL_NUM_OF_BUCKETS;
     h->number_of_records = 0;
+    memset(&h->void_handlers, 0, sizeof(h->void_handlers));
     h->is_data_owner = true;
     h->hasher = NULL;
     h->key_cmp = NULL;
-    h->cpy = NULL;
-    h->cmp = NULL;
-    h->dtr = NULL;
 
     return h;
 }
@@ -188,34 +185,28 @@ void uhtbl_drop_data_ownership(uhtbl_t *h)
     h->is_data_owner = false;
 }
 
-void uhtbl_set_destroyer(uhtbl_t *h, void_dtr_t dtr)
-{
-    UASSERT_INPUT(h);
-    h->dtr = dtr;
-}
-
-void uhtbl_set_comparator(uhtbl_t *h, void_cmp_t cmp)
-{
-    UASSERT_INPUT(h);
-    h->cmp = cmp;
-}
-
-void uhtbl_set_hasher(uhtbl_t *h, void_hasher_t hasher)
-{
-    UASSERT_INPUT(h);
-    h->hasher = hasher;
-}
-
-void uhtbl_set_key_comparator(uhtbl_t *h, void_cmp_t cmp)
+void uhtbl_set_void_key_comparator(uhtbl_t *h, void_cmp_t cmp)
 {
     UASSERT_INPUT(h);
     h->key_cmp = cmp;
 }
 
-void uhtbl_set_copier(uhtbl_t *h, void_cpy_t cpy)
+void_cmp_t uhtbl_get_void_key_comparator(const uhtbl_t *h)
 {
     UASSERT_INPUT(h);
-    h->cpy = cpy;
+    return h->key_cmp;
+}
+
+void uhtbl_set_void_hasher(uhtbl_t *h, void_hasher_t hasher)
+{
+    UASSERT_INPUT(h);
+    h->hasher = hasher;
+}
+
+void_hasher_t uhtbl_get_void_hasher(const uhtbl_t *h)
+{
+    UASSERT_INPUT(h);
+    return h->hasher;
 }
 
 /*
@@ -255,7 +246,7 @@ ugeneric_t uhtbl_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t vdef)
     {
         uhtbl_record_t *del = *hr;
         ret = del->v;
-        ugeneric_destroy(del->k, h->dtr);
+        ugeneric_destroy(del->k, h->void_handlers.dtr);
         *hr = (*hr)->next;
         ufree(del);
         h->number_of_records -= 1;
@@ -518,11 +509,11 @@ uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind)
     }
     uhtbl_iterator_destroy(hi);
 
-    uvector_set_comparator(v, h->cmp); // vector sort should use original cmp
+    uvector_set_void_comparator(v, h->void_handlers.cmp); // vector sort should use original cmp
     uvector_shrink_to_size(v);
     if (kind == UDICT_KV)
     {
-        uvector_set_destroyer(v, ufree);
+        uvector_set_void_destroyer(v, ufree);
     }
     else
     {
@@ -530,4 +521,10 @@ uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind)
     }
 
     return v;
+}
+
+uvoid_handlers_t *uhtbl_get_void_handlers(uhtbl_t *h)
+{
+    UASSERT_INPUT(h);
+    return &h->void_handlers;
 }
