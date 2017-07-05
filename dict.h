@@ -3,6 +3,7 @@
 
 #include "generic.h"
 #include "void.h"
+#include "vector.h"
 
 typedef enum {
     UDICT_BACKEND_DEFAULT,
@@ -30,6 +31,7 @@ typedef char      *(*f_udict_as_str)(const void *d);
 typedef int        (*f_udict_print)(const void *d);
 typedef int        (*f_udict_fprint)(const void *d, FILE *out);
 typedef uvoid_handlers_t *(*f_udict_get_void_handlers)(void *d);
+typedef uvector_t *(*f_udict_get_items)(const void *d, udict_items_kind_t kind);
 
 typedef ugeneric_kv_t (*f_udict_iterator_get_next)(void *di);
 typedef bool          (*f_udict_iterator_has_next)(const void *di);
@@ -51,6 +53,7 @@ typedef struct {
     f_udict_print               print;
     f_udict_fprint              fprint;
     f_udict_get_void_handlers   get_void_handlers;
+    f_udict_get_items           get_items;
 } udict_vtable_t;
 
 typedef struct {
@@ -87,10 +90,14 @@ static inline void udict_serialize(const udict_t *d, ubuffer_t *buf) {d->vtable-
 static inline char *udict_as_str(const udict_t *d) {return d->vtable->as_str(d->vobj);}
 static inline int udict_print(const udict_t *d) {return d->vtable->print(d->vobj);}
 static inline int udict_fprint(const udict_t *d, FILE *out) {return d->vtable->fprint(d->vobj, out);}
+static inline uvector_t *udict_get_items(const udict_t *d, udict_items_kind_t kind) {return d->vtable->get_items(d->vobj, kind);}
 void udict_destroy(udict_t *d);
 int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp);
 void udict_set_void_hasher(udict_t *d, void_hasher_t hasher);
 void udict_set_void_key_comparator(udict_t *d, void_cmp_t cmp);
+
+static inline uvector_t *udict_get_keys(const udict_t *d) {return udict_get_items(d, UDICT_KEYS);}
+static inline uvector_t *udict_get_values(const udict_t *d) {return udict_get_items(d, UDICT_VALUES);}
 
 void *udict_copy(const udict_t *d);
 void *udict_deep_copy(const udict_t *d);

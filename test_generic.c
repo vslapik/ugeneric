@@ -49,7 +49,7 @@ void test_types(void)
     ugeneric_t g_true_copy = ugeneric_copy(g_true, NULL);
     ugeneric_t g_false_copy = ugeneric_copy(g_false, NULL);
     ugeneric_t g_vector_copy = ugeneric_copy(g_vector, NULL);
-    //ugeneric_t g_dict_copy = ugeneric_copy(g_dict, NULL); TODO: implement
+    ugeneric_t g_dict_copy = ugeneric_copy(g_dict, NULL);
     ugeneric_t g_memchunk_copy = ugeneric_copy(g_memchunk, NULL);
 
     UASSERT(G_IS_INT(g_integer_copy));
@@ -63,10 +63,24 @@ void test_types(void)
     UASSERT(G_IS_TRUE(g_true_copy));
     UASSERT(G_IS_FALSE(g_false_copy));
     UASSERT(G_IS_VECTOR(g_vector_copy));
-    //UASSERT(G_IS_DICT(g_dict_copy));
+    UASSERT(G_IS_DICT(g_dict_copy));
     UASSERT(G_IS_MEMCHUNK(g_memchunk_copy));
     UASSERT(G_AS_MEMCHUNK_DATA(g_memchunk_copy) != m);
     UASSERT(G_AS_MEMCHUNK_SIZE(g_memchunk_copy) == strlen(m));
+
+    UASSERT(ugeneric_compare(g_integer, g_integer_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_real, g_real_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_string, g_string_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_cstring, g_cstring_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_size, g_size_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_null, g_null_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_true, g_true_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_false, g_false_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_vector, g_vector_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_dict, g_dict_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_memchunk, g_memchunk_copy, NULL) == 0);
+
+    UASSERT(ugeneric_compare(g_memchunk, g_integer, NULL) != 0);
 
     ugeneric_destroy(g_integer, NULL);
     ugeneric_destroy(g_real, NULL);
@@ -89,7 +103,7 @@ void test_types(void)
     ugeneric_destroy(g_true_copy, NULL);
     ugeneric_destroy(g_false_copy, NULL);
     ugeneric_destroy(g_vector_copy, NULL);
-    //ugeneric_destroy(g_dict_copy, NULL);
+    ugeneric_destroy(g_dict_copy, NULL);
     ugeneric_destroy(g_memchunk_copy, NULL);
 }
 
@@ -337,7 +351,7 @@ int main(int argc, char **argv)
 
     test_types();
     //test_random();
-//    test_generic();
+    test_generic();
     test_parse();
     test_large_parse();
     test_serialize();

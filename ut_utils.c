@@ -1,6 +1,13 @@
 #include <limits.h>
 #include "ut_utils.h"
 #include "void.h"
+#include "string_utils.c"
+
+typedef struct {
+    int i1;
+    int i2;
+    int i3;
+} void_t;
 
 ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable)
 {
@@ -36,7 +43,21 @@ ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable
 
 int _void_cmp(const void *ptr1, const void *ptr2)
 {
-    return (uintptr_t)ptr1 - (uintptr_t)ptr2;
+    int ret = 0;
+    const void_t *p1 = ptr1;
+    const void_t *p2 = ptr2;
+
+    ret = p1->i1 - p2->i1;
+    if (ret == 0)
+    {
+        ret = p1->i2 - p2->i2;
+        if (ret == 0)
+        {
+            ret = p1->i3 - p2->i3;
+        }
+    }
+
+    return ret;
 }
 
 size_t _void_hash(const void *ptr)
@@ -46,7 +67,22 @@ size_t _void_hash(const void *ptr)
 
 void *_void_cpy(const void *ptr)
 {
-    return (void*)ptr;
+    const void_t *p1 = ptr;
+    void_t *p2 = umalloc(sizeof(*p1));
+    memcpy(p2, p1, sizeof(void_t));
+
+    return p2;
+}
+
+void _void_dtr(void *ptr)
+{
+    ufree(ptr);
+}
+
+char *_void_s8r(const void *ptr, size_t *output_size)
+{
+    const void_t *p = ptr;
+    return ustring_fmt_sized("\"[%d, %d, %d]\"", output_size, p->i1, p->i2, p->i3);
 }
 
 ugeneric_t gen_random_vector(int depth, bool verbose)
@@ -55,9 +91,10 @@ ugeneric_t gen_random_vector(int depth, bool verbose)
     if (depth > 1)
     {
         uvector_t *v = uvector_create();
-        uvector_set_void_destroyer(v, ufree);
+        uvector_set_void_destroyer(v, _void_dtr);
         uvector_set_void_comparator(v, _void_cmp);
         uvector_set_void_copier(v, _void_cpy);
+        uvector_set_void_serializer(v, _void_s8r);
         int size = ugeneric_random_from_range(0, 100);
         if (verbose)
         {
@@ -103,6 +140,7 @@ ugeneric_t gen_random_dict(int depth, bool verbose)
     udict_set_void_destroyer(d, ufree);
     udict_set_void_comparator(d, _void_cmp);
     udict_set_void_copier(d, _void_cpy);
+    udict_set_void_serializer(d, _void_s8r);
     if (backend == UDICT_BACKEND_HTBL)
     {
         udict_set_void_hasher(d, _void_hash);
@@ -141,6 +179,13 @@ ugeneric_t gen_random_memchunk(int depth, bool verbose)
 
 ugeneric_t gen_random_void_data(int depth, bool verbose)
 {
-    ugeneric_t gm = gen_random_memchunk(depth - 1, verbose);
-    return G_PTR(G_AS_MEMCHUNK_DATA(gm));
+    (void)depth;
+    (void)verbose;
+
+    void_t *p = umalloc(sizeof(*p));
+    p->i1 = 1;
+    p->i2 = 2;
+    p->i3 = 3;
+
+    return G_PTR(p);
 }

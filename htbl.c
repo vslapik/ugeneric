@@ -283,34 +283,15 @@ int uhtbl_compare(const uhtbl_t *h1, const uhtbl_t *h2, void_cmp_t cmp)
         return 0;
     }
 
-    int diff = 0;
-    uvector_t *vkeys1 = uhtbl_get_keys(h1);
-    uvector_t *vkeys2 = uhtbl_get_keys(h2);
-    uvector_sort(vkeys1);
-    uvector_sort(vkeys2);
+    uvector_t *items1 = uhtbl_get_items(h1, UDICT_KV);
+    uvector_t *items2 = uhtbl_get_items(h2, UDICT_KV);
+    uvector_sort(items1);
+    uvector_sort(items2);
 
-    ugeneric_t *keys1 = uvector_get_cells(vkeys1);
-    ugeneric_t *keys2 = uvector_get_cells(vkeys2);
-    size_t keys1_len = uvector_get_size(vkeys1);
-    size_t keys2_len = uvector_get_size(vkeys2);
-    size_t len = MIN(keys1_len, keys2_len);
+    int diff = uvector_compare(items1, items2, cmp);
 
-    for (size_t i = 0; i < len; i++)
-    {
-        diff = ugeneric_compare(keys1[i], keys2[i], cmp);
-        if (diff)
-        {
-            break;
-        }
-    }
-
-    if (!diff)
-    {
-        diff = keys1_len - keys2_len;
-    }
-
-    uvector_destroy(vkeys1);
-    uvector_destroy(vkeys2);
+    uvector_destroy(items1);
+    uvector_destroy(items2);
 
     return diff;
 }
@@ -325,9 +306,9 @@ void uhtbl_serialize(const uhtbl_t *h, ubuffer_t *buf)
     while (uhtbl_iterator_has_next(hi))
     {
         ugeneric_kv_t kv = uhtbl_iterator_get_next(hi);
-        ugeneric_serialize_v(kv.k, buf, NULL);
+        ugeneric_serialize_v(kv.k, buf, h->void_handlers.s8r);
         ubuffer_append_data(buf, ": ", 2);
-        ugeneric_serialize_v(kv.v, buf, NULL);
+        ugeneric_serialize_v(kv.v, buf, h->void_handlers.s8r);
         if (uhtbl_iterator_has_next(hi))
         {
             ubuffer_append_data(buf, ", ", 2);

@@ -739,6 +739,7 @@ ugeneric_t ubst_get_inorder_successor(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 }
 
 typedef struct {
+    const ubst_t *b;
     size_t nodes_left;
     ubuffer_t *buf;
 } _serialize_data_t;
@@ -748,9 +749,9 @@ bool _serialize(ubst_node_t *node, void *data)
     _serialize_data_t *d = data;
 
     d->nodes_left -= 1;
-    ugeneric_serialize_v(node->k, d->buf, NULL);
+    ugeneric_serialize_v(node->k, d->buf, d->b->void_handlers.s8r);
     ubuffer_append_data(d->buf, ": ", 2);
-    ugeneric_serialize_v(node->v, d->buf, NULL);
+    ugeneric_serialize_v(node->v, d->buf, d->b->void_handlers.s8r);
     if (d->nodes_left)
     {
         ubuffer_append_data(d->buf, ", ", 2);
@@ -765,7 +766,7 @@ void ubst_serialize(const ubst_t *b, ubuffer_t *buf)
     UASSERT_INPUT(buf);
 
     ubuffer_append_byte(buf, '{');
-    _serialize_data_t d = {.nodes_left = b->size, .buf = buf};
+    _serialize_data_t d = {.nodes_left = b->size, .buf = buf, .b = b};
     _iterate_nodes(b->root, UBST_INORDER, _serialize, &d);
     ubuffer_append_byte(buf, '}');
 }

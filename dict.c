@@ -21,6 +21,7 @@ static const udict_vtable_t _uhtbl_vtable = {
     .print               = (f_udict_print)uhtbl_print,
     .fprint              = (f_udict_fprint)uhtbl_fprint,
     .get_void_handlers   = (f_udict_get_void_handlers)uhtbl_get_void_handlers,
+    .get_items           = (f_udict_get_items)uhtbl_get_items,
 };
 
 static const udict_vtable_t _ubst_vtable = {
@@ -38,6 +39,7 @@ static const udict_vtable_t _ubst_vtable = {
     .print               = (f_udict_print)ubst_print,
     .fprint              = (f_udict_fprint)ubst_fprint,
     .get_void_handlers   = (f_udict_get_void_handlers)ubst_get_void_handlers,
+    .get_items           = (f_udict_get_items)ubst_get_items,
 };
 
 static const udict_iterator_vtable_t _uhtbl_iterator_vtable = {
@@ -184,8 +186,20 @@ int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
     }
     else
     {
-        UABORT("not implemented");
-    //    return 0;
+        uvector_t *items1 = udict_get_items(d1, UDICT_KV);
+        uvector_t *items2 = udict_get_items(d2, UDICT_KV);
+        if (d1->backend == UDICT_BACKEND_HTBL)
+        {
+            uvector_sort(items1);
+        }
+        if (d2->backend == UDICT_BACKEND_HTBL)
+        {
+            uvector_sort(items2);
+        }
+        int diff = uvector_compare(items1, items2, cmp);
+        uvector_destroy(items1);
+        uvector_destroy(items2);
+        return diff;
     }
 }
 

@@ -19,12 +19,9 @@
 - deque shrink_to_size
 - vector slice
 - insert vector into vector
-- dict compare (for all backends) !!
 - hide RB tree color inside one of the links
 - xxx_set_destroyer,xxx_set_comparator and xxx_set_copier should return the old handler for being able to restore it
 - uqueue_is_full
 - overwrite mode for queue
-- implement missing methods for void* data management for all containers (only vector contains all as for now)
-- ugeneric_serialize for void*
 - add UTs for file writers (deal with fs garbage)
-- _Genric c11 macros for putting scalars to containers
+- _Generic c11 macros for putting scalars to containers
