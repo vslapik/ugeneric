@@ -102,6 +102,10 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 s2 = G_AS_MEMCHUNK_SIZE(g2);
                 ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
                              MIN(s1, s2));
+                if (ret == 0)
+                {
+                    ret = s1 - s2;
+                }
                 break;
         }
     }

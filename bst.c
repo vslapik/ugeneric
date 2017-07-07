@@ -630,10 +630,6 @@ int ubst_compare(const ubst_t *b1, const ubst_t *b2, void_cmp_t cmp)
         {
             ret = -1;
         }
-        else
-        {
-            ret = 0;
-        }
     }
 
     ubst_iterator_destroy(bi1);
@@ -889,7 +885,6 @@ uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind)
     while (ubst_iterator_has_next(bi))
     {
         ugeneric_kv_t item = ubst_iterator_get_next(bi);
-        ugeneric_kv_t *kv;
         switch (kind)
         {
             case UDICT_KEYS:
@@ -899,9 +894,8 @@ uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind)
                 uvector_append(v, item.v);
                 break;
             case UDICT_KV:
-                kv = umalloc(sizeof(*kv));
-                *kv = item;
-                uvector_append(v, G_PTR(kv));
+                uvector_append(v, item.k);
+                uvector_append(v, item.v);
                 break;
             default:
                 UABORT("internal error");
@@ -909,16 +903,10 @@ uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind)
     }
     ubst_iterator_destroy(bi);
 
+    uvector_drop_data_ownership(v);
     uvector_set_void_comparator(v, b->void_handlers.cmp); // vector sort should use original cmp
+    uvector_set_void_serializer(v, b->void_handlers.s8r);
     uvector_shrink_to_size(v);
-    if (kind == UDICT_KV)
-    {
-        uvector_set_void_destroyer(v, ufree);
-    }
-    else
-    {
-        uvector_drop_data_ownership(v);
-    }
 
     return v;
 }

@@ -470,7 +470,6 @@ uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind)
     while (uhtbl_iterator_has_next(hi))
     {
         ugeneric_kv_t item = uhtbl_iterator_get_next(hi);
-        ugeneric_kv_t *kv;
         switch (kind)
         {
             case UDICT_KEYS:
@@ -480,9 +479,8 @@ uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind)
                 uvector_append(v, item.v);
                 break;
             case UDICT_KV:
-                kv = umalloc(sizeof(*kv));
-                *kv = item;
-                uvector_append(v, G_PTR(kv));
+                uvector_append(v, item.k);
+                uvector_append(v, item.v);
                 break;
             default:
                 UABORT("internal error");
@@ -490,16 +488,10 @@ uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind)
     }
     uhtbl_iterator_destroy(hi);
 
+    uvector_drop_data_ownership(v);
     uvector_set_void_comparator(v, h->void_handlers.cmp); // vector sort should use original cmp
+    uvector_set_void_serializer(v, h->void_handlers.s8r);
     uvector_shrink_to_size(v);
-    if (kind == UDICT_KV)
-    {
-        uvector_set_void_destroyer(v, ufree);
-    }
-    else
-    {
-        uvector_drop_data_ownership(v);
-    }
 
     return v;
 }

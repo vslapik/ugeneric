@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     }
 
     printf("================================== %u ==============================\n", seed);
-    ugeneric_t rv = gen_random_vector(4, verbose);
+    ugeneric_t rv = gen_random_vector(2, verbose);
     printf("Generation done ================== %u ==============================\n", seed);
 
     uvector_sort(G_AS_PTR(rv));
@@ -40,9 +40,11 @@ int main(int argc, char **argv)
     }
     else
     {
+        puts("==========\n");
         puts(t1);
-        puts("==========");
+        puts("==========\n");
         puts(t2);
+        puts("==========\n");
         UABORT("fuck reality!");
     }
 

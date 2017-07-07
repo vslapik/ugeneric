@@ -1,0 +1,4 @@
+syn keyword MyTypes
+\ uvector_t ulist_t uqueue_t ustack_t uheap_t ugraph_t ugeneric_t umemchunk_t
+\ ugeneric_cmp_t ulist_iterator_t
+\ ubst_t udict_t udsu_t

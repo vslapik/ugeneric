@@ -11,9 +11,9 @@ typedef struct {
 
 ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable)
 {
-    ugeneric_t g = G_CSTR("g");
     if (depth > 0)
     {
+        ugeneric_t g = G_CSTR("g");
         ugeneric_type_e gtype;
         do {
             gtype = ugeneric_random_from_range(G_NULL_T, G_MEMCHUNK_T);
@@ -36,9 +36,13 @@ ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable
             case G_MEMCHUNK_T: g = gen_random_memchunk(depth - 1, verbose); break;
             default: ;
         }
-    }
 
-    return g;
+        return g;
+    }
+    else
+    {
+        return G_STR(ustring_fmt("%d", depth));
+    }
 }
 
 int _void_cmp(const void *ptr1, const void *ptr2)
