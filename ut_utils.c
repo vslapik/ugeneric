@@ -99,7 +99,7 @@ ugeneric_t gen_random_vector(int depth, bool verbose)
         uvector_set_void_comparator(v, _void_cmp);
         uvector_set_void_copier(v, _void_cpy);
         uvector_set_void_serializer(v, _void_s8r);
-        int size = ugeneric_random_from_range(0, 100);
+        int size = ugeneric_random_from_range(0, 50);
         if (verbose)
         {
             printf("[%02d] Generate vector of size %d\n", depth, size);
@@ -151,7 +151,7 @@ ugeneric_t gen_random_dict(int depth, bool verbose)
         udict_set_void_key_comparator(d, _void_cmp);
     }
 
-    int size = ugeneric_random_from_range(0, 20);
+    int size = ugeneric_random_from_range(0, 50);
     if (verbose)
     {
         printf("[%02d] Generate dict of size %d\n", depth, size);

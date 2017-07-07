@@ -176,9 +176,9 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
 int ugeneric_fprint_v(ugeneric_t g, FILE *out, void_s8r_t void_serializer);
 
 static inline void ugeneric_serialize(ugeneric_t g, ubuffer_t *buf) {ugeneric_serialize_v(g, buf, NULL);}
-static inline char *ugeneric_as_str(ugeneric_t g)          {return ugeneric_as_str_v(g, NULL);}
+static inline char *ugeneric_as_str(ugeneric_t g) {return ugeneric_as_str_v(g, NULL);}
 static inline int ugeneric_print_v(ugeneric_t g, void_s8r_t void_serializer) {return ugeneric_fprint_v(g, stdout, void_serializer);}
-static inline int ugeneric_print(ugeneric_t g)             {return ugeneric_print_v(g, NULL);}
+static inline int ugeneric_print(ugeneric_t g) {return ugeneric_print_v(g, NULL);}
 static inline int ugeneric_fprint(ugeneric_t g, FILE *out) {return ugeneric_fprint_v(g, out, NULL);}
 
 typedef enum {

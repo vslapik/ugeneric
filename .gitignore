@@ -13,7 +13,6 @@ tags
 
 test_bitmap
 test_bst
-test_buffer
 test_deque
 test_dict
 test_dsu

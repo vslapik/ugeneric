@@ -216,11 +216,11 @@ udict_t *_dcpy(const udict_t *d, bool deep)
         uhtbl_set_void_key_comparator(hc, uhtbl_get_void_key_comparator(h));
     }
 
+    void_cpy_t cpy = udict_get_void_copier((udict_t *)d);
     deep ? udict_take_data_ownership(copy) : udict_drop_data_ownership(copy);
     udict_set_void_comparator(copy, udict_get_void_comparator((udict_t *)d));
     udict_set_void_destroyer(copy, udict_get_void_destroyer((udict_t *)d));
     udict_set_void_serializer(copy, udict_get_void_serializer((udict_t *)d));
-    void_cpy_t cpy = udict_get_void_copier((udict_t *)d);
     udict_set_void_copier(copy, cpy);
 
     while (udict_iterator_has_next(di))

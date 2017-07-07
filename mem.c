@@ -118,7 +118,7 @@ void *umemdup(const void *src, size_t n)
 
 static void _reserve_capacity(ubuffer_t *buf, size_t new_capacity)
 {
-    UASSERT(buf->data_size <= buf->capacity); //TODO: make it internal error
+    UASSERT_INTERNAL(buf->data_size <= buf->capacity);
     if (buf->capacity < new_capacity)
     {
         new_capacity = MAX(new_capacity * BUFFER_SCALE_FACTOR,
