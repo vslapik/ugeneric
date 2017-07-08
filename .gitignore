@@ -10,6 +10,7 @@ tags
 *.diff
 *.s
 *.i
+massif.out.*
 
 test_bitmap
 test_bst

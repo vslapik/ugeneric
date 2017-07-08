@@ -435,10 +435,10 @@ static ugeneric_t _parse_number(const char **str)
             g = G_SIZE(t);
             if (errno != ERANGE)
             {
+                // Check for the case when size_t and uintmax_t
+                // are different in width.
                 if (t != (size_t)t)
                 {
-                    // Check for the case when size_t and uintmax_t
-                    // are different in width.
                     errno = ERANGE;
                 }
             }

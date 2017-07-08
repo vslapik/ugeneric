@@ -59,6 +59,7 @@ static uvector_t *_allocate_vector(void)
 
 int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp)
 {
+    int diff = 0;
     UASSERT_INPUT(v1);
     UASSERT_INPUT(v2);
 
@@ -70,13 +71,19 @@ int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp)
     size_t len = MIN(v1->size, v2->size);
     for (size_t i = 0; i < len; i++)
     {
-        int diff = ugeneric_compare(v1->cells[i], v2->cells[i], cmp);
+        diff = ugeneric_compare(v1->cells[i], v2->cells[i], cmp);
         if (diff)
         {
-            return diff;
+            break;
         }
     }
-    return v1->size - v2->size;
+
+    if (diff == 0)
+    {
+        diff = v1->size - v2->size;
+    }
+
+    return diff;
 }
 
 uvector_t *uvector_create_with_size(size_t size, ugeneric_t value)

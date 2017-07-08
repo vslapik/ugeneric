@@ -168,6 +168,7 @@ void udict_iterator_destroy(udict_iterator_t *di)
 
 int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
 {
+    int diff;
     UASSERT_INPUT(d1);
     UASSERT_INPUT(d2);
 
@@ -178,11 +179,11 @@ int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
 
     if ((d1->backend == UDICT_BACKEND_HTBL) && (d2->backend == UDICT_BACKEND_HTBL))
     {
-        return uhtbl_compare(d1->vobj, d2->vobj, cmp);
+        diff = uhtbl_compare(d1->vobj, d2->vobj, cmp);
     }
     else if (UDICT_ON_BST(d1) && UDICT_ON_BST(d2))
     {
-        return ubst_compare(d1->vobj, d2->vobj, cmp);
+        diff = ubst_compare(d1->vobj, d2->vobj, cmp);
     }
     else
     {
@@ -196,11 +197,12 @@ int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
         {
             uvector_sort(items2);
         }
-        int diff = uvector_compare(items1, items2, cmp);
+        diff = uvector_compare(items1, items2, cmp);
         uvector_destroy(items1);
         uvector_destroy(items2);
-        return diff;
     }
+
+    return diff;
 }
 
 udict_t *_dcpy(const udict_t *d, bool deep)

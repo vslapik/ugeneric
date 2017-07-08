@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     }
 
     printf("================================== %u ==============================\n", seed);
-    ugeneric_t rv = gen_random_vector(16, verbose);
+    ugeneric_t rv = gen_random_vector(17, verbose);
     uvector_t *vector = G_AS_PTR(rv);
     printf("Generation done ================== %u ==============================\n", seed);
 

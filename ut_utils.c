@@ -66,7 +66,8 @@ int _void_cmp(const void *ptr1, const void *ptr2)
 
 size_t _void_hash(const void *ptr)
 {
-    return (size_t)ptr;
+    const void_t *p = ptr;
+    return p->i1 + p->i2 + p->i3;
 }
 
 void *_void_cpy(const void *ptr)
@@ -86,7 +87,7 @@ void _void_dtr(void *ptr)
 char *_void_s8r(const void *ptr, size_t *output_size)
 {
     const void_t *p = ptr;
-    return ustring_fmt_sized("\"[%d, %d, %d]\"", output_size, p->i1, p->i2, p->i3);
+    return ustring_fmt_sized("\"%d-%d-%d\"", output_size, p->i1, p->i2, p->i3);
 }
 
 ugeneric_t gen_random_vector(int depth, bool verbose)
@@ -109,6 +110,17 @@ ugeneric_t gen_random_vector(int depth, bool verbose)
             uvector_append(v, gen_random_generic(depth - 1, verbose, false));
         }
         uvector_shrink_to_size(v);
+/*
+        if (size > 1)
+        {
+            size_t i = ugeneric_random_from_range(0, size - 1);
+            ugeneric_t e = uvector_pop_at(v, i);
+            size_t j = ugeneric_random_from_range(0, size - 2);
+            uvector_insert_at(v, j, e);
+            size_t k = ugeneric_random_from_range(0, size - 1);
+            uvector_remove_at(v, k);
+        }
+        */
 
         if (verbose)
         {
@@ -187,9 +199,9 @@ ugeneric_t gen_random_void_data(int depth, bool verbose)
     (void)verbose;
 
     void_t *p = umalloc(sizeof(*p));
-    p->i1 = 1;
-    p->i2 = 2;
-    p->i3 = 3;
+    p->i1 = ugeneric_random_from_range(0, 500);
+    p->i2 = ugeneric_random_from_range(0, 500);
+    p->i3 = ugeneric_random_from_range(0, 500);
 
     return G_PTR(p);
 }
