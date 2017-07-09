@@ -27,9 +27,9 @@ ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable
             case G_PTR_T:      g = gen_random_void_data(depth - 1, verbose); break;
             case G_STR_T:      g = gen_random_string(depth, verbose); break;
             case G_CSTR_T:     break;
-            case G_INT_T:      g = G_INT(ugeneric_random_from_range(INT_MIN, RAND_MAX)); break;
-            case G_REAL_T:     g = G_REAL(ugeneric_random_from_range(INT_MIN , RAND_MAX)); break;
-            case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(0, RAND_MAX)); break;
+            case G_INT_T:      g = G_INT(ugeneric_random_from_range(-100, 100)); break;
+            case G_REAL_T:     g = G_REAL(ugeneric_random_from_range(-1000 , 1000)/10.0); break;
+            case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(200, 300)); break;
             case G_BOOL_T:     g = G_BOOL(ugeneric_random_from_range(0, 2)); break;
             case G_VECTOR_T:   g = gen_random_vector(depth - 1, verbose); break;
             case G_DICT_T:     g = gen_random_dict(depth - 1, verbose); break;

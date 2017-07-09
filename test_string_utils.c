@@ -78,11 +78,39 @@ void test_ustring_replace_char(void)
     ufree(out);
 }
 
+void test_ustring_starts_with(void)
+{
+    typedef struct {
+        char *str;
+        char *prefix;
+        bool starts_with;
+    } sw_t;
+
+    sw_t tests[] = {
+        {"string", "str", true},
+        {"string", "s", true},
+        {"string", " ", false},
+        {"", "", true},
+        {"", "-", false},
+        {"-", "", true},
+        {"str", "str", true},
+        {0}
+    };
+
+    sw_t *t = tests;
+    while (t->str)
+    {
+        UASSERT(ustring_starts_with(t->str, t->prefix) == t->starts_with);
+        t++;
+    }
+}
+
 int main(void)
 {
     test_ustring_split();
     test_ustring_fmt();
     test_ustring_replace_char();
+    test_ustring_starts_with();
 
     return EXIT_SUCCESS;
 }
