@@ -72,7 +72,7 @@
 #define UASSERT_NO_ERROR(g) do {                                            \
     if (G_IS_ERROR(g))                                                      \
     {                                                                       \
-        fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__, G_AS_STR(g));     \
+        fprintf(stderr, "%s:%d: %s.\n", __FILE__, __LINE__, G_AS_STR(g));   \
         ufree(G_AS_STR(g));                                                 \
         utrace_print();                                                     \
         abort();                                                            \
@@ -82,7 +82,7 @@
 #define EXIT_IF_ERROR(g, ec) do {                                           \
     if (G_IS_ERROR(g))                                                      \
     {                                                                       \
-        fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__, G_AS_STR(g));     \
+        fprintf(stderr, "%s:%d: %s.\n", __FILE__, __LINE__, G_AS_STR(g));   \
         ufree(G_AS_STR(g));                                                 \
         utrace_print();                                                     \
         exit(ec);                                                           \

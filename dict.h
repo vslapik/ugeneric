@@ -107,6 +107,20 @@ static inline bool udict_iterator_has_next(const udict_iterator_t *di) {return d
 static inline void udict_iterator_reset(udict_iterator_t *di) {di->vtable->reset(di->vobj);}
 void udict_iterator_destroy(udict_iterator_t *di);
 
+struct _convertor_data_descriptor {
+    const char *name;
+    ugeneric_type_e type;
+    size_t offset;
+    ugeneric_t dflt;
+    bool is_array;
+    struct _convertor_data_descriptor *field_descriptor; // for nested structures
+    size_t field_size; // for nested structures
+};
+typedef struct _convertor_data_descriptor ugeneric_convertor_data_descriptor_t;
+
+ugeneric_t udict_convert_to_struct(const udict_t *d, size_t struct_size,
+                                   const ugeneric_convertor_data_descriptor_t *gcdd);
+
 static inline uvoid_handlers_t *udict_get_void_handlers(udict_t *d) {return d->vtable->get_void_handlers(d->vobj);}
 DECLARE_VOID_FUNCS(udict)
 

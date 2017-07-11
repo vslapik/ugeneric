@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stddef.h>
 
 #include "mem.h"
 #include "asserts.h"

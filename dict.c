@@ -5,6 +5,7 @@
 #include "dict.h"
 #include "htbl.h"
 #include "bst.h"
+#include "string_utils.h"
 
 static const udict_vtable_t _uhtbl_vtable = {
     .take_data_ownership = (f_udict_take_data_ownership)uhtbl_take_data_ownership,
@@ -55,6 +56,7 @@ static const udict_iterator_vtable_t _ubst_iterator_vtable = {
 };
 
 static udict_backend_t _default_backend = UDICT_BACKEND_BST_PLAIN;
+//static udict_backend_t _default_backend = UDICT_BACKEND_HTBL;
 
 void libugeneric_udict_set_default_backend(udict_backend_t backend)
 {
@@ -261,4 +263,178 @@ void udict_set_void_key_comparator(udict_t *d, void_cmp_t cmp)
     UASSERT_INPUT(d);
     UASSERT_INPUT(d->backend == UDICT_BACKEND_HTBL);
     uhtbl_set_void_key_comparator(d->vobj, cmp);
+}
+
+ugeneric_t udict_convert_to_struct(const udict_t *d, size_t struct_size,
+                                   const ugeneric_convertor_data_descriptor_t *gcdd)
+{
+    UASSERT_INPUT(d);
+    UASSERT_INPUT(gcdd);
+
+    struct __array_placeholder {
+        size_t len;
+        void *cells;
+    };
+    const size_t cells_offset = offsetof(struct __array_placeholder, cells);
+
+    const ugeneric_convertor_data_descriptor_t *i = gcdd;
+    void *p = uzalloc(struct_size);
+
+    while (i->name)
+    {
+        ugeneric_t g = udict_get(d, G_CSTR(i->name), i->dflt);
+        if (G_IS_ERROR(g))
+        {
+            return G_ERROR(ustring_fmt("default value for field '%s' is not provided", i->name));
+        }
+        if (i->is_array)
+        {
+            if (ugeneric_get_type(g) != G_VECTOR_T)
+            {
+                goto format_error;
+            }
+        }
+        else
+        {
+            if (i->type != ugeneric_get_type(g))
+            {
+                goto format_error;
+            }
+        }
+        switch (i->type)
+        {
+            case G_STR_T:
+                if (i->is_array)
+                {
+                    uvector_t *v = G_AS_PTR(g);
+                    char **q = NULL;
+                    size_t len = uvector_get_size(v);
+                    if (len)
+                    {
+                        q = umalloc(len * sizeof(*q));
+                        ugeneric_t *cells = uvector_get_cells(v);
+                        for (size_t j = 0; j < len; j++)
+                        {
+                            ugeneric_t e = cells[j];
+                            if (ugeneric_get_type(e) != i->type)
+                            {
+                                goto format_error;
+                            }
+                            q[j] = ustring_dup(G_AS_STR(e));
+                        }
+                    }
+                    *(size_t *)((char *)p + i->offset) = len;
+                    *(char ***)((char *)p + i->offset + cells_offset) = q;
+                }
+                else
+                {
+                    *(char **)((char *)p + i->offset) = ustring_dup(G_AS_STR(g));
+                }
+                break;
+            case G_INT_T:
+                if (i->is_array)
+                {
+                    uvector_t *v = G_AS_PTR(g);
+                    long int *q = NULL;
+                    size_t len = uvector_get_size(v);
+                    if (len)
+                    {
+                        q = umalloc(len * sizeof(*q));
+                        ugeneric_t *cells = uvector_get_cells(v);
+                        for (size_t j = 0; j < len; j++)
+                        {
+                            ugeneric_t e = cells[j];
+                            if (ugeneric_get_type(e) != i->type)
+                            {
+                                goto format_error;
+                            }
+                            q[j] = G_AS_BOOL(e);
+                        }
+                    }
+                    *(size_t *)((char *)p + i->offset) = len;
+                    *(long int **)((char *)p + i->offset + cells_offset) = q;
+                }
+                else
+                {
+                    *(long int *)((char *)p + i->offset) = G_AS_INT(g);
+                }
+                break;
+            case G_BOOL_T:
+                if (i->is_array)
+                {
+                    uvector_t *v = G_AS_PTR(g);
+                    bool *q = NULL;
+                    size_t len = uvector_get_size(v);
+                    if (len)
+                    {
+                        q = umalloc(len * sizeof(*q));
+                        ugeneric_t *cells = uvector_get_cells(v);
+                        for (size_t j = 0; j < len; j++)
+                        {
+                            ugeneric_t e = cells[j];
+                            if (ugeneric_get_type(e) != i->type)
+                            {
+                                goto format_error;
+                            }
+                            q[j] = G_AS_BOOL(e);
+                        }
+                    }
+                    *(size_t *)((char *)p + i->offset) = len;
+                    *(bool **)((char *)p + i->offset + cells_offset) = q;
+                }
+                else
+                {
+                    *(bool *)((char *)p + i->offset) = G_AS_BOOL(g);
+                }
+                break;
+            case G_DICT_T:
+                if (i->is_array)
+                {
+                    uvector_t *v = G_AS_PTR(g);
+                    void **q = NULL;
+                    size_t len = uvector_get_size(v);
+                    if (len)
+                    {
+                        q = umalloc(len * sizeof(*q));
+                        ugeneric_t *cells = uvector_get_cells(v);
+                        for (size_t j = 0; j < len; j++)
+                        {
+                            ugeneric_t e = cells[j];
+                            if (ugeneric_get_type(e) != i->type)
+                            {
+                                goto format_error;
+                            }
+                            ugeneric_t t = udict_convert_to_struct(G_AS_PTR(e), i->field_size, i->field_descriptor);
+                            if (G_IS_ERROR(t))
+                            {
+                                return t;
+                            }
+                            q[j] = G_AS_PTR(t);
+                        }
+                    }
+                    *(size_t *)((char *)p + i->offset) = len;
+                    *(void ***)((char *)p + i->offset + cells_offset) = q;
+                }
+                else
+                {
+                    ugeneric_t t = udict_convert_to_struct(G_AS_PTR(g), i->field_size, i->field_descriptor);
+                    if (G_IS_ERROR(t))
+                    {
+                        return t;
+                    }
+                    *(void **)((char *)p + i->offset) = G_AS_PTR(t);
+                }
+                break;
+            default:
+                goto format_error;
+
+        }
+        i++;
+    }
+
+    return G_PTR(p);
+
+format_error:
+    ufree(p);
+    return G_ERROR(ustring_fmt("data descriptor format error"));
 }
