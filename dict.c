@@ -348,7 +348,7 @@ ugeneric_t udict_convert_to_struct(const udict_t *d, size_t struct_size,
                             {
                                 goto format_error;
                             }
-                            q[j] = G_AS_BOOL(e);
+                            q[j] = G_AS_INT(e);
                         }
                     }
                     *(size_t *)((char *)p + i->offset) = len;
