@@ -7,7 +7,7 @@ CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
 #CFLAGS = $(CFLAGS_COMMON) -Ofast
 VFLAGS = -q --child-silent-after-fork=yes --leak-check=full --error-exitcode=3
 
-src = generic.c stack.c vector.c queue.c heap.c list.c graph.c bitmap.c sort.c string_utils.c file_utils.c bst.c mem.c dsu.c dict.c htbl.c deque.c
+src = generic.c stack.c vector.c queue.c heap.c list.c graph.c bitmap.c sort.c string_utils.c file_utils.c bst.c mem.c dsu.c dict.c htbl.c struct.c
 tsrc = $(patsubst %.c, test_%.c, $(src))
 texe = $(patsubst %.c, %, $(tsrc))
 checks = $(patsubst test_%, check_%, $(texe))
