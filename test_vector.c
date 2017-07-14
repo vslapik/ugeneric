@@ -5,6 +5,7 @@
 #include "mem.h"
 #include "string_utils.h"
 #include "ut_utils.h"
+#include "math.h"
 
 typedef struct {
     char *name;
@@ -314,8 +315,56 @@ void test_uvector_compare(void)
     UASSERT(cmp("[3, 2, 3]", "[1, 2, 3]") > 0);
 }
 
+
+double f(double x, void *p)
+{
+    uvector_t *v = p;
+    return G_AS_REAL(uvector_get_at(v, x));
+}
+/*
+void test_gnuplot(void)
+{
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_deriv.h>
+
+    gsl_function F;
+    double result, abserr;
+    #define N 10
+
+    gnuplot_attrs_t a = {
+        .xlabel = "xlabel",
+        .ylabel = "ylabel",
+        .data_label = "samples",
+        .title = "chart",
+    };
+
+    uvector_t *v = uvector_create();
+    for (size_t i = 0; i < N; i++)
+    {
+        uvector_append(v, G_REAL(sin(i/50.0)));
+    }
+    uvector_dump_to_gnuplot(v, &a, stdout);
+
+    uvector_t *dv = uvector_create();
+    F.function = &f;
+    F.params = v;
+
+    for (size_t i = 0; i < N; i++)
+    {
+        UASSERT(gsl_deriv_central(&F, (double)i, 1e-8, &result, &abserr) == 0);
+        uvector_append(dv, G_REAL(result));
+    }
+    uvector_dump_to_gnuplot(dv, &a, stdout);
+
+    uvector_destroy(v);
+    uvector_destroy(dv);
+}
+*/
+
 int main(int argc, char **argv)
 {
+//    test_gnuplot();
+
     (void)argv;
     test_uvector_api();
     test_uvector_serialization(argc > 1);

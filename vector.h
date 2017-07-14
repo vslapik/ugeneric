@@ -54,6 +54,14 @@ void uvector_serialize(const uvector_t *v, ubuffer_t *buf);
 int uvector_print(const uvector_t *v);
 int uvector_fprint(const uvector_t *v, FILE *out);
 
+typedef struct {
+    char *title;
+    char *xlabel;
+    char *ylabel;
+    char *data_label;
+} gnuplot_attrs_t;
+void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs, FILE *out);
+
 uvoid_handlers_t *uvector_get_void_handlers(uvector_t *v);
 DECLARE_VOID_FUNCS(uvector)
 

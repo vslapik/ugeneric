@@ -433,3 +433,28 @@ uvoid_handlers_t *uvector_get_void_handlers(uvector_t *v)
     UASSERT_INPUT(v);
     return &v->void_handlers;
 }
+
+void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs, FILE *out)
+{
+    fprintf(out,
+        "set datafile separator ','\n"
+        //"set terminal png size 1024,768\n"
+        "set title '%s'\n"
+        "set xlabel '%s'\n"
+        "set ylabel '%s'\n"
+//        "set xdata time\n"
+//        "set timefmt \"%s\""
+//        "set format x \"%m/%d\""
+        "set key left top\n"
+        "set grid\n",
+        attrs->title, attrs->xlabel, attrs->ylabel
+    );
+    fprintf(out, "plot '-' with lines title '%s'\n", attrs->data_label);
+    for (size_t i = 0; i < v->size; i++)
+    {
+        char *str = ugeneric_as_str(v->cells[i]);
+        fprintf(out, "%zu,%s\n", i, str);
+        ufree(str);
+    }
+
+}
