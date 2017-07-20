@@ -248,16 +248,13 @@ void test_uvector_api()
     uvector_reserve_capacity(v, 1024);
     uvector_shrink_to_size(v);
     uvector_destroy(v);
-
 /*
-    UASSERT_UABORTS(uvector_destroy(v));
-    UASSERT_UABORTS(uvector_destroy(NULL));
+    v = NULL;
     UASSERT_UABORTS(uvector_append(v, G_INT(0)));
     UASSERT_UABORTS(uvector_pop_back(v));
-    UASSERT_UABORTS(uvector_pop_front(v));
     UASSERT_UABORTS(uvector_get_cells(v));
     UASSERT_UABORTS(uvector_get_size(v));
-    UASSERT_UABORTS(uvector_resize(v, 100 G_NULL));
+    UASSERT_UABORTS(uvector_resize(v, 100, G_NULL));
     UASSERT_UABORTS(uvector_reserve_capacity(v, 100));
     UASSERT_UABORTS(uvector_get_capacity(v));
     UASSERT_UABORTS(uvector_is_empty(v));
@@ -266,7 +263,7 @@ void test_uvector_api()
     UASSERT_UABORTS(uvector_get_at(v, 1));
     UASSERT_UABORTS(uvector_set_at(v, 1, G_INT(0)));
 
-    v = uvector_create(0);
+    v = uvector_create_with_size(0, G_NULL);
     UASSERT_UABORTS(uvector_get_at(v, 1));
     UASSERT_UABORTS(uvector_set_at(v, 1, G_INT(0)));
 
@@ -361,6 +358,41 @@ void test_gnuplot(void)
 }
 */
 
+void _check_slice(const uvector_t *v, size_t b, size_t e, size_t s, char *exp)
+{
+    uvector_t *slice = uvector_get_slice(v, b, e, s);
+    char *str = uvector_as_str(slice);
+    UASSERT_STR_EQ(str, exp);
+    ufree(str);
+    uvector_destroy(slice);
+}
+
+void test_uvector_slice(void)
+{
+    ugeneric_t g = ugeneric_parse("[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]");
+    UASSERT_NO_ERROR(g);
+    uvector_t *v = G_AS_PTR(g);
+
+    _check_slice(v, 0, 10, 1, "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]");
+    _check_slice(v, 0, 10, 2, "[1, 3, 5, 7, 9]");
+    _check_slice(v, 1, 10, 2, "[2, 4, 6, 8, 10]");
+    _check_slice(v, 0, 10, 3, "[1, 4, 7, 10]");
+    _check_slice(v, 1, 10, 3, "[2, 5, 8]");
+    _check_slice(v, 0, 10, 4, "[1, 5, 9]");
+    _check_slice(v, 1, 10, 4, "[2, 6, 10]");
+    _check_slice(v, 0, 10, 5, "[1, 6]");
+    _check_slice(v, 1, 10, 5, "[2, 7]");
+    _check_slice(v, 0, 10, 6, "[1, 7]");
+    _check_slice(v, 1, 10, 6, "[2, 8]");
+    _check_slice(v, 0, 10, 9, "[1, 10]");
+    _check_slice(v, 1, 10, 9, "[2]");
+    _check_slice(v, 1, 1, 1, "[]");
+    _check_slice(v, 1, 1, 5, "[]");
+    _check_slice(v, 0, 10, 25, "[1]");
+
+    uvector_destroy(v);
+}
+
 int main(int argc, char **argv)
 {
 //    test_gnuplot();
@@ -372,6 +404,7 @@ int main(int argc, char **argv)
     test_uvector_copy(argc > 1);
     test_uvector_bsearch();
     test_uvector_compare();
+    test_uvector_slice();
 
     return EXIT_SUCCESS;
 }

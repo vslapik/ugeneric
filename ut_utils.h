@@ -1,9 +1,10 @@
 #ifndef UT_UTILS_H__
 #define UT_UTILS_H__
 
-#include <unistd.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
+#include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
@@ -68,7 +69,7 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
         {                                                                   \
             fprintf(stderr,                                                 \
                     "setrlimit: Can not disable core dumps generation in child process: %s.\n", \
-                     strerror(errno));                                      \
+                    strerror(errno));                                       \
         }                                                                   \
         else                                                                \
         {                                                                   \
@@ -77,7 +78,7 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
             fclose(stderr);                                                 \
             s;                                                              \
         }                                                                   \
-         return EXIT_SUCCESS;                                               \
+        exit(EXIT_SUCCESS);                                                 \
     }                                                                       \
     else if (pid > 0)                                                       \
     {                                                                       \
@@ -86,7 +87,7 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
         if (waitpid(pid, &status, 0) != pid)                                \
         {                                                                   \
             printf("Can not happen.");                                      \
-            return EXIT_FAILURE;                                            \
+            exit(EXIT_FAILURE);                                             \
         }                                                                   \
         else                                                                \
         {                                                                   \
@@ -95,7 +96,7 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
             {                                                               \
                 printf("Expected UABORT at %s:%u didn't happen.\n",         \
                         __FILE__, __LINE__);                                \
-                return EXIT_FAILURE;                                        \
+                exit(EXIT_FAILURE);                                         \
             }                                                               \
         }                                                                   \
     }                                                                       \
@@ -103,7 +104,7 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
     {                                                                       \
         /* fork failed */                                                   \
         printf("fork() failed!\n");                                         \
-        return EXIT_FAILURE;                                                \
+        exit(EXIT_FAILURE);                                                 \
     }                                                                       \
 } while (0)
 

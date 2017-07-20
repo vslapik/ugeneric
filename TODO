@@ -17,8 +17,7 @@
 - bst destroying should not use recursion (Day-Stout-Warren)
 - for bst without balancing implement Day–Stout–Warren algorithm to make it balanced
 - deque shrink_to_size
-- vector slice
-- insert vector into vector
+- merge vector into vector
 - hide RB tree color inside one of the links
 - xxx_set_destroyer,xxx_set_comparator and xxx_set_copier should return the old handler for being able to restore it
 - uqueue_is_full

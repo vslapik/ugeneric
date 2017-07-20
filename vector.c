@@ -16,9 +16,24 @@ struct uvector_opaq {
     ugeneric_sorter_t sorter;
 };
 
+static ugeneric_sorter_t _default_vector_sorter = hybrid_sort;
+
+static uvector_t *_allocate_vector(void)
+{
+    uvector_t *v = umalloc(sizeof(*v));
+    memset(&v->void_handlers, 0, sizeof(v->void_handlers));
+    v->size = 0;
+    v->capacity = 0;
+    v->cells = NULL;
+    v->is_data_owner = true;
+    v->sorter = _default_vector_sorter;
+
+    return v;
+}
+
 static uvector_t *_vcpy(const uvector_t *v, bool deep)
 {
-    uvector_t *copy = uvector_create();
+    uvector_t *copy = _allocate_vector();
     memcpy(copy, v, sizeof(*v));
     if (v->size)
     {
@@ -42,19 +57,6 @@ static uvector_t *_vcpy(const uvector_t *v, bool deep)
     }
 
     return copy;
-}
-
-static uvector_t *_allocate_vector(void)
-{
-    uvector_t *v = umalloc(sizeof(*v));
-    memset(&v->void_handlers, 0, sizeof(v->void_handlers));
-    v->size = 0;
-    v->capacity = 0;
-    v->cells = NULL;
-    v->is_data_owner = true;
-    v->sorter = hybrid_sort;
-
-    return v;
 }
 
 int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp)
@@ -432,6 +434,33 @@ uvoid_handlers_t *uvector_get_void_handlers(uvector_t *v)
 {
     UASSERT_INPUT(v);
     return &v->void_handlers;
+}
+
+uvector_t *uvector_get_slice(const uvector_t *v, size_t begin, size_t end,
+                             size_t stride)
+{
+    UASSERT_INPUT(v);
+    UASSERT_INPUT(begin <= end);
+    UASSERT_INPUT(end <= v->size);
+    UASSERT_INPUT(stride != 0);
+
+    uvector_t *slice = umalloc(sizeof(*v));
+    memcpy(&slice->void_handlers, &v->void_handlers, sizeof(v->void_handlers));
+    slice->size = (end - begin) / stride + (bool)((end - begin) % stride);
+    slice->capacity = slice->size;
+    slice->is_data_owner = false;
+    slice->sorter = _default_vector_sorter;
+    slice->cells = NULL;
+    if (slice->size)
+    {
+        slice->cells = umalloc(sizeof(slice->cells[0]) * slice->size);
+        for (size_t i = 0; i < slice->size; i++)
+        {
+            slice->cells[i] = v->cells[begin + i * stride];
+        }
+    }
+
+    return slice;
 }
 
 void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs, FILE *out)

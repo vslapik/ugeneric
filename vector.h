@@ -38,6 +38,8 @@ void uvector_shrink_to_size(uvector_t *v);
 
 void uvector_reserve_capacity(uvector_t *v, size_t new_capacity);
 size_t uvector_get_capacity(const uvector_t *v);
+uvector_t *uvector_get_slice(const uvector_t *v, size_t begin, size_t end,
+                             size_t stride);
 
 void uvector_swap(uvector_t *v, size_t l, size_t r);
 void uvector_reverse(uvector_t *v, size_t l, size_t r);
