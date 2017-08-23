@@ -7,11 +7,12 @@ install:
   - sudo apt-get install -y valgrind
 script:
   - make check
+ 
+dist: trusty
+sudo: required
   
 env:
   global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
    - secure: "h8OfwWkNd68LWUgIy1whPU4lc6YtLEPh9i93EaP9LpskFssivUIBQrmD9pynfytYiu1Pe/qgzwDRj9a0oM5elmRKQkXhG160jwbLMMsCATr61gjZ3zPyLz54NnXUVydS5MUS+fr8EVMQdFGaoVoxrAfXftXrT/JbSAFZ/01WHFLxBUpuO7qy5xTmkrekm14ARpnWhX7pFACbZJoebf6OfFSXF9MVeQ29IDyrlSPaREz99uwoRN+x98vQagrd7B2bn7qQu5VXKaZxm34grcl55gDYLHPiUNS3e0vif0QZ6qXml52PaMHvcqUiPR4Mk2DByz+QZNPSRiqPET09WLcqYiTLa+x/Ui9D1tdLaxYQCGVG/E36ja4+4h/Whv7chhzG0qOqkO8yJzPmOdKVG4PjAIUCV1S1Rpj/D2uz096XjJDErr0PRBJdNgsahJ1RIXgUSeVdLUX/58XjBvYX3YZrQIrSXfKzzrwmrnhoCxxO5z+pQ6hyWjFenra/y+NBXagMSUjXPGAwsIz3mnvqSjUgMbl8IjqLWNXzePh8Hqs2om/XZubn/fyaEDOr3nXrKQSpUgH1X0ONMmt6S9HiBIRxZmLugX07VGQdTH0awC22gqrKOosPH6LamMtQLC2UYZhxLJa+kS/uugEcueYS5hAzIyYJwVcad3rxCMNRNG56SfI="
 
 before_install:
@@ -25,4 +26,4 @@ addons:
     notification_email: vslapik@gmail.com
     build_command_prepend: "make clean"
     build_command:   "make -j 4"
-    branch_pattern: master
+    branch_pattern: _master
