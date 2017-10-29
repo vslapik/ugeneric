@@ -26,4 +26,4 @@ addons:
     notification_email: vslapik@gmail.com
     build_command_prepend: "make clean"
     build_command:   "make -j 4"
-    branch_pattern: _master
+    branch_pattern: master
