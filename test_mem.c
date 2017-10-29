@@ -7,24 +7,17 @@
 
 /* to disable linux overcommit "sysctl vm.overcommit_memory=2" */
 
+/*
 bool oom(void *data)
 {
     uvector_t *v = data;
     uvector_destroy(v);
 
     fprintf(stderr, "tryint to clean up things out ...\n");
-    uvector_clear(v);
 
     // true means retry allocation again
     //return true;
     return false;
-}
-
-void test_umemdup(void)
-{
-    char *str = umemdup("string", sizeof("string"));
-    UASSERT_STR_EQ(str, "string");
-    ufree(str);
 }
 
 void test_oom(void)
@@ -50,6 +43,14 @@ void test_oom(void)
         printf("%zu\n", i++);
     }
 }
+*/
+
+void test_umemdup(void)
+{
+    char *str = umemdup("string", sizeof("string"));
+    UASSERT_STR_EQ(str, "string");
+    ufree(str);
+}
 
 void test_memchunk(void)
 {
@@ -72,5 +73,5 @@ int main(void)
     test_umemdup();
     test_memchunk();
 
-//    test_oom();
+    //test_oom();
 }

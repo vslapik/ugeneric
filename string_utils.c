@@ -71,7 +71,6 @@ char *ustring_dup(const char *str)
     UASSERT_INPUT(str);
     char *p = umalloc(strlen(str) + 1);
     strcpy(p, str);
-
     return p;
 }
 
@@ -124,6 +123,7 @@ char *ustring_fmt(const char *fmt, ...)
     va_start(ap, fmt);
     va_copy(ap_copy, ap);
     mem = _vstr_fmt(fmt, ap_copy);
+    va_end(ap);
     va_end(ap_copy);
     str = mem.data;
     str[mem.size] = 0; // room for 0 is assured by _vstr_fmt
@@ -141,12 +141,14 @@ char *ustring_fmt_sized(const char *fmt, size_t *output_size, ...)
     va_start(ap, output_size);
     va_copy(ap_copy, ap);
     mem = _vstr_fmt(fmt, ap_copy);
+    va_end(ap);
     va_end(ap_copy);
 
     if (output_size)
     {
         *output_size = mem.size;
     }
+
     return mem.data;
 }
 

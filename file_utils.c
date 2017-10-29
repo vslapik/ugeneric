@@ -149,14 +149,17 @@ ugeneric_t ufile_read_to_memchunk(const char *path)
 
     FILE *f = G_AS_PTR(g);
     char *t = umalloc(fsize + 1);
+
     if (fread(t, 1, fsize, f) < fsize)
     {
+        ufree(t);
         return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
     t[fsize] = 0;
 
     if (fclose(f) != 0)
     {
+        ufree(t);
         return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 

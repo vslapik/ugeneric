@@ -59,6 +59,7 @@ ugeneric_t ustruct_create_from_dict(const udict_t *d, size_t struct_size,
                             if (ugeneric_get_type(e) != i->type)
                             {
                                 // TBD: what to do if elements of vector have unexpected type
+                                ufree(q);
                                 goto format_error;
                             }
                             q[j] = ustring_dup(G_AS_STR(e));
@@ -87,6 +88,7 @@ ugeneric_t ustruct_create_from_dict(const udict_t *d, size_t struct_size,
                             ugeneric_t e = cells[j];
                             if (ugeneric_get_type(e) != i->type)
                             {
+                                ufree(q);
                                 goto format_error;
                             }
                             q[j] = G_AS_INT(e);
@@ -115,6 +117,7 @@ ugeneric_t ustruct_create_from_dict(const udict_t *d, size_t struct_size,
                             ugeneric_t e = cells[j];
                             if (ugeneric_get_type(e) != i->type)
                             {
+                                ufree(q);
                                 goto format_error;
                             }
                             q[j] = G_AS_BOOL(e);
@@ -143,6 +146,7 @@ ugeneric_t ustruct_create_from_dict(const udict_t *d, size_t struct_size,
                             ugeneric_t e = cells[j];
                             if (ugeneric_get_type(e) != i->type)
                             {
+                                ufree(q);
                                 goto format_error;
                             }
                             ugeneric_t t = ustruct_create_from_dict(G_AS_PTR(e), i->field_size, i->field_descriptor);

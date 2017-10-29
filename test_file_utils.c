@@ -16,7 +16,6 @@ size_t execute_read(const char *path, size_t buffer_size)
         UASSERT_INT_EQ(offset, G_AS_SIZE(g));
         g = ufile_reader_read(fr, buffer_size, NULL); UASSERT_NO_ERROR(g);
         offset += buffer_size;
-
 //        ugeneric_print(g);
         read_count++;
     }
@@ -34,30 +33,36 @@ void test_ufile_reader(void)
     ufile_reader_t *fr;
 
     size_t buffer_size = 3;
-    UASSERT_NO_ERROR(g = ufile_reader_create("utdata/100", buffer_size));
+    g = ufile_reader_create("utdata/100", buffer_size);
+    UASSERT_NO_ERROR(g);
     fr = G_AS_PTR(g);
 
-    UASSERT_NO_ERROR(g = ufile_reader_read(fr, buffer_size, NULL));
+    g = ufile_reader_read(fr, buffer_size, NULL);
+    UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
     UASSERT_STR_EQ(data, "313233");
     ufree(data);
 
-    UASSERT_NO_ERROR(g = ufile_reader_read(fr, buffer_size, NULL));
+    g = ufile_reader_read(fr, buffer_size, NULL);
+    UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
     UASSERT_STR_EQ(data, "343536");
     ufree(data);
 
-    UASSERT_NO_ERROR(g = ufile_reader_read(fr, buffer_size, NULL));
+    g = ufile_reader_read(fr, buffer_size, NULL);
+    UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
     UASSERT_STR_EQ(data, "373839");
     ufree(data);
 
-    UASSERT_NO_ERROR(ufile_reader_set_position(fr, 0));
+    g = ufile_reader_set_position(fr, 0);
+    UASSERT_NO_ERROR(g);
 
-    UASSERT_NO_ERROR(g = ufile_reader_read(fr, buffer_size, NULL));
+    g = ufile_reader_read(fr, buffer_size, NULL);
+    UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
     UASSERT_STR_EQ(data, "313233");
@@ -72,22 +77,26 @@ void test_ufile_reader(void)
     UASSERT_INT_EQ(execute_read("utdata/empty", 1), 0);
     UASSERT_INT_EQ(execute_read("utdata/empty", 1001), 0);
 
-    UASSERT_NO_ERROR(g = ufile_reader_create("utdata/empty", 10));
+    g = ufile_reader_create("utdata/empty", 10);
+    UASSERT_NO_ERROR(g);
     fr = G_AS_PTR(g);
     g = ufile_reader_get_file_size(fr);
     UASSERT_INT_EQ(G_AS_SIZE(g), 0);
     ufile_reader_destroy(fr);
 
-    UASSERT_NO_ERROR(g = ufile_reader_create("utdata/100", 10));
+    g = ufile_reader_create("utdata/100", 10);
+    UASSERT_NO_ERROR(g);
     fr = G_AS_PTR(g);
     g = ufile_reader_get_file_size(fr);
     UASSERT_INT_EQ(G_AS_SIZE(g), 100);
     ufile_reader_destroy(fr);
 
     // Buffer grows
-    UASSERT_NO_ERROR(g = ufile_reader_create("utdata/100", 1));
+    g = ufile_reader_create("utdata/100", 1);
+    UASSERT_NO_ERROR(g);
     fr = G_AS_PTR(g);
-    UASSERT_NO_ERROR(g = ufile_reader_read(fr, 5, NULL));
+    g = ufile_reader_read(fr, 5, NULL);
+    UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
     UASSERT_STR_EQ(data, "3132333435");
@@ -133,7 +142,8 @@ void test_ufile_api(void)
 //    ugeneric_error_print(g);
     ugeneric_error_destroy(g);
 
-    UASSERT_NO_ERROR(g = ufile_get_size("utdata/empty"));
+    g = ufile_get_size("utdata/empty");
+    UASSERT_NO_ERROR(g);
     UASSERT_SIZE_EQ(G_AS_SIZE(g), 0);
 }
 
