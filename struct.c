@@ -153,6 +153,7 @@ ugeneric_t ustruct_create_from_dict(const udict_t *d, size_t struct_size,
                             if (G_IS_ERROR(t))
                             {
                                 ufree(p);
+                                ufree(q);
                                 return t;
                             }
                             q[j] = G_AS_PTR(t);

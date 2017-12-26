@@ -651,7 +651,6 @@ bool ugeneric_array_is_sorted(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
     return true;
 }
 
-
 bool ugeneric_array_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
     if (nmemb > 1)

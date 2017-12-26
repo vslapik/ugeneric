@@ -40,7 +40,7 @@ clean:
 	$(RM) *.o $(lib) tags core.* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s test_fuzz
 
 check_%: test_%
-	@echo "=======================[ $* ]===================="
+	@printf "====================[ %-12s ]====================\n"  $*
 	@valgrind $(VFLAGS) ./test_$* && echo "Valring: OK"
 	@gcov $*.c | grep $*.c -A1 | grep Lines | sed 's/Lines executed:/Coverage: /'
 

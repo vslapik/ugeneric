@@ -107,27 +107,30 @@ void uqueue_reserve_capacity(uqueue_t *q, size_t new_capacity)
 {
     UASSERT_INPUT(q);
 
-    /* If queue is not empty and we need more slots we allocate
-     * additional memory and move existing elements to bigger room.
-     * Old queue memory should be freed.
-     */
-    if (q->size)
+    if (q->capacity < new_capacity)
     {
-        ugeneric_t *p = umalloc(new_capacity * sizeof(*p));
-        for (size_t i = 0; i < q->size; i++)
+        /* If queue is not empty and we need more slots we allocate
+         * additional memory and move existing elements to bigger room.
+         * Old queue memory should be freed.
+         */
+        if (q->size)
         {
-            p[i] = q->data[(q->h + i) % q->capacity];
+            ugeneric_t *p = umalloc(new_capacity * sizeof(*p));
+            for (size_t i = 0; i < q->size; i++)
+            {
+                p[i] = q->data[(q->h + i) % q->capacity];
+            }
+            ufree(q->data);
+            q->data = p;
+            q->h = 0;
+            q->t = q->size - 1;
+            q->capacity = new_capacity;
         }
-        ufree(q->data);
-        q->data = p;
-        q->h = 0;
-        q->t = q->size - 1;
-        q->capacity = new_capacity;
-    }
-    else
-    {
-        q->data = umalloc(new_capacity * sizeof(q->data[0]));
-        q->capacity = new_capacity;
+        else
+        {
+            q->data = umalloc(new_capacity * sizeof(q->data[0]));
+            q->capacity = new_capacity;
+        }
     }
 }
 
