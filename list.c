@@ -35,7 +35,6 @@ static inline ulist_item_t **_rewind_to(ulist_t *l, size_t i)
 
 static ulist_t *_lcpy(const ulist_t *l, bool deep)
 {
-
     ulist_t *copy = ulist_create();
     memcpy(copy, l, sizeof(*l));
     ulist_item_t *from = l->head;
@@ -197,7 +196,7 @@ ugeneric_t ulist_get_at(const ulist_t *l, size_t i)
     UASSERT_INPUT(l);
     UASSERT_INPUT(i < l->size);
 
-    ulist_item_t **t = _rewind_to((ulist_t*)l, i);
+    ulist_item_t **t = _rewind_to((ulist_t *)l, i);
 
     return (*t)->data;
 }

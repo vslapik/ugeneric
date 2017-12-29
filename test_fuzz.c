@@ -4,7 +4,7 @@
 int main(int argc, char **argv)
 {
     unsigned int seed;
-    bool verbose = false;
+    bool verbose = true;
 
     if (argc >= 2)
     {

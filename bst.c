@@ -138,7 +138,7 @@ static ubst_node_t **_get_inorder_successor(ubst_t *b, ubst_node_t **node)
     {
         ugeneric_t k = (*node)->k;
         ubst_node_t **pos = &b->root;
-        while (node)
+        while (*pos)
         {
             int cmp = ugeneric_compare(k, (*pos)->k, b->void_handlers.cmp);
             if (cmp < 0)
@@ -694,7 +694,7 @@ void ubst_clear(ubst_t *b)
 }
 
 void ubst_traverse(const ubst_t *b, ubst_traverse_mode_t mode,
-                  ugeneric_kv_iter_t cb, void *data)
+                   ugeneric_kv_iter_t cb, void *data)
 {
     UASSERT_INPUT(b);
     _iterate_kv(b->root, mode, cb, data);
@@ -915,6 +915,7 @@ typedef struct {
     size_t nullcnt;
     FILE *out;
     bool dump_values;
+    ubst_balancing_mode_t balancing_mode;
 } _dump2dot_data_t;
 
 bool _dump2dot(ubst_node_t *node, void *data)
@@ -925,23 +926,23 @@ bool _dump2dot(ubst_node_t *node, void *data)
     char *vstr = d->dump_values ? ugeneric_as_str_v(node->v, NULL) : NULL;
     char *str = ustring_fmt("\"%08" PRIxPTR "\"", node);
 
-    char *lstr;
+    char *lstr = NULL;
     if (node->left)
     {
         lstr = ustring_fmt("\"%08" PRIxPTR "\"", (uintptr_t)node->left);
     }
-    else
+    else if (d->balancing_mode == UBST_RB_BALANCING)
     {
         fprintf(d->out, "    nullnode%zu [style = filled, fillcolor = black, label = null];\n", d->nullcnt);
         lstr = ustring_fmt("nullnode%zu", d->nullcnt++);
     }
 
-    char *rstr;
+    char *rstr = NULL;
     if (node->right)
     {
         rstr = ustring_fmt("\"%08" PRIxPTR "\"", (uintptr_t)node->right);
     }
-    else
+    else if (d->balancing_mode == UBST_RB_BALANCING)
     {
         fprintf(d->out, "    nullnode%zu [style = filled, fillcolor = black, label = null];\n", d->nullcnt);
         rstr = ustring_fmt("nullnode%zu", d->nullcnt++);
@@ -954,8 +955,14 @@ bool _dump2dot(ubst_node_t *node, void *data)
             kstr,
             d->dump_values ? "->" : "",
             d->dump_values ? vstr: "");
-    fprintf(d->out, "    %s -> %s;\n", str, lstr);
-    fprintf(d->out, "    %s -> %s;\n", str, rstr);
+    if (lstr)
+    {
+        fprintf(d->out, "    %s -> %s;\n", str, lstr);
+    }
+    if (rstr)
+    {
+        fprintf(d->out, "    %s -> %s;\n", str, rstr);
+    }
 
     ufree(str); ufree(kstr); ufree(vstr); ufree(lstr); ufree(rstr);
 
@@ -970,7 +977,7 @@ void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values, FILE 
     fprintf(out, "    label=\"%s\";\n", name);
     fprintf(out, "    labelloc=top;\n");
 
-    _dump2dot_data_t d = {.out = out, .nullcnt = 0, .dump_values = dump_values};
+    _dump2dot_data_t d = {.out = out, .nullcnt = 0, .dump_values = dump_values, .balancing_mode = b->balancing_mode};
     _iterate_nodes(b->root, UBST_INORDER, _dump2dot, &d);
     fprintf(out, "}\n");
 }

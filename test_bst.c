@@ -46,8 +46,8 @@ static ubst_t *_create_test_tree(void)
     /*         3
      *      /     \
      *     1       5
-     *      \     /
-     *       2   4
+     *    / \     / \
+     *   0   2   4   6
      */
 
     ubst_t *b = ubst_create();
@@ -56,6 +56,42 @@ static ubst_t *_create_test_tree(void)
     ubst_put(b, G_INT(5), G_INT(5));
     ubst_put(b, G_INT(2), G_INT(2));
     ubst_put(b, G_INT(4), G_INT(4));
+    ubst_put(b, G_INT(0), G_INT(0));
+    ubst_put(b, G_INT(6), G_INT(6));
+
+    return b;
+}
+
+static ubst_t *_create_test_tree2(void)
+{
+    /*       2
+     *      /
+     *     1
+     *    /
+     *   0
+     */
+
+    ubst_t *b = ubst_create();
+    ubst_put(b, G_INT(2), G_INT(2));
+    ubst_put(b, G_INT(1), G_INT(1));
+    ubst_put(b, G_INT(0), G_INT(0));
+
+    return b;
+}
+
+static ubst_t *_create_test_tree3(void)
+{
+    /*       0
+     *        \
+     *         1
+     *          \
+     *           2
+     */
+
+    ubst_t *b = ubst_create();
+    ubst_put(b, G_INT(0), G_INT(0));
+    ubst_put(b, G_INT(1), G_INT(1));
+    ubst_put(b, G_INT(2), G_INT(2));
 
     return b;
 }
@@ -64,15 +100,31 @@ void test_api(void)
 {
     ubst_t *b = _create_test_tree();
 
-    UASSERT_INT_EQ(G_AS_INT(ubst_get_min(b)), 1);
-    UASSERT_INT_EQ(G_AS_INT(ubst_get_max(b)), 5);
+    UASSERT_INT_EQ(G_AS_INT(ubst_get_min(b)), 0);
+    UASSERT_INT_EQ(G_AS_INT(ubst_get_max(b)), 6);
+    _check_relationship(b, G_INT(0), G_INT(-1), G_INT(1), G_INT(-1));
+    _check_relationship(b, G_INT(1), G_INT(0), G_INT(2), G_INT(-1));
+    _check_relationship(b, G_INT(2), G_INT(1), G_INT(3), G_INT(-1));
+    _check_relationship(b, G_INT(3), G_INT(2), G_INT(4), G_INT(-1));
+    _check_relationship(b, G_INT(4), G_INT(3), G_INT(5), G_INT(-1));
+    _check_relationship(b, G_INT(5), G_INT(4), G_INT(6), G_INT(-1));
+    _check_relationship(b, G_INT(6), G_INT(5), G_INT(-1), G_INT(-1));
+    ubst_destroy(b);
 
-    _check_relationship(b, G_INT(1), G_INT(0), G_INT(2), G_INT(0));
-    _check_relationship(b, G_INT(2), G_INT(1), G_INT(3), G_INT(0));
-    _check_relationship(b, G_INT(3), G_INT(2), G_INT(4), G_INT(0));
-    _check_relationship(b, G_INT(4), G_INT(3), G_INT(5), G_INT(0));
-    _check_relationship(b, G_INT(5), G_INT(4), G_INT(0), G_INT(0));
+    b = _create_test_tree2();
+    UASSERT_INT_EQ(G_AS_INT(ubst_get_min(b)), 0);
+    UASSERT_INT_EQ(G_AS_INT(ubst_get_max(b)), 2);
+    _check_relationship(b, G_INT(0), G_INT(-1), G_INT(1), G_INT(-1));
+    _check_relationship(b, G_INT(1), G_INT(0), G_INT(2), G_INT(-1));
+    _check_relationship(b, G_INT(2), G_INT(1), G_INT(-1), G_INT(-1));
+    ubst_destroy(b);
 
+    b = _create_test_tree3();
+    UASSERT_INT_EQ(G_AS_INT(ubst_get_min(b)), 0);
+    UASSERT_INT_EQ(G_AS_INT(ubst_get_max(b)), 2);
+    _check_relationship(b, G_INT(0), G_INT(-1), G_INT(1), G_INT(-1));
+    _check_relationship(b, G_INT(1), G_INT(0), G_INT(2), G_INT(-1));
+    _check_relationship(b, G_INT(2), G_INT(1), G_INT(-1), G_INT(-1));
     ubst_destroy(b);
 }
 
@@ -86,7 +138,7 @@ void test_pop(void)
     ubst_pop(b, G_INT(4), G_INT(-1));
     ubst_traverse(b, UBST_INORDER, _tree_keys_to_str, &buf);
     ubuffer_null_terminate(&buf);
-    UASSERT_STR_EQ(buf.data, "135");
+    UASSERT_STR_EQ(buf.data, "01356");
     ubuffer_reset(&buf);
     ubst_destroy(b);
 
@@ -95,7 +147,7 @@ void test_pop(void)
     ubst_pop(b, G_INT(5), G_INT(-1));
     ubst_traverse(b, UBST_INORDER, _tree_keys_to_str, &buf);
     ubuffer_null_terminate(&buf);
-    UASSERT_STR_EQ(buf.data, "234");
+    UASSERT_STR_EQ(buf.data, "02346");
     ubuffer_reset(&buf);
     ubst_destroy(b);
 
@@ -103,7 +155,7 @@ void test_pop(void)
     ubst_pop(b, G_INT(3), G_INT(-1));
     ubst_traverse(b, UBST_INORDER, _tree_keys_to_str, &buf);
     ubuffer_null_terminate(&buf);
-    UASSERT_STR_EQ(buf.data, "1245");
+    UASSERT_STR_EQ(buf.data, "012456");
     ubuffer_reset(&buf);
 //    ubst_dump_to_dot(b, "UBST2", false, stdout);
     ubst_destroy(b);
@@ -188,19 +240,19 @@ void test_traverse(void)
     uvector_t *k = uvector_create();
     ubst_traverse(b, UBST_POSTORDER, _find_2, k);
     str = uvector_as_str(k);
-    UASSERT_STR_EQ(str, "[2]");
+    UASSERT_STR_EQ(str, "[0, 2]");
     uvector_clear(k);
     ufree(str);
 
     ubst_traverse(b, UBST_PREORDER, _find_2, k);
     str = uvector_as_str(k);
-    UASSERT_STR_EQ(str, "[3, 1, 2]");
+    UASSERT_STR_EQ(str, "[3, 1, 0, 2]");
     uvector_clear(k);
     ufree(str);
 
     ubst_traverse(b, UBST_INORDER, _find_2, k);
     str = uvector_as_str(k);
-    UASSERT_STR_EQ(str, "[1, 2]");
+    UASSERT_STR_EQ(str, "[0, 1, 2]");
     uvector_clear(k);
     ufree(str);
 
@@ -265,11 +317,13 @@ void test_ubst_iterator(void)
 
     while (t--)
     {
+        UASSERT_INT_EQ(G_AS_INT(ubst_iterator_get_next(bi).v), 0);
         UASSERT_INT_EQ(G_AS_INT(ubst_iterator_get_next(bi).v), 1);
         UASSERT_INT_EQ(G_AS_INT(ubst_iterator_get_next(bi).v), 2);
         UASSERT_INT_EQ(G_AS_INT(ubst_iterator_get_next(bi).v), 3);
         UASSERT_INT_EQ(G_AS_INT(ubst_iterator_get_next(bi).v), 4);
         UASSERT_INT_EQ(G_AS_INT(ubst_iterator_get_next(bi).v), 5);
+        UASSERT_INT_EQ(G_AS_INT(ubst_iterator_get_next(bi).v), 6);
         ubst_iterator_reset(bi);
     }
 

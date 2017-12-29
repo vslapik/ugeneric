@@ -633,7 +633,9 @@ void ugeneric_array_reverse(ugeneric_t *base, size_t nmemb, size_t l, size_t r)
     UASSERT_INPUT(l <= r); // when l == r do nothing
 
     while (l < r)
+    {
         ugeneric_swap(&base[l++], &base[r--]);
+    }
 }
 
 bool ugeneric_array_is_sorted(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)

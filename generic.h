@@ -94,9 +94,9 @@ static inline ugeneric_type_e ugeneric_get_type(ugeneric_t g)
 
 #define G_NULL         (ugeneric_t){.type.type = G_NULL_T}
 #define G_TRUE         (ugeneric_t){.type.type = G_BOOL_T,              \
-                                     .value = {.boolean = true}}
+                                    .value = {.boolean = true}}
 #define G_FALSE        (ugeneric_t){.type.type = G_BOOL_T,              \
-                                     .value = {.boolean = false}}
+                                    .value = {.boolean = false}}
 
 #define G_AS_INT(g)    ((g).value.integer)
 #define G_AS_REAL(g)   ((g).value.real)
