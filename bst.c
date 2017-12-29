@@ -697,7 +697,7 @@ void ubst_traverse(const ubst_t *b, ubst_traverse_mode_t mode,
                    ugeneric_kv_iter_t cb, void *data)
 {
     UASSERT_INPUT(b);
-    _iterate_kv(b->root, mode, cb, data);
+    (void)_iterate_kv(b->root, mode, cb, data);
 }
 
 ugeneric_t ubst_get_inorder_predecessor(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
