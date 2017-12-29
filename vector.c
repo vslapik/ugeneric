@@ -298,11 +298,8 @@ void uvector_clear(uvector_t *v)
                 ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
             }
         }
-        ufree(v->cells);
-        v->cells = 0; // if you don't do it realloc(v->cells, ...) will fail
     }
     v->size = 0;
-    v->capacity = 0;
 }
 
 void uvector_append(uvector_t *v, ugeneric_t e)
