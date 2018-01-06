@@ -284,7 +284,7 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             }
             else
             {
-                snprintf(tmp, sizeof(tmp), "&%p", G_AS_PTR(g));
+                snprintf(tmp, sizeof(tmp), "ptr:0x%p", G_AS_PTR(g));
                 m.data = tmp, m.size = strlen(tmp);
                 ubuffer_append_memchunk(buf, &m);
             }
@@ -344,6 +344,44 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             umemchunk_serialize(G_AS_MEMCHUNK(g), buf);
             break;
     }
+}
+
+static inline int htoi(int x)
+{
+    return 9 * (x >> 6) + (x & 0x0f);
+}
+
+static ugeneric_t _parse_memchunk(const char **str)
+{
+    const char *p = *str;
+
+    while (isxdigit(*p))
+    {
+        p++;
+    }
+
+    size_t len = p - *str;
+
+    if (len == 0)
+    {
+        return G_MEMCHUNK(NULL, 0);
+    }
+
+    if (len % 2)
+    {
+        return G_ERROR(ustring_dup("invalid memchunk size"));
+    }
+
+    char *m = umalloc(len / 2);
+    p = *str;
+
+    for (size_t i = 0; i < len / 2; i++)
+    {
+        m[i] = 16 * htoi(p[2 * i]) + htoi(p[2 * i + 1]);
+    }
+
+    *str += len;
+    return G_MEMCHUNK(m, len / 2);
 }
 
 static ugeneric_t _parse_string(const char **str)
@@ -593,6 +631,11 @@ static ugeneric_t _parse_item(const char **str)
     {
         *str += 5;
         g = G_FALSE;
+    }
+    else if (!strncmp(*str, "mem:", 4))
+    {
+        *str += 4;
+        g = _parse_memchunk(str);
     }
     else
     {

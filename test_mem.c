@@ -63,7 +63,7 @@ void test_memchunk(void)
     uvector_append(v, G_VECTOR(uvector_copy(v)));
 
     char *str = uvector_as_str(v);
-    UASSERT_STR_EQ(str, "[31323334ff, 31323334ff, [31323334ff, 31323334ff]]");
+    UASSERT_STR_EQ(str, "[mem:31323334ff, mem:31323334ff, [mem:31323334ff, mem:31323334ff]]");
     ufree(str);
     uvector_destroy(v);
 }

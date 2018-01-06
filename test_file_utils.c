@@ -41,21 +41,21 @@ void test_ufile_reader(void)
     UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
-    UASSERT_STR_EQ(data, "313233");
+    UASSERT_STR_EQ(data, "mem:313233");
     ufree(data);
 
     g = ufile_reader_read(fr, buffer_size, NULL);
     UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
-    UASSERT_STR_EQ(data, "343536");
+    UASSERT_STR_EQ(data, "mem:343536");
     ufree(data);
 
     g = ufile_reader_read(fr, buffer_size, NULL);
     UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
-    UASSERT_STR_EQ(data, "373839");
+    UASSERT_STR_EQ(data, "mem:373839");
     ufree(data);
 
     g = ufile_reader_set_position(fr, 0);
@@ -65,7 +65,7 @@ void test_ufile_reader(void)
     UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
-    UASSERT_STR_EQ(data, "313233");
+    UASSERT_STR_EQ(data, "mem:313233");
     ufree(data);
 
     ufile_reader_destroy(fr);
@@ -99,7 +99,7 @@ void test_ufile_reader(void)
     UASSERT_NO_ERROR(g);
     m = G_AS_MEMCHUNK(g);
     data = umemchunk_as_str(m);
-    UASSERT_STR_EQ(data, "3132333435");
+    UASSERT_STR_EQ(data, "mem:3132333435");
     ufree(data);
 
     UASSERT_INT_EQ(ufile_reader_get_buffer_size(fr), 5);

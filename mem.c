@@ -203,11 +203,11 @@ int umemchunk_print(umemchunk_t m)
 void umemchunk_serialize(umemchunk_t m, ubuffer_t *buf)
 {
     UASSERT_INPUT(buf);
-    UASSERT_INPUT(m.data);
     UASSERT_INPUT(m.size < SIZE_MAX / 2);
 
     const char *hex = "0123456789abcdef";
 
+    ubuffer_append_data(buf, "mem:", 4);
     _reserve_capacity(buf, buf->data_size + 2 * m.size);
     for (size_t i = 0; i < m.size; i++)
     {

@@ -210,6 +210,8 @@ void test_parse(void)
         {"45913141877270640000.0", "4.59131e+19", NULL},
         {"0.017976931348623157e+310", "1.79769e+308", NULL},
         {"5708990770823839207320493820740630171355185152001e-3", "5.70899e+45", NULL},
+        {"mem:000011ccFFaa", "mem:000011ccffaa", NULL},
+        {"mem:", "mem:", NULL},
         {0}
     };
 
@@ -284,11 +286,12 @@ void test_serialize(void)
     uvector_append(v, G_REAL(3.4));
     uvector_append(v, G_SIZE(1888888888888881));
     uvector_append(v, G_PTR(NULL));
+    uvector_append(v, G_MEMCHUNK(umemdup("\xff\xaa\xbb", 3), 3));
     uvector_set_void_destroyer(v, ufree);
     udict_put(d, G_CSTR("key"), G_VECTOR(v));
 
     char *str = ugeneric_as_str(G_DICT(d));
-    UASSERT_STR_EQ(str, "{\"key\": [null, true, false, [], {}, -1, 2, 3.4, 1888888888888881, &(nil)]}");
+    UASSERT_STR_EQ(str, "{\"key\": [null, true, false, [], {}, -1, 2, 3.4, 1888888888888881, ptr:0x(nil), mem:ffaabb]}");
     ufree(str);
     udict_destroy(d);
 }
