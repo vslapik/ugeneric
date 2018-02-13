@@ -568,6 +568,7 @@ void ubst_put(ubst_t *b, ugeneric_t k, ugeneric_t v)
             break;
         case UBST_SPLAY_BALANCING:
             _put_splay(b, k, v);
+            break;
         default:
             UABORT("internal error");
     }
@@ -588,6 +589,7 @@ ugeneric_t ubst_pop(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
             break;
         case UBST_SPLAY_BALANCING:
             ret = _pop_splay(b, k, vdef);
+            break;
         default:
             UABORT("internal error");
     }
