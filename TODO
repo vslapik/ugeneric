@@ -24,3 +24,4 @@
 - overwrite mode for queue
 - add UTs for file writers (deal with fs garbage)
 - _Generic c11 macros for putting scalars to containers
+- comments: inside a function - imperative form (do something); outside - indicative form (does something)

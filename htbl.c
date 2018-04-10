@@ -210,7 +210,7 @@ void_hasher_t uhtbl_get_void_hasher(const uhtbl_t *h)
 }
 
 /*
- * Puts without copy, keys and values which contains pointers
+ * Puts without copy, keys and values which contain pointers
  * may cause issue if you forget who owns the data.
  */
 void uhtbl_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)

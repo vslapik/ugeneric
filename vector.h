@@ -11,8 +11,8 @@ typedef struct uvector_opaq uvector_t;
 uvector_t *uvector_create(void);
 uvector_t *uvector_create_with_size(size_t size, ugeneric_t value);
 uvector_t *uvector_create_from_array(void *array, size_t array_len,
-                                   size_t array_element_size,
-                                   ugeneric_type_e uvector_element_type);
+                                     size_t array_element_size,
+                                     ugeneric_type_e uvector_element_type);
 void uvector_destroy(uvector_t *v);
 void uvector_clear(uvector_t *v);
 
@@ -62,7 +62,8 @@ typedef struct {
     char *ylabel;
     char *data_label;
 } gnuplot_attrs_t;
-void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs, FILE *out);
+void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs,
+                             FILE *out);
 
 uvoid_handlers_t *uvector_get_void_handlers(uvector_t *v);
 DECLARE_VOID_FUNCS(uvector)

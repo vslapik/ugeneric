@@ -41,7 +41,7 @@ clean:
 
 check_%: test_%
 	@printf "====================[ %-12s ]====================\n"  $*
-	@valgrind $(VFLAGS) ./test_$* && echo "Valring: OK"
+	@valgrind $(VFLAGS) ./test_$* && echo "valgrind: OK"
 	@gcov $*.c | grep $*.c -A1 | grep Lines | sed 's/Lines executed:/Coverage: /'
 
 check: $(checks)
