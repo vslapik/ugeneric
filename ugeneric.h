@@ -1,3 +1,7 @@
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "generic.h"
 #include "dict.h"
 #include "vector.h"
@@ -13,3 +17,7 @@
 #include "bitmap.h"
 #include "string_utils.h"
 #include "file_utils.h"
+
+#if defined(__cplusplus)
+}
+#endif
