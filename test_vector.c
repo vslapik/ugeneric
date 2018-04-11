@@ -157,7 +157,7 @@ void test_uvector_api()
     UASSERT_INT_EQ(uvector_get_capacity(v), 1000);
     uvector_destroy(v);
 
-    v = uvector_create_with_size(3, G_NULL);
+    v = uvector_create_with_size(3, G_NULL());
     UASSERT_INT_EQ(uvector_get_size(v), 3);
 
     uvector_append(v, G_INT(11));
@@ -173,7 +173,7 @@ void test_uvector_api()
     UASSERT_INT_EQ(G_AS_INT(uvector_get_at(v, 4)), 33);
     UASSERT_INT_EQ(G_AS_INT(uvector_get_at(v, 5)), 22);
 
-    uvector_resize(v, 0, G_NULL);
+    uvector_resize(v, 0, G_NULL());
     UASSERT(uvector_is_empty(v));
 
     uvector_append(v, G_INT(44));
@@ -197,7 +197,7 @@ void test_uvector_api()
     UASSERT(uvector_is_empty(v));
     UASSERT_INT_EQ(uvector_get_size(v), 0);
 
-    uvector_resize(v, 0, G_NULL);
+    uvector_resize(v, 0, G_NULL());
     uvector_append(v, G_INT(200));
     uvector_append(v, G_INT(100));
     UASSERT_INT_EQ(uvector_get_size(v), 2);
@@ -214,7 +214,7 @@ void test_uvector_api()
     UASSERT_INT_EQ(uvector_get_size(v), 1);
     UASSERT_INT_EQ(G_AS_INT(uvector_pop_at(v, 0)), 100);
     UASSERT_INT_EQ(uvector_get_size(v), 0);
-    uvector_resize(v, 1000, G_NULL);
+    uvector_resize(v, 1000, G_NULL());
     UASSERT_INT_EQ(uvector_get_size(v), 1000);
     uvector_destroy(v);
 
@@ -223,8 +223,8 @@ void test_uvector_api()
     uvector_append(v, G_STR(ustring_dup("2")));
     uvector_append(v, G_STR(ustring_dup("3")));
     uvector_append(v, G_STR(ustring_dup("4")));
-    uvector_resize(v, 2, G_NULL);
-    uvector_resize(v, 1, G_NULL);
+    uvector_resize(v, 2, G_NULL());
+    uvector_resize(v, 1, G_NULL());
     uvector_clear(v);
     uvector_append(v, G_STR(ustring_dup("5")));
     UASSERT_INT_EQ(uvector_get_size(v), 1);

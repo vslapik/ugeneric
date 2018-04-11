@@ -43,7 +43,7 @@ static ugeneric_t _set_position(FILE *f, size_t position)
     {
         return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
-    return G_NULL;
+    return G_NULL();
 }
 
 static ugeneric_t _get_file_size(FILE *f, bool save_pos)
@@ -127,7 +127,7 @@ ugeneric_t ufile_create_from_memchunk(const char *path, umemchunk_t mchunk)
         return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
-    return G_NULL;
+    return G_NULL();
 }
 
 ugeneric_t ufile_read_to_memchunk(const char *path)
@@ -241,7 +241,7 @@ ugeneric_t ufile_close(FILE *f)
         return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
-    return G_NULL;
+    return G_NULL();
 }
 
 ugeneric_t ufile_reader_create(const char *path, size_t buffer_size)
@@ -343,7 +343,7 @@ ugeneric_t ufile_reader_set_position(ufile_reader_t *fr, size_t position)
 
 ugeneric_t ufile_reader_destroy(ufile_reader_t *fr)
 {
-    ugeneric_t g = G_NULL;
+    ugeneric_t g = G_NULL();
     if (fr)
     {
         g = ufile_close(fr->file);
@@ -381,7 +381,7 @@ ugeneric_t ufile_writer_write(ufile_writer_t *fw, umemchunk_t mchunk)
         return _error_handler(G_ERROR_IO, _error_handler_ctx);
     }
 
-    return G_NULL;
+    return G_NULL();
 }
 
 ugeneric_t ufile_writer_get_file_size(ufile_writer_t *fw)
@@ -404,7 +404,7 @@ ugeneric_t ufile_writer_set_position(ufile_writer_t *fw, size_t position)
 
 ugeneric_t ufile_writer_destroy(ufile_writer_t *fw)
 {
-    ugeneric_t g = G_NULL;
+    ugeneric_t g = G_NULL();
     if (fw)
     {
         g = ufile_close(fw->file);

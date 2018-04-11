@@ -31,28 +31,24 @@ typedef enum {
     G_MEMCHUNK_T = 11,  // Reference to a chunk of memory.
 } ugeneric_type_e;
 
-/*
- * Enum type is int in C, we want size_t, that's why we need union here.
- */
-typedef union {
-    size_t size;
-    ugeneric_type_e type;
-} ugeneric_type_t;
-
-typedef union {
-    char *err;
-    void *ptr;
-    char *str;
-    const char *cstr;
-    long integer;
-    double real;
-    size_t size;
-    bool boolean;
-} ugeneric_value_t;
-
 typedef struct {
-    ugeneric_type_t type;
-    ugeneric_value_t value;
+    /*
+     * Enum type is int in C, we want size_t, that's why we need union here.
+     */
+    union {
+        size_t memchunk_size;
+        ugeneric_type_e type;
+    };
+    union {
+        char *err;
+        void *ptr;
+        char *str;
+        const char *cstr;
+        long integer;
+        double real;
+        size_t size;
+        bool boolean;
+    };
 } ugeneric_t;
 
 typedef struct {
@@ -68,72 +64,64 @@ typedef enum {
 
 static inline ugeneric_type_e ugeneric_get_type(ugeneric_t g)
 {
-    return (g.type.type >= G_MEMCHUNK_T) ? G_MEMCHUNK_T : g.type.type;
+    return (g.type >= G_MEMCHUNK_T) ? G_MEMCHUNK_T : g.type;
 }
 
-#define G_ERROR(v)     (ugeneric_t){.type.type = G_ERROR_T,             \
-                                    .value = {.str = (v)}}
-#define G_PTR(v)       (ugeneric_t){.type.type = G_PTR_T,               \
-                                    .value = {.ptr = (v)}}
-#define G_STR(v)       (ugeneric_t){.type.type = G_STR_T,               \
-                                    .value = {.str = (v)}}
-#define G_CSTR(v)      (ugeneric_t){.type.type = G_CSTR_T,              \
-                                    .value = {.cstr = (v)}}
-#define G_INT(v)       (ugeneric_t){.type.type = G_INT_T,               \
-                                    .value = {.integer = (v)}}
-#define G_REAL(v)      (ugeneric_t){.type.type = G_REAL_T,              \
-                                    .value = {.real = (v)}}
-#define G_SIZE(v)      (ugeneric_t){.type.type = G_SIZE_T,              \
-                                    .value = {.size = (v)}}
-#define G_VECTOR(v)    (ugeneric_t){.type.type = G_VECTOR_T,            \
-                                    .value = {.ptr = (v)}}
-#define G_DICT(v)      (ugeneric_t){.type.type = G_DICT_T,              \
-                                    .value = {.ptr = (v)}}
-#define G_BOOL(v)      (ugeneric_t){.type.type = G_BOOL_T,              \
-                                    .value = {.boolean = (bool)(v)}}
+static inline ugeneric_t G_ERROR(char *v) {ugeneric_t g; g.type = G_ERROR_T; g.err = v; return g;}
+static inline ugeneric_t G_PTR(void *v)   {ugeneric_t g; g.type = G_PTR_T;   g.ptr = v; return g;}
+static inline ugeneric_t G_STR(char *v)   {ugeneric_t g; g.type = G_STR_T;   g.str = v; return g;}
+static inline ugeneric_t G_CSTR(const char *v) {ugeneric_t g; g.type = G_CSTR_T;  g.cstr = v; return g;}
+static inline ugeneric_t G_INT(long v)    {ugeneric_t g; g.type = G_INT_T;   g.integer = v; return g;}
+static inline ugeneric_t G_REAL(double v) {ugeneric_t g; g.type = G_REAL_T;  g.real = v; return g;}
+static inline ugeneric_t G_SIZE(size_t v) {ugeneric_t g; g.type = G_SIZE_T;  g.size = v; return g;}
+static inline ugeneric_t G_VECTOR(void *v){ugeneric_t g; g.type = G_VECTOR_T; g.ptr = v; return g;}
+static inline ugeneric_t G_DICT(void *v)  {ugeneric_t g; g.type = G_DICT_T;  g.ptr = v; return g;}
+static inline ugeneric_t G_BOOL(bool v)   {ugeneric_t g; g.type = G_BOOL_T; g.boolean = v; return g;}
+static inline ugeneric_t G_NULL(void)     {ugeneric_t g; g.type = G_NULL_T; return g;}
+static inline ugeneric_t G_TRUE(void)     {ugeneric_t g; g.type = G_BOOL_T; g.boolean = true; return g;}
+static inline ugeneric_t G_FALSE(void)    {ugeneric_t g; g.type = G_BOOL_T; g.boolean = false;  return g;}
 
-#define G_NULL         (ugeneric_t){.type.type = G_NULL_T}
-#define G_TRUE         (ugeneric_t){.type.type = G_BOOL_T,              \
-                                    .value = {.boolean = true}}
-#define G_FALSE        (ugeneric_t){.type.type = G_BOOL_T,              \
-                                    .value = {.boolean = false}}
+#define G_AS_INT(g)    ((g).integer)
+#define G_AS_REAL(g)   ((g).real)
+#define G_AS_PTR(g)    ((g).ptr)
+#define G_AS_SIZE(g)   ((g).size)
+#define G_AS_STR(g)    ((g).str)
+#define G_AS_BOOL(g)   ((g).boolean)
 
-#define G_AS_INT(g)    ((g).value.integer)
-#define G_AS_REAL(g)   ((g).value.real)
-#define G_AS_PTR(g)    ((g).value.ptr)
-#define G_AS_SIZE(g)   ((g).value.size)
-#define G_AS_STR(g)    ((g).value.str)
-#define G_AS_BOOL(g)   ((g).value.boolean)
-
-#define G_AS_MEMCHUNK_DATA(g) ((g).value.ptr)
-#define G_AS_MEMCHUNK_SIZE(g) ((g).type.size - G_MEMCHUNK_T)
+#define G_AS_MEMCHUNK_DATA(g) ((g).ptr)
+#define G_AS_MEMCHUNK_SIZE(g) ((g).memchunk_size - G_MEMCHUNK_T)
 
 static inline ugeneric_t G_MEMCHUNK(void *ptr, size_t size)
 {
-    return (ugeneric_t){.value = {.ptr = (ptr)},
-                        .type.size = size + G_MEMCHUNK_T};
-}
-static inline umemchunk_t G_AS_MEMCHUNK(ugeneric_t g)
-{
-    return (umemchunk_t){.data = G_AS_MEMCHUNK_DATA(g),
-                         .size = G_AS_MEMCHUNK_SIZE(g)};
+    ugeneric_t g;
+    g.memchunk_size = size + G_MEMCHUNK_T;
+    g.ptr = ptr;
+    return g;
 }
 
-static inline bool G_IS_ERROR(ugeneric_t g) {return g.type.type == G_ERROR_T;}
-static inline bool G_IS_NULL(ugeneric_t g)  {return g.type.type == G_NULL_T;}
-static inline bool G_IS_PTR(ugeneric_t g)   {return g.type.type == G_PTR_T;}
-static inline bool G_IS_STR(ugeneric_t g)   {return g.type.type == G_STR_T;}
-static inline bool G_IS_CSTR(ugeneric_t g)  {return g.type.type == G_CSTR_T;}
-static inline bool G_IS_STRING(ugeneric_t g){return G_IS_CSTR(g) || G_IS_STR(g);}
-static inline bool G_IS_INT(ugeneric_t g)   {return g.type.type == G_INT_T;}
-static inline bool G_IS_REAL(ugeneric_t g)  {return g.type.type == G_REAL_T;}
-static inline bool G_IS_SIZE(ugeneric_t g)  {return g.type.type == G_SIZE_T;}
-static inline bool G_IS_BOOL(ugeneric_t g)  {return g.type.type == G_BOOL_T;}
-static inline bool G_IS_TRUE(ugeneric_t g)  {return (g.type.type == G_BOOL_T) && G_AS_BOOL(g);}
-static inline bool G_IS_FALSE(ugeneric_t g) {return (g.type.type == G_BOOL_T) && !G_AS_BOOL(g);}
-static inline bool G_IS_VECTOR(ugeneric_t g){return g.type.type == G_VECTOR_T;}
-static inline bool G_IS_DICT(ugeneric_t g)  {return g.type.type == G_DICT_T;}
-static inline bool G_IS_MEMCHUNK(ugeneric_t g){return g.type.type > G_MEMCHUNK_T;}
+static inline umemchunk_t G_AS_MEMCHUNK(ugeneric_t g)
+{
+    umemchunk_t m;
+    m.data = G_AS_MEMCHUNK_DATA(g),
+    m.size = G_AS_MEMCHUNK_SIZE(g);
+    return m;
+}
+
+static inline bool G_IS_ERROR(ugeneric_t g)   {return g.type == G_ERROR_T;}
+static inline bool G_IS_NULL(ugeneric_t g)    {return g.type == G_NULL_T;}
+static inline bool G_IS_PTR(ugeneric_t g)     {return g.type == G_PTR_T;}
+static inline bool G_IS_STR(ugeneric_t g)     {return g.type == G_STR_T;}
+static inline bool G_IS_CSTR(ugeneric_t g)    {return g.type == G_CSTR_T;}
+static inline bool G_IS_STRING(ugeneric_t g)  {return G_IS_CSTR(g) || G_IS_STR(g);}
+static inline bool G_IS_INT(ugeneric_t g)     {return g.type == G_INT_T;}
+static inline bool G_IS_REAL(ugeneric_t g)    {return g.type == G_REAL_T;}
+static inline bool G_IS_SIZE(ugeneric_t g)    {return g.type == G_SIZE_T;}
+static inline bool G_IS_BOOL(ugeneric_t g)    {return g.type == G_BOOL_T;}
+static inline bool G_IS_TRUE(ugeneric_t g)    {return (g.type == G_BOOL_T) && G_AS_BOOL(g);}
+static inline bool G_IS_FALSE(ugeneric_t g)   {return (g.type == G_BOOL_T) && !G_AS_BOOL(g);}
+static inline bool G_IS_VECTOR(ugeneric_t g)  {return g.type == G_VECTOR_T;}
+static inline bool G_IS_DICT(ugeneric_t g)    {return g.type == G_DICT_T;}
+static inline bool G_IS_MEMCHUNK(ugeneric_t g){return g.type > G_MEMCHUNK_T;}
 
 static inline void ugeneric_swap(ugeneric_t *g1, ugeneric_t *g2)
 {

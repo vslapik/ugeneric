@@ -39,7 +39,7 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 
     if (ret == 0)
     {
-        switch (g1.type.type)
+        switch (g1.type)
         {
             case G_NULL_T:
                 ret = 0;
@@ -97,7 +97,7 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 break;
 
             default: // G_MEMCHUNK_T
-                UASSERT_INTERNAL(g1.type.type >= G_MEMCHUNK_T);
+                UASSERT_INTERNAL(g1.type >= G_MEMCHUNK_T);
                 s1 = G_AS_MEMCHUNK_SIZE(g1);
                 s2 = G_AS_MEMCHUNK_SIZE(g2);
                 ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
@@ -117,7 +117,7 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
 {
     double d;
 
-    switch (g.type.type)
+    switch (g.type)
     {
         case G_PTR_T:
             UASSERT_MSG(dtr, "don't know how to destroy void data");
@@ -157,7 +157,7 @@ void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
             break;
 
         default: // G_MEMCHUNK_T
-            UASSERT_INTERNAL(g.type.type >= G_MEMCHUNK_T);
+            UASSERT_INTERNAL(g.type >= G_MEMCHUNK_T);
             ufree(G_AS_MEMCHUNK_DATA(g));
             break;
     }
@@ -190,7 +190,7 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
     void *data;
     double d;
 
-    switch (g.type.type)
+    switch (g.type)
     {
         case G_PTR_T:
             UASSERT_MSG(cpy, "don't know how to copy void data");
@@ -231,7 +231,7 @@ ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
             break;
 
         default: // G_MEMCHUNK_T
-            UASSERT_INTERNAL(g.type.type >= G_MEMCHUNK_T);
+            UASSERT_INTERNAL(g.type >= G_MEMCHUNK_T);
             size = G_AS_MEMCHUNK_SIZE(g);
             data = G_AS_MEMCHUNK_DATA(g);
             ret = G_MEMCHUNK(umemdup(data, size), size);
@@ -267,9 +267,10 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
     UASSERT_INPUT(buf);
 
     char tmp[32];
+    char *s;
     umemchunk_t m;
 
-    switch (g.type.type)
+    switch (g.type)
     {
         case G_NULL_T:
             ubuffer_append_string(buf, "null");
@@ -293,7 +294,7 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
         case G_STR_T:
         case G_CSTR_T:
             ubuffer_append_byte(buf, '\"');
-            char *s = G_AS_STR(g);
+            s = G_AS_STR(g);
             while (*s)
             {
                 if (*s == '"')
@@ -340,7 +341,7 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             break;
 
         default: // G_MEMCHUNK_T
-            UASSERT_INTERNAL(g.type.type >= G_MEMCHUNK_T);
+            UASSERT_INTERNAL(g.type >= G_MEMCHUNK_T);
             umemchunk_serialize(G_AS_MEMCHUNK(g), buf);
             break;
     }
@@ -620,17 +621,17 @@ static ugeneric_t _parse_item(const char **str)
     else if (!strncmp(*str, "null", 4))
     {
         *str += 4;
-        g = G_NULL;
+        g = G_NULL();
     }
     else if (!strncmp(*str, "true", 4))
     {
         *str += 4;
-        g = G_TRUE;
+        g = G_TRUE();
     }
     else if (!strncmp(*str, "false", 5))
     {
         *str += 5;
-        g = G_FALSE;
+        g = G_FALSE();
     }
     else if (!strncmp(*str, "mem:", 4))
     {
@@ -812,7 +813,7 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
     void *data;
     size_t size;
 
-    switch (g.type.type)
+    switch (g.type)
     {
         case G_NULL_T:
             return 0;
@@ -846,7 +847,7 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
             UABORT("object is not hashable");
 
         default: // G_MEMCHUNK_T
-            UASSERT_INTERNAL(g.type.type >= G_MEMCHUNK_T);
+            UASSERT_INTERNAL(g.type >= G_MEMCHUNK_T);
             data = G_AS_MEMCHUNK_DATA(g);
             size = G_AS_MEMCHUNK_SIZE(g);
             break;

@@ -96,7 +96,7 @@ uvector_t *ugraph_get_edges(const ugraph_t *g)
 {
     UASSERT_INPUT(g);
 
-    uvector_t *v = uvector_create_with_size(g->m, G_NULL);
+    uvector_t *v = uvector_create_with_size(g->m, G_NULL());
     uvector_set_void_destroyer(v, ufree);
     size_t j = 0;
     for (size_t i = 0; i < g->n; i++)

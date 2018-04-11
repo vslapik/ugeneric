@@ -14,7 +14,7 @@ void test_resize(void)
 
     for (size_t i = 0; i < 1000; i++)
     {
-        ugeneric_t g = uhtbl_get(h, G_INT(i), G_NULL);
+        ugeneric_t g = uhtbl_get(h, G_INT(i), G_NULL());
         UASSERT_INT_EQ(i + 500, G_AS_INT(g));
     }
 
@@ -27,7 +27,7 @@ int main(void)
 
     uhtbl_t *h = uhtbl_create();
     uhtbl_put(h, G_STR(ustring_dup("one")), G_STR(ustring_dup("one")));
-    ugeneric_t g = uhtbl_pop(h, G_STR("one"), G_NULL);
+    ugeneric_t g = uhtbl_pop(h, G_STR("one"), G_NULL());
     UASSERT(ugeneric_get_type(g) == G_STR_T);
     ufree(G_AS_STR(g));
     uhtbl_destroy(h);

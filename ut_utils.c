@@ -23,7 +23,7 @@ ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable
 
         switch(gtype)
         {
-            case G_NULL_T:     g = G_NULL; break;
+            case G_NULL_T:     g = G_NULL(); break;
             case G_PTR_T:      g = gen_random_void_data(depth - 1, verbose); break;
             case G_STR_T:      g = gen_random_string(depth, verbose); break;
             case G_CSTR_T:     break;

@@ -17,7 +17,7 @@ void test_uheap_api(void)
     uheap_destroy(h);
 
     h = uheap_create();
-    uheap_push(h, G_TRUE);
+    uheap_push(h, G_TRUE());
     UASSERT(G_IS_TRUE(uheap_peek(h)));
     UASSERT(!uheap_is_empty(h));
     UASSERT(G_IS_TRUE(uheap_pop(h)));

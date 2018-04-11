@@ -25,19 +25,19 @@ void test_udict_pop(udict_backend_t backend)
     UASSERT(!udict_has_key(d, G_STR("key")));
 
     ugeneric_t out;
-    out = udict_pop(d, G_STR("k1"), G_NULL);
+    out = udict_pop(d, G_STR("k1"), G_NULL());
     UASSERT(!G_IS_NULL(out));
     UASSERT_STR_EQ(G_AS_STR(out), "v1");
     UASSERT_INT_EQ(udict_get_size(d), 2);
     ufree(G_AS_STR(out));
 
-    out = udict_pop(d, G_STR("k2"), G_NULL);
+    out = udict_pop(d, G_STR("k2"), G_NULL());
     UASSERT(!G_IS_NULL(out));
     UASSERT_STR_EQ(G_AS_STR(out), "v2");
     UASSERT_INT_EQ(udict_get_size(d), 1);
     ufree(G_AS_STR(out));
 
-    out = udict_pop(d, G_STR("k3"), G_NULL);
+    out = udict_pop(d, G_STR("k3"), G_NULL());
     UASSERT(!G_IS_NULL(out));
     UASSERT_STR_EQ(G_AS_STR(out), "v3");
     UASSERT_INT_EQ(udict_get_size(d), 0);
@@ -89,7 +89,7 @@ void test_udict_api(udict_backend_t backend)
     gk = G_MEMCHUNK(ustring_dup(key), strlen(key) + 1);
     gv = G_MEMCHUNK(ustring_dup(val), strlen(val) + 1);
     udict_put(d, gk, gv);
-    ugeneric_t out = udict_get(d, gk, G_NULL);
+    ugeneric_t out = udict_get(d, gk, G_NULL());
     umemchunk_t mout = G_AS_MEMCHUNK(out);
     UASSERT_STR_EQ(mout.data, "value");
 
@@ -150,11 +150,11 @@ void test_udict_serialize(udict_backend_t backend)
     ufree(ds);
     udict_put(d, G_INT(33), G_INT(2222));
 
-    t = udict_get(d, G_CSTR("---"), G_NULL);
+    t = udict_get(d, G_CSTR("---"), G_NULL());
     UASSERT(G_IS_CSTR(t));
     UASSERT_STR_EQ(G_AS_STR(t), "+++");
 
-    t = udict_get(d, G_INT(33), G_NULL);
+    t = udict_get(d, G_INT(33), G_NULL());
     UASSERT(G_IS_INT(t));
     UASSERT_INT_EQ(G_AS_INT(t), 2222);
 
@@ -214,19 +214,19 @@ void test_udict_iterator(udict_backend_t backend)
 
     // More elements ...
     d = udict_create_with_backend(UDICT_BACKEND_HTBL);
-    udict_put(d, G_INT(1), G_NULL);
-    udict_put(d, G_INT(2), G_NULL);
-    udict_put(d, G_INT(3), G_NULL);
-    udict_put(d, G_INT(4), G_NULL);
-    udict_put(d, G_INT(5), G_NULL);
-    udict_put(d, G_INT(6), G_NULL);
-    udict_put(d, G_INT(-1), G_NULL);
-    udict_put(d, G_INT(-2), G_NULL);
-    udict_put(d, G_INT(-3), G_NULL);
-    udict_put(d, G_INT(-4), G_NULL);
-    udict_put(d, G_INT(-5), G_NULL);
-    udict_put(d, G_INT(-6), G_NULL);
-    udict_put(d, G_INT(0), G_NULL);
+    udict_put(d, G_INT(1), G_NULL());
+    udict_put(d, G_INT(2), G_NULL());
+    udict_put(d, G_INT(3), G_NULL());
+    udict_put(d, G_INT(4), G_NULL());
+    udict_put(d, G_INT(5), G_NULL());
+    udict_put(d, G_INT(6), G_NULL());
+    udict_put(d, G_INT(-1), G_NULL());
+    udict_put(d, G_INT(-2), G_NULL());
+    udict_put(d, G_INT(-3), G_NULL());
+    udict_put(d, G_INT(-4), G_NULL());
+    udict_put(d, G_INT(-5), G_NULL());
+    udict_put(d, G_INT(-6), G_NULL());
+    udict_put(d, G_INT(0), G_NULL());
 
     di = udict_iterator_create(d);
     uvector_t *v = uvector_create();

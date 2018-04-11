@@ -17,9 +17,9 @@ void test_types(void)
     ugeneric_t g_string = G_STR(ustring_dup("hello ugeneric"));
     ugeneric_t g_cstring = G_CSTR("hello constant ugeneric");
     ugeneric_t g_size = G_SIZE(123412341);
-    ugeneric_t g_null = G_NULL;
-    ugeneric_t g_true = G_TRUE;
-    ugeneric_t g_false = G_FALSE;
+    ugeneric_t g_null = G_NULL();
+    ugeneric_t g_true = G_TRUE();
+    ugeneric_t g_false = G_FALSE();
     ugeneric_t g_vector = G_VECTOR(uvector_create());
     ugeneric_t g_dict = G_DICT(udict_create());
     ugeneric_t g_memchunk = G_MEMCHUNK(m, strlen(m));
@@ -276,9 +276,9 @@ void test_serialize(void)
     udict_t *dempty = udict_create();
     uvector_t *v = uvector_create();
     uvector_t *vempty = uvector_create();
-    uvector_append(v, G_NULL);
-    uvector_append(v, G_TRUE);
-    uvector_append(v, G_FALSE);
+    uvector_append(v, G_NULL());
+    uvector_append(v, G_TRUE());
+    uvector_append(v, G_FALSE());
     uvector_append(v, G_VECTOR(vempty));
     uvector_append(v, G_DICT(dempty));
     uvector_append(v, G_INT(-1));

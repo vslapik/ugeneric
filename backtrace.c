@@ -5,7 +5,7 @@
 
 void utrace_print(void)
 {
-#ifdef __GNU_LIBRARY__
+#if defined(__GNU_LIBRARY__) && !defined(__cplusplus)
 #include <execinfo.h>
     static void *array[DEPTH];
     size_t size;
@@ -28,6 +28,6 @@ void utrace_print(void)
 
     free(strings);
 #else
-    fprintf(stderr, "backtrace is not available");
+    fprintf(stderr, "Backtrace is not available.\n");
 #endif
 }

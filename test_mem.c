@@ -56,7 +56,7 @@ void test_memchunk(void)
 {
     char *data = ustring_dup("1234\xff");
     uvector_t *v = uvector_create();
-    umemchunk_t t = {.size = 5, .data = data};
+    umemchunk_t t = {.data = data, .size = 5};
     ugeneric_t gm = G_MEMCHUNK(t.data, t.size);
     uvector_append(v, gm);
     uvector_append(v, ugeneric_copy(gm, NULL));

@@ -27,8 +27,8 @@ typedef struct {
 } ubuffer_t;
 
 typedef struct {
-    size_t size;
     void *data;
+    size_t size;
 } umemchunk_t;
 
 void ubuffer_append_data(ubuffer_t *buf, const void *data, size_t size);
