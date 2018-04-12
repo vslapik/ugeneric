@@ -155,7 +155,7 @@ char *ustring_fmt_sized(const char *fmt, size_t *output_size, ...)
 bool ustring_starts_with(const char *str, const char *prefix)
 {
     UASSERT_INPUT(str);
-    UASSERT_INPUT(str);
+    UASSERT_INPUT(prefix);
 
     while (*prefix)
     {

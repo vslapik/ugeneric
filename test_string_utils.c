@@ -88,6 +88,7 @@ void test_ustring_starts_with(void)
 
     sw_t tests[] = {
         {"string", "str", true},
+        {"str", "string", false},
         {"string", "s", true},
         {"string", " ", false},
         {"", "", true},
