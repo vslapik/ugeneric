@@ -1,17 +1,18 @@
 class GenericsPrettyPrinter:
     ''' Pretty printing of ugeneric_t instances.
     '''
-    def __init__(self, val):
-        self.val = val
+    def __init__(self, value):
+        #print(str(value))
+        self.v = value
 
     def to_string (self):
-        t = self.val['type']
-        v = self.val['value']
-#        print(str(t))
-#        print(str(v))
+        t = self.v['t']
+        v = self.v['v']
+        #print(str(t))
+        #print(str(v))
 
         if t['type'] >= 11: # magic constant comes from generic.h
-            return "G_MEMCHUNK{.data = %s, .size = %s}" % (v['ptr'], t['size'] - 11)
+            return "G_MEMCHUNK{.data = %s, .size = %s}" % (v['ptr'], t['memchunk_size'] - 11)
         else:
             return str(t['type'])[:-2] + "{" + {
                 "G_ERROR_T": str(v['err']),
@@ -27,9 +28,9 @@ class GenericsPrettyPrinter:
                 "G_DICT_T":  str(v['ptr']),
             }.get(str(t['type']), "unknown") + "}"
 
-def print_ugeneric_t(val):
-    if str(val.type) == 'ugeneric_t':
-        return GenericsPrettyPrinter(val)
+def print_ugeneric_t(value):
+    if str(value.type) == 'ugeneric_t':
+        return GenericsPrettyPrinter(value)
     return None
 
 gdb.pretty_printers.append(print_ugeneric_t)

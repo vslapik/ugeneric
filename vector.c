@@ -121,9 +121,9 @@ uvector_t *uvector_create_from_array(void *array, size_t array_len,
     while (i < array_len)
     {
         v->cells[i] = (ugeneric_t){0};
-        v->cells[i].type = uvector_element_type;
+        v->cells[i].t.type = uvector_element_type;
         // TODO: check portability
-        memcpy(&(v->cells[i].ptr), p, array_element_size);
+        memcpy(&(v->cells[i].v), p, array_element_size);
         p += array_element_size;
         i++;
     }
