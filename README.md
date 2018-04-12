@@ -20,7 +20,7 @@ Random notes:
 - library code is NOT thread safe, locks are caller's responsibility
 - xxx_destroy(NULL) safely does nothing similar to free(NULL)
 - containers are owners of elements memory by default, i.e. all elements memory is freed when container is destroyed, you don't need to keep pointers for everyting you put to container
-- you can serialize containers to JSON compatible format or construct containers from JSON, not all JSON features are supported (like unicode strings, some odd float points formats, etc)
+- you can serialize containers to JSON compatible format or construct containers from JSON, not all JSON features are supported (like unicode strings, some odd float points formats), more regarding JSON support in the library is here: [performance](https://cdn.rawgit.com/vslapik/nativejson-benchmark/5e627942/sample/performance_Corei5-2450M@2.50GHz_linux64_gcc5.4.html#1.%20Parse), [conformance](https://github.com/vslapik/nativejson-benchmark/blob/master/sample/conformance_ugeneric%20(C).md)
 - xxx_remove_xxx - remove element from container and destroy it without returning to caller
 - xxx_pop_xxx - remove element from container and return to caller (caller is responsible for destroying element)
 - xxx_get/peek_xxx - return element to caller without removing it from container (shallow copy)
