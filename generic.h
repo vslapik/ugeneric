@@ -181,6 +181,6 @@ typedef enum {
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #define ARR_LEN(a) sizeof(a)/sizeof(a[0])
-#define SCALE_FACTOR 2
+#define SCALE_FACTOR 1.5
 
 #endif
