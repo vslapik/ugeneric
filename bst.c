@@ -329,7 +329,8 @@ static void _put_red_black(ubst_t *b, ugeneric_t k, ugeneric_t v)
     // If we rotate the whole tree around the root we need
     // to store the link to a new root somewhere (as old root gets
     // rotated). Right link of the of sentinel node below is this place.
-    ubst_node_t sentinel_root = {.right = b->root};
+    ubst_node_t sentinel_root = {0};
+    sentinel_root.right = b->root;
 
     ubst_node_t *x = b->root;           // current node
     ubst_node_t *p = NULL;              // current node parent
@@ -764,7 +765,7 @@ void ubst_serialize(const ubst_t *b, ubuffer_t *buf)
     UASSERT_INPUT(buf);
 
     ubuffer_append_byte(buf, '{');
-    _serialize_data_t d = {.nodes_left = b->size, .buf = buf, .b = b};
+    _serialize_data_t d = {.b = b, .nodes_left = b->size, .buf = buf};
     _iterate_nodes(b->root, UBST_INORDER, _serialize, &d);
     ubuffer_append_byte(buf, '}');
 }
@@ -979,7 +980,7 @@ void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values, FILE 
     fprintf(out, "    label=\"%s\";\n", name);
     fprintf(out, "    labelloc=top;\n");
 
-    _dump2dot_data_t d = {.out = out, .nullcnt = 0, .dump_values = dump_values, .balancing_mode = b->balancing_mode};
+    _dump2dot_data_t d = {.nullcnt = 0, .out = out, .dump_values = dump_values, .balancing_mode = b->balancing_mode};
     _iterate_nodes(b->root, UBST_INORDER, _dump2dot, &d);
     fprintf(out, "}\n");
 }

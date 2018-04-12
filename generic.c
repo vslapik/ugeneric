@@ -861,7 +861,7 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
 static bool _rand_is_initialized = false;
 
 /*
- * When the thing crashed the seed value should be preserved in core dump.
+ * When the thing crashed the seed value should be preserved in a core dump.
  */
 static unsigned int _rand_seed = 0;
 
