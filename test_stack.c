@@ -3,6 +3,7 @@
 #include "stack.h"
 #include "asserts.h"
 #include "ut_utils.h"
+#include "string_utils.h"
 
 #define N 129
 
@@ -218,11 +219,22 @@ void test_ustack_api(void)
 
 }
 
+void test_data_ownership(void)
+{
+    ustack_t *s = ustack_create();
+    ustack_push(s, G_STR(ustring_dup("v")));
+    ustack_push(s, G_STR(ustring_dup("s")));
+    ustack_push(s, G_STR(ustring_dup("j")));
+    ustack_take_data_ownership(s);
+    ustack_destroy(s);
+}
+
 int main(void)
 {
     test_calc();
     test_ustack_api();
     test_balanced_brackets();
+    test_data_ownership();
 
     return 0;
 }

@@ -15,8 +15,17 @@ ustack_t *ustack_create(void)
     ustack_t *s = umalloc(sizeof(*s));
     s->data = uvector_create();
     uvector_reserve_capacity(s->data, STACK_INITIAL_CAPACITY);
-    uvector_drop_data_ownership(s->data); // TODO: this is actually a hack.
     return s;
+}
+
+void ustack_take_data_ownership(ustack_t *s)
+{
+    uvector_take_data_ownership(s->data);
+}
+
+void ustack_drop_data_ownership(ustack_t *s)
+{
+    uvector_drop_data_ownership(s->data);
 }
 
 void ustack_destroy(ustack_t *s)
