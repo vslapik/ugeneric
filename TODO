@@ -4,10 +4,9 @@
 - improve print_trace() to show output similar to GDB (addr2line functionality)
 - improve UT coverage and framework
 - rename xxx_get_size to xxx_get_len, so len applies to any container
-- implement deque http://stackoverflow.com/questions/6292332/what-really-is-a-deque-in-stl
-- stack on top of vector, deque and list
-- queue on top of deque or list or circullar buffer (current implementation)
-- queue/dequeue iterators
+- stack on top of vector and list
+- queue on top of list or circullar buffer (current implementation)
+- queue iterators
 - implement multiset (on BST)
 - improve parse/serialize compatibilities with JSON spec
 - different types of assert (input check, logic erros, internal sanity checks) with option to disable them
@@ -16,7 +15,6 @@
 - all ranges should be half open, i.e. [)
 - bst destroying should not use recursion (Day-Stout-Warren)
 - for bst without balancing implement Day–Stout–Warren algorithm to make it balanced
-- deque shrink_to_size
 - merge vector into vector
 - hide RB tree color inside one of the links
 - xxx_set_destroyer,xxx_set_comparator and xxx_set_copier should return the old handler for being able to restore it
