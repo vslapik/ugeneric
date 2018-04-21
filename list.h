@@ -2,14 +2,11 @@
 #define ULIST_H__
 
 #include "generic.h"
-#include "void.h"
 
 typedef struct ulist_opaq ulist_t;
 typedef struct ulist_iterator_opaq ulist_iterator_t;
 
 ulist_t *ulist_create(void);
-void ulist_take_data_ownership(ulist_t *l);
-void ulist_drop_data_ownership(ulist_t *l);
 void ulist_destroy(ulist_t *l);
 void ulist_append(ulist_t *l, ugeneric_t e);
 void ulist_prepend(ulist_t *l, ugeneric_t e);
@@ -33,13 +30,17 @@ void ulist_serialize(const ulist_t *l, ubuffer_t *buf);
 int ulist_fprint(const ulist_t *l, FILE *out);
 int ulist_print(const ulist_t *l);
 
+static void ulist_take_data_ownership(ulist_t *l);
+static void ulist_drop_data_ownership(ulist_t *l);
+static bool ulist_is_data_owner(ulist_t *l);
+
 ulist_iterator_t *ulist_iterator_create(const ulist_t *l);
 ugeneric_t ulist_iterator_get_next(ulist_iterator_t *li);
 bool ulist_iterator_has_next(const ulist_iterator_t *li);
 void ulist_iterator_reset(ulist_iterator_t *li);
 void ulist_iterator_destroy(ulist_iterator_t *li);
 
-uvoid_handlers_t *ulist_get_void_handlers(ulist_t *l);
-DECLARE_VOID_FUNCS(ulist)
+ugeneric_base_t *ulist_get_base(ulist_t *l);
+DEFINE_BASE_FUNCS(ulist)
 
 #endif

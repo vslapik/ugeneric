@@ -1,11 +1,10 @@
 lib = libugeneric.a
-#CC = gcc
-PFLAGS = -fprofile-arcs -ftest-coverage
+#CC = g++ -fpermissive
+#PFLAGS = -fprofile-arcs -ftest-coverage
 CFLAGS_COMMON=-I. -g -std=c11 -Wall -Wextra -Winline -pedantic -Wno-missing-field-initializers -Wno-missing-braces
-#CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
-CFLAGS = $(CFLAGS_COMMON) -Ofast
+CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
+#CFLAGS = $(CFLAGS_COMMON) -Ofast
 VFLAGS = -q --child-silent-after-fork=yes --leak-check=full --error-exitcode=3
-#GSLFLAGS = -lgsl -lgslcblas -lm
 
 src = generic.c stack.c vector.c queue.c heap.c list.c graph.c bitmap.c sort.c string_utils.c file_utils.c bst.c mem.c dsu.c dict.c htbl.c struct.c
 tsrc = $(patsubst %.c, test_%.c, $(src))

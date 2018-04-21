@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include "void.h"
 #include "mem.h"
 #include "htbl.h"
 
@@ -17,10 +16,10 @@ typedef struct uhtbl_record uhtbl_record_t;
 
 struct uhtbl_opaq {
     uvoid_handlers_t void_handlers;
+    bool is_data_owner;
     uhtbl_record_t **buckets;
     size_t number_of_buckets;
     size_t number_of_records;
-    bool is_data_owner;
     void_hasher_t hasher;
     void_cmp_t key_cmp;
 };
@@ -171,18 +170,6 @@ uhtbl_t *uhtbl_create(void)
     h->key_cmp = NULL;
 
     return h;
-}
-
-void uhtbl_take_data_ownership(uhtbl_t *h)
-{
-    UASSERT_INPUT(h);
-    h->is_data_owner = true;
-}
-
-void uhtbl_drop_data_ownership(uhtbl_t *h)
-{
-    UASSERT_INPUT(h);
-    h->is_data_owner = false;
 }
 
 void uhtbl_set_void_key_comparator(uhtbl_t *h, void_cmp_t cmp)
@@ -496,8 +483,8 @@ uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind)
     return v;
 }
 
-uvoid_handlers_t *uhtbl_get_void_handlers(uhtbl_t *h)
+ugeneric_base_t *uhtbl_get_base(uhtbl_t *h)
 {
     UASSERT_INPUT(h);
-    return &h->void_handlers;
+    return (ugeneric_base_t *)h;
 }

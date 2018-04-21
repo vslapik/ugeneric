@@ -2,7 +2,6 @@
 #define UQUEUE_H__
 
 #include "generic.h"
-#include "void.h"
 
 #define QUEUE_INITIAL_CAPACITY 16
 
@@ -24,7 +23,11 @@ void uqueue_serialize(const uqueue_t *q, ubuffer_t *buf);
 int uqueue_fprint(const uqueue_t *q, FILE *out);
 int uqueue_print(const uqueue_t *q);
 
-uvoid_handlers_t *uqueue_get_void_handlers(uqueue_t *q);
-DECLARE_VOID_FUNCS(uqueue)
+static void uqueue_take_data_ownership(uqueue_t *q);
+static void uqueue_drop_data_ownership(uqueue_t *q);
+static bool uqueue_is_data_owner(uqueue_t *q);
+
+ugeneric_base_t *uqueue_get_base(uqueue_t *q);
+DEFINE_BASE_FUNCS(uqueue)
 
 #endif

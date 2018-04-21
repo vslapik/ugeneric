@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "vector.h"
-#include "void.h"
 #include "mem.h"
 #include "string_utils.h"
 #include "ut_utils.h"
@@ -393,6 +392,29 @@ void test_uvector_slice(void)
     uvector_destroy(v);
 }
 
+void test_uvector_data_ownership(void)
+{
+    uvector_t *v = uvector_create();
+    UASSERT(uvector_is_data_owner(v));
+    //uvector_append(v, G_CSTR("s1"));
+    //uvector_append(v, G_CSTR("s1"));
+
+    // shallow copy
+    uvector_t *copy1 = uvector_copy(v);
+    UASSERT(!uvector_is_data_owner(copy1));
+
+    // deep copy
+    uvector_t *copy2 = uvector_deep_copy(v);
+    UASSERT(uvector_is_data_owner(copy2));
+    uvector_drop_data_ownership(copy2);
+    UASSERT(!uvector_is_data_owner(copy2));
+
+    // kick the bucket
+    uvector_destroy(v);
+    uvector_destroy(copy1);
+    uvector_destroy(copy2);
+}
+
 int main(int argc, char **argv)
 {
 //    test_gnuplot();
@@ -405,6 +427,7 @@ int main(int argc, char **argv)
     test_uvector_bsearch();
     test_uvector_compare();
     test_uvector_slice();
+    test_uvector_data_ownership();
 
     return EXIT_SUCCESS;
 }

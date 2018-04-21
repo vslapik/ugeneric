@@ -3,7 +3,6 @@
 
 #include "generic.h"
 #include "vector.h"
-#include "void.h"
 
 typedef struct ubst_opaq ubst_t;
 typedef struct ubst_iterator_opaq ubst_iterator_t;
@@ -27,8 +26,10 @@ void ubst_set_default_balancing_mode(ubst_balancing_mode_t mode);
 ubst_t *ubst_create(void);
 ubst_t *ubst_create_ext(ubst_balancing_mode_t mode);
 void ubst_destroy(ubst_t *b);
-void ubst_drop_data_ownership(ubst_t *b);
-void ubst_take_data_ownership(ubst_t *b);
+
+static bool ubst_is_data_owner(ubst_t *b);
+static void ubst_drop_data_ownership(ubst_t *b);
+static void ubst_take_data_ownership(ubst_t *b);
 
 void ubst_put(ubst_t *b, ugeneric_t k, ugeneric_t v);
 ugeneric_t ubst_pop(ubst_t *b, ugeneric_t k, ugeneric_t vdef);
@@ -66,7 +67,7 @@ uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind);
 static inline uvector_t *ubst_get_keys(const ubst_t *b) { return ubst_get_items(b, UDICT_KEYS); }
 static inline uvector_t *ubst_get_values(const ubst_t *b) { return ubst_get_items(b, UDICT_VALUES); }
 
-uvoid_handlers_t *ubst_get_void_handlers(ubst_t *b);
-DECLARE_VOID_FUNCS(ubst)
+ugeneric_base_t *ubst_get_base(ubst_t *b);
+DEFINE_BASE_FUNCS(ubst)
 
 #endif

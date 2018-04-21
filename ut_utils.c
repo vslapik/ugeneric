@@ -1,6 +1,5 @@
 #include <limits.h>
 #include "ut_utils.h"
-#include "void.h"
 #include "string_utils.c"
 
 typedef struct {

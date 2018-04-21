@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdbool.h>
-#include "mem.h"
 #include "vector.h"
 #include "stack.h"
 
@@ -16,16 +15,6 @@ ustack_t *ustack_create(void)
     s->data = uvector_create();
     uvector_reserve_capacity(s->data, STACK_INITIAL_CAPACITY);
     return s;
-}
-
-void ustack_take_data_ownership(ustack_t *s)
-{
-    uvector_take_data_ownership(s->data);
-}
-
-void ustack_drop_data_ownership(ustack_t *s)
-{
-    uvector_drop_data_ownership(s->data);
 }
 
 void ustack_destroy(ustack_t *s)
@@ -81,8 +70,8 @@ size_t ustack_get_capacity(const ustack_t *s)
     return uvector_get_capacity(s->data);
 }
 
-uvoid_handlers_t *ustack_get_void_handlers(ustack_t *s)
+ugeneric_base_t *ustack_get_base(ustack_t *s)
 {
     UASSERT_INPUT(s);
-    return uvector_get_void_handlers(s->data);
+    return uvector_get_base(s->data);
 }

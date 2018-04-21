@@ -2,7 +2,6 @@
 #define UVECTOR_H__
 
 #include "generic.h"
-#include "void.h"
 
 #define VECTOR_INITIAL_CAPACITY 16
 
@@ -48,8 +47,9 @@ bool uvector_is_sorted(const uvector_t *v);
 size_t uvector_bsearch(const uvector_t *v, ugeneric_t e);
 bool uvector_next_permutation(uvector_t *v);
 
-void uvector_take_data_ownership(uvector_t *v);
-void uvector_drop_data_ownership(uvector_t *v);
+static void uvector_take_data_ownership(uvector_t *v);
+static void uvector_drop_data_ownership(uvector_t *v);
+static bool uvector_is_data_owner(uvector_t *v);
 
 char *uvector_as_str(const uvector_t *v);
 void uvector_serialize(const uvector_t *v, ubuffer_t *buf);
@@ -65,7 +65,7 @@ typedef struct {
 void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs,
                              FILE *out);
 
-uvoid_handlers_t *uvector_get_void_handlers(uvector_t *v);
-DECLARE_VOID_FUNCS(uvector)
+ugeneric_base_t *uvector_get_base(uvector_t *v);
+DEFINE_BASE_FUNCS(uvector)
 
 #endif

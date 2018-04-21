@@ -23,10 +23,10 @@ typedef bool (*ubst_node_cb_t)(ubst_node_t *node, void *data);
 
 struct ubst_opaq {
     uvoid_handlers_t void_handlers;
+    bool is_data_owner;
     ubst_node_t *root;
     ubst_balancing_mode_t balancing_mode;
     size_t size;
-    bool is_data_owner;
 };
 
 struct ubst_iterator_opaq {
@@ -543,18 +543,6 @@ ubst_t *ubst_create(void)
     return ubst_create_ext(UBST_DEFAULT_BALANCING);
 }
 
-void ubst_take_data_ownership(ubst_t *b)
-{
-    UASSERT_INPUT(b);
-    b->is_data_owner = true;
-}
-
-void ubst_drop_data_ownership(ubst_t *b)
-{
-    UASSERT_INPUT(b);
-    b->is_data_owner = false;
-}
-
 void ubst_put(ubst_t *b, ugeneric_t k, ugeneric_t v)
 {
     UASSERT_INPUT(b);
@@ -983,10 +971,4 @@ void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values, FILE 
     _dump2dot_data_t d = {.nullcnt = 0, .out = out, .dump_values = dump_values, .balancing_mode = b->balancing_mode};
     _iterate_nodes(b->root, UBST_INORDER, _dump2dot, &d);
     fprintf(out, "}\n");
-}
-
-uvoid_handlers_t *ubst_get_void_handlers(ubst_t *b)
-{
-    UASSERT_INPUT(b);
-    return &b->void_handlers;
 }

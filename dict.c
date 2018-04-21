@@ -8,8 +8,6 @@
 #include "string_utils.h"
 
 static const udict_vtable_t _uhtbl_vtable = {
-    .take_data_ownership = (f_udict_take_data_ownership)uhtbl_take_data_ownership,
-    .drop_data_ownership = (f_udict_drop_data_ownership)uhtbl_drop_data_ownership,
     .clear               = (f_udict_clear)uhtbl_clear,
     .put                 = (f_udict_put)uhtbl_put,
     .get                 = (f_udict_get)uhtbl_get,
@@ -21,13 +19,11 @@ static const udict_vtable_t _uhtbl_vtable = {
     .as_str              = (f_udict_as_str)uhtbl_as_str,
     .print               = (f_udict_print)uhtbl_print,
     .fprint              = (f_udict_fprint)uhtbl_fprint,
-    .get_void_handlers   = (f_udict_get_void_handlers)uhtbl_get_void_handlers,
+    .get_base            = (f_udict_get_base)uhtbl_get_base,
     .get_items           = (f_udict_get_items)uhtbl_get_items,
 };
 
 static const udict_vtable_t _ubst_vtable = {
-    .take_data_ownership = (f_udict_take_data_ownership)ubst_take_data_ownership,
-    .drop_data_ownership = (f_udict_drop_data_ownership)ubst_drop_data_ownership,
     .clear               = (f_udict_clear)ubst_clear,
     .put                 = (f_udict_put)ubst_put,
     .get                 = (f_udict_get)ubst_get,
@@ -39,7 +35,7 @@ static const udict_vtable_t _ubst_vtable = {
     .as_str              = (f_udict_as_str)ubst_as_str,
     .print               = (f_udict_print)ubst_print,
     .fprint              = (f_udict_fprint)ubst_fprint,
-    .get_void_handlers   = (f_udict_get_void_handlers)ubst_get_void_handlers,
+    .get_base            = (f_udict_get_base)uhtbl_get_base,
     .get_items           = (f_udict_get_items)ubst_get_items,
 };
 

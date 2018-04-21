@@ -12,9 +12,9 @@ typedef struct ulist_item {
 
 struct ulist_opaq {
     uvoid_handlers_t void_handlers;
+    bool is_data_owner;
     size_t size;
     ulist_item_t *head;
-    bool is_data_owner;
 };
 
 struct ulist_iterator_opaq {
@@ -77,18 +77,6 @@ ulist_t *ulist_create(void)
     memset(&l->void_handlers, 0, sizeof(l->void_handlers));
 
     return l;
-}
-
-void ulist_take_data_ownership(ulist_t *l)
-{
-    UASSERT_INPUT(l);
-    l->is_data_owner = true;
-}
-
-void ulist_drop_data_ownership(ulist_t *l)
-{
-    UASSERT_INPUT(l);
-    l->is_data_owner = false;
 }
 
 void ulist_append(ulist_t *l, ugeneric_t e)
@@ -398,8 +386,8 @@ void ulist_iterator_reset(ulist_iterator_t *li)
     li->next = li->list->head;
 }
 
-uvoid_handlers_t *ulist_get_void_handlers(ulist_t *l)
+ugeneric_base_t *ulist_get_base(ulist_t *l)
 {
     UASSERT_INPUT(l);
-    return &l->void_handlers;
+    return (ugeneric_base_t *)l;
 }

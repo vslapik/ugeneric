@@ -2,7 +2,6 @@
 #include <inttypes.h>
 #include "heap.h"
 #include "vector.h"
-#include "void.h"
 #include "mem.h"
 #include "string_utils.h"
 
@@ -154,18 +153,6 @@ void uheap_reserve_capacity(uheap_t *h, size_t new_capacity)
     uvector_reserve_capacity(h->data, new_capacity);
 }
 
-void uheap_take_data_ownership(uheap_t *h)
-{
-    UASSERT_INPUT(h);
-    uvector_take_data_ownership(h->data);
-}
-
-void uheap_drop_data_ownership(uheap_t *h)
-{
-    UASSERT_INPUT(h);
-    uvector_drop_data_ownership(h->data);
-}
-
 ugeneric_t *uheap_get_cells(const uheap_t *h)
 {
     UASSERT_INPUT(h);
@@ -207,8 +194,8 @@ void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out)
     fprintf(out, "}\n");
 }
 
-uvoid_handlers_t *uheap_get_void_handlers(uheap_t *h)
+ugeneric_base_t *uheap_get_base(uheap_t *h)
 {
     UASSERT_INPUT(h);
-    return uvector_get_void_handlers(h->data);
+    return uvector_get_base(h->data);
 }

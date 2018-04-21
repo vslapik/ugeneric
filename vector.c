@@ -3,16 +3,15 @@
 #include "vector.h"
 #include "mem.h"
 #include "sort.h"
-#include "void.h"
 
 /* [0][1][2][...][size - 1][.][.][...][.][.][capacity - 1] */
 
 struct uvector_opaq {
     uvoid_handlers_t void_handlers;
+    bool is_data_owner;
     ugeneric_t *cells;
     size_t size;
     size_t capacity;
-    bool is_data_owner;
     ugeneric_sorter_t sorter;
 };
 
@@ -130,18 +129,6 @@ uvector_t *uvector_create_from_array(void *array, size_t array_len,
     v->size = array_len;
 
     return v;
-}
-
-void uvector_take_data_ownership(uvector_t *v)
-{
-    UASSERT_INPUT(v);
-    v->is_data_owner = true;
-}
-
-void uvector_drop_data_ownership(uvector_t *v)
-{
-    UASSERT_INPUT(v);
-    v->is_data_owner = false;
 }
 
 void uvector_destroy(uvector_t *v)
@@ -427,10 +414,10 @@ bool uvector_next_permutation(uvector_t *v)
     return ugeneric_array_next_permutation(v->cells, v->size, v->void_handlers.cmp);
 }
 
-uvoid_handlers_t *uvector_get_void_handlers(uvector_t *v)
+ugeneric_base_t *uvector_get_base(uvector_t *v)
 {
     UASSERT_INPUT(v);
-    return &v->void_handlers;
+    return (ugeneric_base_t *)v;
 }
 
 uvector_t *uvector_get_slice(const uvector_t *v, size_t begin, size_t end,

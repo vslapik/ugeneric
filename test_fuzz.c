@@ -4,7 +4,7 @@
 int main(int argc, char **argv)
 {
     unsigned int seed;
-    bool verbose = true;
+    bool verbose = false;
 
     if (argc >= 2)
     {
@@ -38,10 +38,23 @@ int main(int argc, char **argv)
 
     UASSERT(ugeneric_compare(rv, rv_copy, uvector_get_void_comparator(vector)) == 0);
 
+    ugeneric_t g = ugeneric_parse(t2);
+    if (G_IS_ERROR(g))
+    {
+        ugeneric_error_print(g);
+        ugeneric_error_destroy(g);
+        UABORT("test failed");
+    }
+    UASSERT(G_IS_VECTOR(g));
+    uvector_sort(G_AS_PTR(g));
+    UASSERT(uvector_is_sorted(G_AS_PTR(g)));
+
+    UASSERT(ugeneric_compare(rv, g, uvector_get_void_comparator(vector)) == 0);
+
     ufree(t1);
     ufree(t2);
-
     ugeneric_destroy(rv_copy, NULL);
     ugeneric_destroy(rv, NULL);
+    ugeneric_destroy(g, NULL);
     printf("Destoyed ========================= %u ==============================\n", seed);
 }

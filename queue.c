@@ -7,6 +7,7 @@
 
 struct uqueue_opaq {
     uvoid_handlers_t void_handlers;
+    bool is_data_owner;
     ugeneric_t *data;
     size_t h; // head
     size_t t; // tail
@@ -180,8 +181,8 @@ int uqueue_print(const uqueue_t *q)
     return uqueue_fprint(q, stdout);
 }
 
-uvoid_handlers_t *uqueue_get_void_handlers(uqueue_t *q)
+ugeneric_base_t *uqueue_get_base(uqueue_t *q)
 {
     UASSERT_INPUT(q);
-    return &q->void_handlers;
+    return (ugeneric_base_t *)q;
 }
