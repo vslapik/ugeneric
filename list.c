@@ -296,12 +296,6 @@ ulist_t *ulist_deep_copy(const ulist_t *l)
     return _lcpy(l, true);
 }
 
-int ulist_print(const ulist_t *l)
-{
-    UASSERT_INPUT(l);
-    return ulist_fprint(l, stdout);
-}
-
 int ulist_fprint(const ulist_t *l, FILE *out)
 {
     UASSERT_INPUT(l);

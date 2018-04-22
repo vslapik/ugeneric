@@ -15,7 +15,7 @@ void *urealloc(void *uptr, size_t nmemb);
 void *umemdup(const void *src, size_t n);
 void ufree(void *ptr);
 
-static inline void *uzalloc(size_t size) { return ucalloc(size, 1); }
+static inline void *uzalloc(size_t size) {return ucalloc(size, 1);}
 
 #define BUFFER_INITIAL_CAPACITY 16
 #define BUFFER_SCALE_FACTOR 2
@@ -42,6 +42,6 @@ void ubuffer_reset(ubuffer_t *buf);
 char *umemchunk_as_str(umemchunk_t m);
 void umemchunk_serialize(umemchunk_t m, ubuffer_t *buf);
 int umemchunk_fprint(umemchunk_t m, FILE *out);
-int umemchunk_print(umemchunk_t m);
+static inline int umemchunk_print(umemchunk_t m) {return umemchunk_fprint(m, stdout);}
 
 #endif

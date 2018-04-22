@@ -17,7 +17,6 @@ static const udict_vtable_t _uhtbl_vtable = {
     .is_empty            = (f_udict_is_empty)uhtbl_is_empty,
     .serialize           = (f_udict_serialize)uhtbl_serialize,
     .as_str              = (f_udict_as_str)uhtbl_as_str,
-    .print               = (f_udict_print)uhtbl_print,
     .fprint              = (f_udict_fprint)uhtbl_fprint,
     .get_base            = (f_udict_get_base)uhtbl_get_base,
     .get_items           = (f_udict_get_items)uhtbl_get_items,
@@ -33,7 +32,6 @@ static const udict_vtable_t _ubst_vtable = {
     .is_empty            = (f_udict_is_empty)ubst_is_empty,
     .serialize           = (f_udict_serialize)ubst_serialize,
     .as_str              = (f_udict_as_str)ubst_as_str,
-    .print               = (f_udict_print)ubst_print,
     .fprint              = (f_udict_fprint)ubst_fprint,
     .get_base            = (f_udict_get_base)uhtbl_get_base,
     .get_items           = (f_udict_get_items)ubst_get_items,
@@ -51,7 +49,8 @@ static const udict_iterator_vtable_t _ubst_iterator_vtable = {
     .reset               = (f_udict_iterator_reset)ubst_iterator_reset,
 };
 
-static udict_backend_t _default_backend = UDICT_BACKEND_BST_PLAIN;
+static udict_backend_t _default_backend = UDICT_BACKEND_BST_RB;
+//static udict_backend_t _default_backend = UDICT_BACKEND_BST_PLAIN;
 //static udict_backend_t _default_backend = UDICT_BACKEND_HTBL;
 
 void libugeneric_udict_set_default_backend(udict_backend_t backend)
@@ -185,8 +184,8 @@ int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
     }
     else
     {
-        uvector_t *items1 = udict_get_items(d1, UDICT_KV);
-        uvector_t *items2 = udict_get_items(d2, UDICT_KV);
+        uvector_t *items1 = udict_get_items(d1, UDICT_KV, false);
+        uvector_t *items2 = udict_get_items(d2, UDICT_KV, false);
         if (d1->backend == UDICT_BACKEND_HTBL)
         {
             uvector_sort(items1);

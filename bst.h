@@ -55,7 +55,7 @@ void ubst_dump_to_dot(const ubst_t *b, const char *name, bool dump_values,
 char *ubst_as_str(const ubst_t *b);
 void ubst_serialize(const ubst_t *b, ubuffer_t *buf);
 int ubst_fprint(const ubst_t *b, FILE *out);
-int ubst_print(const ubst_t *b);
+static inline int ubst_print(const ubst_t *b) {return ubst_fprint(b, stdout);}
 
 ubst_iterator_t *ubst_iterator_create(const ubst_t *b);
 ugeneric_kv_t ubst_iterator_get_next(ubst_iterator_t *bi);
@@ -63,9 +63,9 @@ bool ubst_iterator_has_next(const ubst_iterator_t *bi);
 void ubst_iterator_reset(ubst_iterator_t *bi);
 void ubst_iterator_destroy(ubst_iterator_t *bi);
 
-uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind);
-static inline uvector_t *ubst_get_keys(const ubst_t *b) { return ubst_get_items(b, UDICT_KEYS); }
-static inline uvector_t *ubst_get_values(const ubst_t *b) { return ubst_get_items(b, UDICT_VALUES); }
+uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind, bool deep);
+static inline uvector_t *ubst_get_keys(const ubst_t *b, bool deep) {return ubst_get_items(b, UDICT_KEYS, deep);}
+static inline uvector_t *ubst_get_values(const ubst_t *b, bool deep) {return ubst_get_items(b, UDICT_VALUES, deep);}
 
 ugeneric_base_t *ubst_get_base(ubst_t *b);
 DEFINE_BASE_FUNCS(ubst)

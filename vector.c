@@ -384,12 +384,6 @@ char *uvector_as_str(const uvector_t *v)
     return buf.data;
 }
 
-int uvector_print(const uvector_t *v)
-{
-    UASSERT_INPUT(v);
-    return uvector_fprint(v, stdout);
-}
-
 int uvector_fprint(const uvector_t *v, FILE *out)
 {
     UASSERT_INPUT(v);

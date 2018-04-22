@@ -28,12 +28,11 @@ typedef char      *(*f_udict_as_str)(const void *d);
 typedef int        (*f_udict_print)(const void *d);
 typedef int        (*f_udict_fprint)(const void *d, FILE *out);
 typedef ugeneric_base_t *(*f_udict_get_base)(void *d);
-typedef uvector_t *(*f_udict_get_items)(const void *d, udict_items_kind_t kind);
+typedef uvector_t *(*f_udict_get_items)(const void *d, udict_items_kind_t kind, bool deep);
 
 typedef ugeneric_kv_t (*f_udict_iterator_get_next)(void *di);
 typedef bool          (*f_udict_iterator_has_next)(const void *di);
 typedef void          (*f_udict_iterator_reset)(void *di);
-
 
 typedef struct {
     f_udict_clear               clear;
@@ -45,7 +44,6 @@ typedef struct {
     f_udict_is_empty            is_empty;
     f_udict_serialize           serialize;
     f_udict_as_str              as_str;
-    f_udict_print               print;
     f_udict_fprint              fprint;
     f_udict_get_base            get_base;
     f_udict_get_items           get_items;
@@ -86,16 +84,16 @@ static inline size_t udict_get_size(const udict_t *d) {return d->vtable->get_siz
 static inline bool udict_is_empty(const udict_t *d) {return d->vtable->is_empty(d->vobj);}
 static inline void udict_serialize(const udict_t *d, ubuffer_t *buf) {d->vtable->serialize(d->vobj, buf);}
 static inline char *udict_as_str(const udict_t *d) {return d->vtable->as_str(d->vobj);}
-static inline int udict_print(const udict_t *d) {return d->vtable->print(d->vobj);}
 static inline int udict_fprint(const udict_t *d, FILE *out) {return d->vtable->fprint(d->vobj, out);}
-static inline uvector_t *udict_get_items(const udict_t *d, udict_items_kind_t kind) {return d->vtable->get_items(d->vobj, kind);}
+static inline int udict_print(const udict_t *d) {return udict_fprint(d, stdout); }
+static inline uvector_t *udict_get_items(const udict_t *d, udict_items_kind_t kind, bool deep) {return d->vtable->get_items(d->vobj, kind, deep);}
 void udict_destroy(udict_t *d);
 int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp);
 void udict_set_void_hasher(udict_t *d, void_hasher_t hasher);
 void udict_set_void_key_comparator(udict_t *d, void_cmp_t cmp);
 
-static inline uvector_t *udict_get_keys(const udict_t *d) {return udict_get_items(d, UDICT_KEYS);}
-static inline uvector_t *udict_get_values(const udict_t *d) {return udict_get_items(d, UDICT_VALUES);}
+static inline uvector_t *udict_get_keys(const udict_t *d, bool deep) {return udict_get_items(d, UDICT_KEYS, deep);}
+static inline uvector_t *udict_get_values(const udict_t *d, bool deep) {return udict_get_items(d, UDICT_VALUES, deep);}
 
 void *udict_copy(const udict_t *d);
 void *udict_deep_copy(const udict_t *d);

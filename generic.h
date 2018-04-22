@@ -176,6 +176,11 @@ typedef enum {
     UDICT_KV,
 } udict_items_kind_t;
 
+typedef enum {
+    UCOPY_SHALLOW,
+    UCOPY_DEEP,
+} ucopy_kind_t;
+
 // MAX and MIN are not side-effect free, be cautious.
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -200,12 +205,12 @@ static inline void _ctn_##_set_void_destroyer(_ctn_##_t *self, void_dtr_t dtr)  
 static inline void _ctn_##_set_void_comparator(_ctn_##_t *self, void_cmp_t cmp) {_ctn_##_get_base(self)->void_handlers.cmp = cmp;} \
 static inline void _ctn_##_set_void_copier(_ctn_##_t *self, void_cpy_t cpy)     {_ctn_##_get_base(self)->void_handlers.cpy = cpy;} \
 static inline void _ctn_##_set_void_serializer(_ctn_##_t *self, void_s8r_t s8r) {_ctn_##_get_base(self)->void_handlers.s8r = s8r;} \
-static inline void_dtr_t _ctn_##_get_void_destroyer(_ctn_##_t *self)   { return _ctn_##_get_base(self)->void_handlers.dtr; } \
-static inline void_cmp_t _ctn_##_get_void_comparator( _ctn_##_t *self) { return _ctn_##_get_base(self)->void_handlers.cmp; } \
-static inline void_cpy_t _ctn_##_get_void_copier(_ctn_##_t *self)      { return _ctn_##_get_base(self)->void_handlers.cpy; } \
-static inline void_s8r_t _ctn_##_get_void_serializer(_ctn_##_t *self)  { return _ctn_##_get_base(self)->void_handlers.s8r; } \
-static inline void _ctn_##_take_data_ownership(_ctn_##_t *self) { _ctn_##_get_base(self)->is_data_owner = true; }  \
-static inline void _ctn_##_drop_data_ownership(_ctn_##_t *self) { _ctn_##_get_base(self)->is_data_owner = false; } \
-static inline bool _ctn_##_is_data_owner(_ctn_##_t *self)       { return _ctn_##_get_base(self)->is_data_owner; }  \
+static inline void_dtr_t _ctn_##_get_void_destroyer(_ctn_##_t *self)   {return _ctn_##_get_base(self)->void_handlers.dtr; } \
+static inline void_cmp_t _ctn_##_get_void_comparator(_ctn_##_t *self) {return _ctn_##_get_base(self)->void_handlers.cmp; } \
+static inline void_cpy_t _ctn_##_get_void_copier(_ctn_##_t *self)      {return _ctn_##_get_base(self)->void_handlers.cpy; } \
+static inline void_s8r_t _ctn_##_get_void_serializer(_ctn_##_t *self)  {return _ctn_##_get_base(self)->void_handlers.s8r; } \
+static inline void _ctn_##_take_data_ownership(_ctn_##_t *self) {_ctn_##_get_base(self)->is_data_owner = true; }  \
+static inline void _ctn_##_drop_data_ownership(_ctn_##_t *self) {_ctn_##_get_base(self)->is_data_owner = false; } \
+static inline bool _ctn_##_is_data_owner(_ctn_##_t *self)       {return _ctn_##_get_base(self)->is_data_owner; }  \
 
 #endif

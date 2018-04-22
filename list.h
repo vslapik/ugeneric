@@ -28,7 +28,7 @@ int ulist_compare(const ulist_t *l1, const ulist_t *l2, void_cmp_t cmp);
 char *ulist_as_str(const ulist_t *l);
 void ulist_serialize(const ulist_t *l, ubuffer_t *buf);
 int ulist_fprint(const ulist_t *l, FILE *out);
-int ulist_print(const ulist_t *l);
+static inline int ulist_print(const ulist_t *l) {return ulist_fprint(l, stdout);}
 
 static void ulist_take_data_ownership(ulist_t *l);
 static void ulist_drop_data_ownership(ulist_t *l);

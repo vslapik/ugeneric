@@ -21,7 +21,7 @@ bool uqueue_is_empty(const uqueue_t *q);
 char *uqueue_as_str(const uqueue_t *q);
 void uqueue_serialize(const uqueue_t *q, ubuffer_t *buf);
 int uqueue_fprint(const uqueue_t *q, FILE *out);
-int uqueue_print(const uqueue_t *q);
+static inline int uqueue_print(const uqueue_t *q) {return uqueue_fprint(q, stdout);}
 
 static void uqueue_take_data_ownership(uqueue_t *q);
 static void uqueue_drop_data_ownership(uqueue_t *q);

@@ -769,12 +769,6 @@ char *ubst_as_str(const ubst_t *b)
     return buf.data;
 }
 
-int ubst_print(const ubst_t *b)
-{
-    UASSERT_INPUT(b);
-    return ubst_fprint(b, stdout);
-}
-
 int ubst_fprint(const ubst_t *b, FILE *out)
 {
     UASSERT_INPUT(b);
@@ -866,9 +860,10 @@ void ubst_iterator_destroy(ubst_iterator_t *bi)
     }
 }
 
-uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind)
+uvector_t *ubst_get_items(const ubst_t *b, udict_items_kind_t kind, bool deep)
 {
     UASSERT_INPUT(b);
+    (void)deep; //TODO: implement it
 
     ubst_iterator_t *bi = ubst_iterator_create(b);
     uvector_t *v = uvector_create();

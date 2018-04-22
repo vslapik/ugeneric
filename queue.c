@@ -175,12 +175,6 @@ int uqueue_fprint(const uqueue_t *q, FILE *out)
     return ret;
 }
 
-int uqueue_print(const uqueue_t *q)
-{
-    UASSERT_INPUT(q);
-    return uqueue_fprint(q, stdout);
-}
-
 ugeneric_base_t *uqueue_get_base(uqueue_t *q)
 {
     UASSERT_INPUT(q);

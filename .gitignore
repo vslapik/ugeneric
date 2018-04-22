@@ -31,3 +31,4 @@ test_string_utils
 test_vector
 test_fuzz
 test_struct
+test_set

@@ -270,8 +270,8 @@ int uhtbl_compare(const uhtbl_t *h1, const uhtbl_t *h2, void_cmp_t cmp)
         return 0;
     }
 
-    uvector_t *items1 = uhtbl_get_items(h1, UDICT_KV);
-    uvector_t *items2 = uhtbl_get_items(h2, UDICT_KV);
+    uvector_t *items1 = uhtbl_get_items(h1, UDICT_KV, false);
+    uvector_t *items2 = uhtbl_get_items(h2, UDICT_KV, false);
     uvector_sort(items1);
     uvector_sort(items2);
 
@@ -314,12 +314,6 @@ char *uhtbl_as_str(const uhtbl_t *h)
     ubuffer_null_terminate(&buf);
 
     return buf.data;
-}
-
-int uhtbl_print(const uhtbl_t *h)
-{
-    UASSERT_INPUT(h);
-    return uhtbl_fprint(h, stdout);
 }
 
 int uhtbl_fprint(const uhtbl_t *h, FILE *out)
@@ -447,9 +441,10 @@ bool uhtbl_has_key(const uhtbl_t *h, ugeneric_t k)
     return *_find_by_key(h, k) != NULL;
 }
 
-uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind)
+uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind, bool deep)
 {
     UASSERT_INPUT(h);
+    (void)deep; //TODO: implement it
 
     uhtbl_iterator_t *hi = uhtbl_iterator_create(h);
     uvector_t *v = uvector_create();

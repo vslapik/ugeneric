@@ -53,8 +53,8 @@ static bool uvector_is_data_owner(uvector_t *v);
 
 char *uvector_as_str(const uvector_t *v);
 void uvector_serialize(const uvector_t *v, ubuffer_t *buf);
-int uvector_print(const uvector_t *v);
 int uvector_fprint(const uvector_t *v, FILE *out);
+static inline int uvector_print(const uvector_t *v) {return uvector_fprint(v, stdout);}
 
 typedef struct {
     char *title;

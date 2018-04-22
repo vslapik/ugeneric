@@ -9,11 +9,11 @@
 #include "mem.h"
 
 /* MSB0 bit numbering, rfc1166 */
-static inline void *ubitmap_allocate(size_t len)               { return ucalloc(len / 8 + (bool)(len % 8), 1);               }
-static inline bool  ubitmap_get_bit(const void *a, size_t num) { return ((uint8_t *)a)[(num) / 8] &   (0x80 >> ((num) % 8)); }
-static inline void  ubitmap_set_bit(void *a, size_t num)       {        ((uint8_t *)a)[(num) / 8] |=  (0x80 >> ((num) % 8)); }
-static inline void  ubitmap_clear_bit(void *a, size_t num)     {        ((uint8_t *)a)[(num) / 8] &= ~(0x80 >> ((num) % 8)); }
-static inline void  ubitmap_flip_bit(void *a, size_t num)      {        ((uint8_t *)a)[(num) / 8] ^=  (0x80 >> ((num) % 8)); }
+static inline void *ubitmap_allocate(size_t len)               {return ucalloc(len / 8 + (bool)(len % 8), 1);              }
+static inline bool  ubitmap_get_bit(const void *a, size_t num) {return ((uint8_t *)a)[(num) / 8] &   (0x80 >> ((num) % 8));}
+static inline void  ubitmap_set_bit(void *a, size_t num)       {       ((uint8_t *)a)[(num) / 8] |=  (0x80 >> ((num) % 8));}
+static inline void  ubitmap_clear_bit(void *a, size_t num)     {       ((uint8_t *)a)[(num) / 8] &= ~(0x80 >> ((num) % 8));}
+static inline void  ubitmap_flip_bit(void *a, size_t num)      {       ((uint8_t *)a)[(num) / 8] ^=  (0x80 >> ((num) % 8));}
 
 void ubitmap_set_range(void *a, size_t l, size_t r);
 void ubitmap_flip_all(void *b, size_t len);

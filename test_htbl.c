@@ -37,8 +37,8 @@ int main(void)
     uhtbl_put(h, G_CSTR("2"), G_CSTR("two"));
     uhtbl_put(h, G_STR(ustring_dup("3")), G_STR(ustring_dup("txhree")));
 
-    uvector_t *keys = uhtbl_get_keys(h);
-    uvector_t *values = uhtbl_get_values(h);
+    uvector_t *keys = uhtbl_get_keys(h, false);
+    uvector_t *values = uhtbl_get_values(h, false);
     uvector_sort(keys);
     uvector_sort(values);
 

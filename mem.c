@@ -195,11 +195,6 @@ int umemchunk_fprint(umemchunk_t m, FILE *out)
     return ret;
 }
 
-int umemchunk_print(umemchunk_t m)
-{
-    return umemchunk_fprint(m, stdout);
-}
-
 void umemchunk_serialize(umemchunk_t m, ubuffer_t *buf)
 {
     UASSERT_INPUT(buf);

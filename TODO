@@ -7,7 +7,6 @@
 - stack on top of vector and list
 - queue on top of list or circular buffer (current implementation)
 - queue iterators
-- implement multiset (on BST)
 - vector uniq elements
 - improve parse/serialize compatibilities with JSON spec
 - different types of assert (input check, logic errors, internal sanity checks) with option to disable them
