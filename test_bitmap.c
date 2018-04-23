@@ -5,23 +5,19 @@
 
 #define CHECK_BITMAP(bmp, len, as_string) do {              \
     char *__s = ubitmap_as_str(bmp, len);                   \
-    UASSERT_STR_EQ(__s, as_string);                          \
+    UASSERT_STR_EQ(__s, as_string);                         \
     ufree(__s);                                             \
 } while (0)                                                 \
 
 void test_bitmap()
 {
-    char *str;
-
     uint8_t b1 = 0;
+
     ubitmap_set_bit(&b1, 0);
-    str = ubitmap_as_str(&b1, 1);
-    UASSERT_STR_EQ(str, "1");
-    ufree(str);
+    CHECK_BITMAP(&b1, 1, "1");
 
     ubitmap_clear_bit(&b1, 0);
-    str = ubitmap_as_str(&b1, 1);
-    UASSERT_STR_EQ(str, "0"); ufree(str);
+    CHECK_BITMAP(&b1, 1, "0");
 
     uint16_t b11 = 0;
     ubitmap_set_bit(&b11, 1);

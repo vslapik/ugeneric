@@ -395,7 +395,7 @@ static ugeneric_t _parse_string(const char **str)
     // Step over opening quote.
     *str += 1;
 
-    // Count string len skipping escape characters.
+    // Calculate string length skipping escape characters.
     while ((**str != delim) && **str)
     {
         if (**str == '\\')
@@ -466,7 +466,7 @@ static ugeneric_t _parse_number(const char **str)
         g = G_INT(l);
         if (errno == ERANGE && **str != '-')
         {
-            // Tooken looks like a huge positive integer number
+            // Token looks like a huge positive integer number
             // which doesn't fit to long int, let's try to parse
             // it as size_t.
             errno = 0;

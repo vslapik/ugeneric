@@ -7,7 +7,7 @@
 #include "string_utils.h"
 
 /*
- * Split string to a vector, makes copies of substrings,
+ * Split string to a vector, make copies of substrings,
  * vector is owner of these substrings.
  */
 uvector_t *ustring_split(const char *str, const char *sep)

@@ -3,9 +3,9 @@
 #include "mem.h"
 #include "htbl.h"
 
-#define HTBL_SCALE_FACTOR 2
-#define HTBL_INITIAL_NUM_OF_BUCKETS 32
-#define REHASH_THRESHOLD (3.0)/(4.0)
+#define UHTBL_SCALE_FACTOR 2
+#define UHTBL_INITIAL_NUM_OF_BUCKETS 32
+#define UHTBL_REHASH_THRESHOLD (3.0)/(4.0)
 
 struct uhtbl_record {
     ugeneric_t k;
@@ -136,7 +136,7 @@ static void _resize(uhtbl_t *h)
     uhtbl_t new_table;
 
     memcpy(&new_table, h, sizeof(*h));
-    new_table.number_of_buckets = HTBL_SCALE_FACTOR * h->number_of_buckets;
+    new_table.number_of_buckets = UHTBL_SCALE_FACTOR * h->number_of_buckets;
     new_table.buckets = ucalloc(new_table.number_of_buckets,
                                 sizeof(new_table.buckets[0]));
     new_table.number_of_records = 0;
@@ -161,8 +161,8 @@ static void _resize(uhtbl_t *h)
 uhtbl_t *uhtbl_create(void)
 {
     uhtbl_t *h = umalloc(sizeof(*h));
-    h->buckets = ucalloc(HTBL_INITIAL_NUM_OF_BUCKETS, sizeof(h->buckets[0]));
-    h->number_of_buckets = HTBL_INITIAL_NUM_OF_BUCKETS;
+    h->buckets = ucalloc(UHTBL_INITIAL_NUM_OF_BUCKETS, sizeof(h->buckets[0]));
+    h->number_of_buckets = UHTBL_INITIAL_NUM_OF_BUCKETS;
     h->number_of_records = 0;
     memset(&h->void_handlers, 0, sizeof(h->void_handlers));
     h->is_data_owner = true;
@@ -206,7 +206,7 @@ void uhtbl_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
 
     _put(h, k, v);
 
-    if (_get_load_factor(h) >= REHASH_THRESHOLD)
+    if (_get_load_factor(h) >= UHTBL_REHASH_THRESHOLD)
     {
         _resize(h);
     }
