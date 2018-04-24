@@ -44,6 +44,18 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
     }                                                                       \
 } while (0)
 
+#define UASSERT_LLINT_EQ(i1, i2) do {                                       \
+    long long __i1 = (i1);                                                  \
+    long long __i2 = (i2);                                                  \
+    if (__i1 != __i2)                                                       \
+    {                                                                       \
+        fprintf(stderr, "Assertion failed at %s:%d: %lld != %lld.\n",       \
+                __FILE__, __LINE__, __i1, __i2);                            \
+        utrace_print();                                                     \
+        abort();                                                            \
+    }                                                                       \
+} while (0)
+
 #define UASSERT_SIZE_EQ(sz1, sz2) do {                                      \
     size_t __sz1 = (sz1);                                                   \
     size_t __sz2 = (sz2);                                                   \

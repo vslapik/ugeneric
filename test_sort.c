@@ -229,7 +229,7 @@ void test_count_iversions(void)
     }
     t = ufile_close(fd);
     UASSERT_NO_ERROR(t);
-    UASSERT_INT_EQ(2407905288, count_inversions(f, ARR_LEN(f), NULL));
+    UASSERT_LLINT_EQ(2407905288, count_inversions(f, ARR_LEN(f), NULL));
 }
 
 int main(void)
