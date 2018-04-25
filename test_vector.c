@@ -247,32 +247,34 @@ void test_uvector_api()
     uvector_reserve_capacity(v, 1024);
     uvector_shrink_to_size(v);
     uvector_destroy(v);
-/*
-    v = NULL;
-    UASSERT_UABORTS(uvector_append(v, G_INT(0)));
-    UASSERT_UABORTS(uvector_pop_back(v));
-    UASSERT_UABORTS(uvector_get_cells(v));
-    UASSERT_UABORTS(uvector_get_size(v));
-    UASSERT_UABORTS(uvector_resize(v, 100, G_NULL));
-    UASSERT_UABORTS(uvector_reserve_capacity(v, 100));
-    UASSERT_UABORTS(uvector_get_capacity(v));
-    UASSERT_UABORTS(uvector_is_empty(v));
-    UASSERT_UABORTS(uvector_swap(v, 1, 2));
-    UASSERT_UABORTS(uvector_insert_at(v, 1, G_INT(100)));
-    UASSERT_UABORTS(uvector_get_at(v, 1));
-    UASSERT_UABORTS(uvector_set_at(v, 1, G_INT(0)));
 
-    v = uvector_create_with_size(0, G_NULL);
-    UASSERT_UABORTS(uvector_get_at(v, 1));
-    UASSERT_UABORTS(uvector_set_at(v, 1, G_INT(0)));
+#ifdef __unix__
+    // Check asserts.
+    UASSERT_ABORTS(uvector_append(NULL, G_INT(0)));
+    UASSERT_ABORTS(uvector_pop_back(NULL));
+    UASSERT_ABORTS(uvector_get_cells(NULL));
+    UASSERT_ABORTS(uvector_get_size(NULL));
+    UASSERT_ABORTS(uvector_resize(NULL, 100, G_NULL()));
+    UASSERT_ABORTS(uvector_reserve_capacity(NULL, 100));
+    UASSERT_ABORTS(uvector_get_capacity(NULL));
+    UASSERT_ABORTS(uvector_is_empty(NULL));
+    UASSERT_ABORTS(uvector_swap(NULL, 1, 2));
+    UASSERT_ABORTS(uvector_insert_at(NULL, 1, G_INT(100)));
+    UASSERT_ABORTS(uvector_get_at(NULL, 1));
+    UASSERT_ABORTS(uvector_set_at(NULL, 1, G_INT(0)));
+    uvector_destroy(NULL);
 
-    uvector_resize(v, 100, G_NULL);
-    UASSERT_UABORTS(uvector_swap(v, 150, 250));
-    UASSERT_UABORTS(uvector_swap(v, 50, 250));
-    UASSERT_UABORTS(uvector_insert_at(v, 500, G_INT(400)));
+    v = uvector_create_with_size(0, G_NULL());
+    UASSERT_ABORTS(uvector_get_at(v, 1));
+    UASSERT_ABORTS(uvector_set_at(v, 1, G_INT(0)));
 
+    uvector_resize(v, 100, G_NULL());
+    UASSERT_ABORTS(uvector_swap(v, 150, 250));
+    UASSERT_ABORTS(uvector_swap(v, 50, 250));
+    UASSERT_ABORTS(uvector_insert_at(v, 500, G_INT(400)));
     uvector_destroy(v);
-    */
+#endif
+
 }
 
 int cmp(const char *s1, const char *s2)

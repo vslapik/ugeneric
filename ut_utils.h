@@ -1,10 +1,6 @@
 #ifndef UT_UTILS_H__
 #define UT_UTILS_H__
 
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/resource.h>
-#include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
@@ -68,7 +64,14 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
     }                                                                       \
 } while (0)
 
-#define UASSERT_UABORTS(s) do {                                             \
+#ifdef __unix__
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
+#include <unistd.h>
+
+#define UASSERT_ABORTS(s) do {                                              \
     pid_t pid = fork();                                                     \
     if (pid == 0)                                                           \
     {                                                                       \
@@ -110,6 +113,11 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
                         __FILE__, __LINE__);                                \
                 exit(EXIT_FAILURE);                                         \
             }                                                               \
+            else                                                            \
+            {                                                               \
+                printf("'%s' expectedly aborted execution at %s:%u.\n",     \
+                       #s, __FILE__, __LINE__);                             \
+            }                                                               \
         }                                                                   \
     }                                                                       \
     else                                                                    \
@@ -119,5 +127,8 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
         exit(EXIT_FAILURE);                                                 \
     }                                                                       \
 } while (0)
+#else
+#define UASSERT_ABORTS(s) (void)s;
+#endif // __unix__
 
 #endif
