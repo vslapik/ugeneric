@@ -1,9 +1,9 @@
 #ifndef UUASSERTS_H__
 #define UUASSERTS_H__
 
+#include "backtrace.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "backtrace.h"
 
 #ifdef ENABLE_UASSERT_INPUT
     #define UASSERT_INPUT(cond) do {                                        \

@@ -1,13 +1,11 @@
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
 #include "generic.h"
+
 #include "dict.h"
-#include "vector.h"
-#include "mem.h"
-#include "asserts.h"
 #include "file_utils.h"
+#include "mem.h"
 #include "ut_utils.h"
+#include "vector.h"
+#include <limits.h>
 
 void test_types(void)
 {

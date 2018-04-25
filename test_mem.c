@@ -1,9 +1,9 @@
-#include <stdio.h>
-#include <limits.h>
 #include "mem.h"
-#include "vector.h"
+
 #include "string_utils.h"
 #include "ut_utils.h"
+#include "vector.h"
+#include <limits.h>
 
 /* to disable linux overcommit "sysctl vm.overcommit_memory=2" */
 

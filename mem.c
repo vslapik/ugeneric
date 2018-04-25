@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include "generic.h"
 #include "mem.h"
+#include "asserts.h"
+#include "generic.h"
 
 static bool _default_oom_handler(void *ctx)
 {

@@ -1,7 +1,7 @@
-#include <stdlib.h>
-#include <stdbool.h>
-#include "vector.h"
 #include "stack.h"
+
+#include "asserts.h"
+#include "vector.h"
 
 #define STACK_INITIAL_CAPACITY 16
 

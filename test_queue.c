@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "ut_utils.h"
 #include "queue.h"
+
+#include "asserts.h"
+#include "ut_utils.h"
 
 int main(void)
 {

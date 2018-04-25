@@ -1,10 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "vector.h"
+
+#include "math.h"
 #include "mem.h"
 #include "string_utils.h"
 #include "ut_utils.h"
-#include "math.h"
 
 typedef struct {
     char *name;

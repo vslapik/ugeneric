@@ -1,13 +1,12 @@
 #ifndef UT_UTILS_H__
 #define UT_UTILS_H__
 
-#include <errno.h>
-#include <string.h>
-#include <stdbool.h>
+#include "asserts.h"
+#include "backtrace.h"
+#include "dict.h"
 #include "generic.h"
 #include "vector.h"
-#include "dict.h"
-#include "backtrace.h"
+#include <errno.h>
 
 ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable);
 ugeneric_t gen_random_vector(int depth, bool verbose);

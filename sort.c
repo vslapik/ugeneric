@@ -1,7 +1,7 @@
-#include <string.h>
-#include <stdlib.h>
-#include "mem.h"
 #include "sort.h"
+
+#include "asserts.h"
+#include "mem.h"
 
 static size_t _insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
 static size_t _merge(ugeneric_t *lbase, size_t lsize, ugeneric_t *rbase,

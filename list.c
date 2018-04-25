@@ -1,7 +1,5 @@
-#include <stdlib.h>
-#include <string.h>
-#include "mem.h"
 #include "list.h"
+#include "mem.h"
 
 /* head->[e{0}]->[e{1}]-> ... >[e{size-2}]->[e{size-1}]->NULL  */
 

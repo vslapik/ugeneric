@@ -1,11 +1,9 @@
-#include <stdlib.h>
-#include <string.h>
-#include "generic.h"
-#include "mem.h"
-#include "dsu.h"
-#include "vector.h"
-#include "list.h"
 #include "graph.h"
+
+#include "dsu.h"
+#include "list.h"
+#include "mem.h"
+#include "vector.h"
 
 struct ugraph_opaq {
     uvector_t *nodes; // adj lists

@@ -1,7 +1,7 @@
-#include <stdlib.h>
-#include <string.h>
-#include "mem.h"
 #include "htbl.h"
+
+#include "asserts.h"
+#include "mem.h"
 
 #define UHTBL_SCALE_FACTOR 2
 #define UHTBL_INITIAL_NUM_OF_BUCKETS 32

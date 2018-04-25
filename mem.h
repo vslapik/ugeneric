@@ -1,10 +1,10 @@
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-
 #ifndef UMEM_H__
 #define UMEM_H__
+
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef bool (*oom_handler_t)(void *data);
 void libugeneric_set_oom_handler(oom_handler_t handler, void *ctx);

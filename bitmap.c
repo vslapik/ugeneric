@@ -1,9 +1,5 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "generic.h"
 #include "bitmap.h"
+#include "asserts.h"
 
 static void _flip_range(void *a, size_t l, size_t r)
 {

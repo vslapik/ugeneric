@@ -1,10 +1,10 @@
-#include <stdlib.h>
-#include <stddef.h>
-#include <inttypes.h>
-#include "stack.h"
-#include "mem.h"
 #include "bst.h"
+
+#include "asserts.h"
+#include "mem.h"
+#include "stack.h"
 #include "string_utils.h"
+#include <inttypes.h>
 
 typedef enum {
     UBST_NODE_BLACK,

@@ -1,14 +1,18 @@
 #ifndef UGENERIC_H__
 #define UGENERIC_H__
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stddef.h>
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
-#include "mem.h"
 #include "asserts.h"
+#include "mem.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef enum {
     G_ERROR_T   = 0,    // Error object.

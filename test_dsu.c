@@ -1,5 +1,7 @@
 #include "dsu.h"
 
+#include "asserts.h"
+
 int main(void)
 {
     udsu_t *d = udsu_create(10);

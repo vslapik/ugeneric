@@ -1,13 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-#include "mem.h"
 #include "dict.h"
-#include "vector.h"
-#include "string_utils.h"
+
 #include "file_utils.h"
+#include "mem.h"
+#include "string_utils.h"
 #include "ut_utils.h"
+#include "vector.h"
 #include "vector.h"
 
 void test_udict_pop(udict_backend_t backend)

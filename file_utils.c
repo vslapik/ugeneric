@@ -1,8 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include "mem.h"
 #include "file_utils.h"
+
+#include "asserts.h"
+#include "mem.h"
 
 struct ufile_reader_opaq {
     FILE *file;

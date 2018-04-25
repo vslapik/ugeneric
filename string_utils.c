@@ -1,10 +1,9 @@
-#include <stdarg.h>
-#include <string.h>
-#include <stdlib.h>
-#include "vector.h"
-#include "mem.h"
-#include "asserts.h"
 #include "string_utils.h"
+
+#include "asserts.h"
+#include "mem.h"
+#include "vector.h"
+#include <stdarg.h>
 
 /*
  * Split string to a vector, make copies of substrings,

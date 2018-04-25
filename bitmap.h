@@ -1,12 +1,11 @@
 #ifndef UBITMAP_H__
 #define UBITMAP_H__
 
-#include <stddef.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdint.h>
-
 #include "mem.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
 /* MSB0 bit numbering, rfc1166 */
 static inline void *ubitmap_allocate(size_t len)               {return ucalloc(len / 8 + (bool)(len % 8), 1);              }

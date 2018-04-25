@@ -36,7 +36,7 @@ test_fuzz: $(lib) ut_utils.c test_fuzz.c
 
 .PHONY: clean
 clean:
-	$(RM) *.o $(lib) tags core.* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s test_fuzz
+	$(RM) *.o $(lib) tags core* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s test_fuzz
 
 check_%: test_%
 	@printf "====================[ %-12s ]====================\n"  $*

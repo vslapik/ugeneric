@@ -1,7 +1,7 @@
-#include <stdlib.h>
-#include "generic.h"
-#include "mem.h"
 #include "queue.h"
+
+#include "asserts.h"
+#include "mem.h"
 
 /* out <-- [h][e][e][...][e][e][t] <-- in */
 

@@ -1,14 +1,13 @@
-#include <string.h>
-#include <time.h>
-#include <ctype.h>
-#include <limits.h>
-#include <inttypes.h>
-#include <errno.h>
 #include "generic.h"
-#include "mem.h"
-#include "vector.h"
+
 #include "dict.h"
 #include "string_utils.h"
+#include "vector.h"
+#include <ctype.h>
+#include <errno.h>
+#include <inttypes.h>
+#include <limits.h>
+#include <time.h>
 
 static ugeneric_t _parse_item(const char **str);
 

@@ -1,4 +1,6 @@
-#include "generic.h"
+#ifndef USTRUCT_H__
+#define USTRUCT_H__
+
 #include "dict.h"
 #include "vector.h"
 
@@ -18,3 +20,4 @@ ugeneric_t ustruct_create_from_dict(const udict_t *d, size_t struct_size,
 void ustruct_destroy_by_descriptor(void *p,
                                    const ustruct_data_descriptor_t *sdd);
 
+#endif

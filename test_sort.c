@@ -1,13 +1,10 @@
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
 #include "mem.h"
-#include "sort.h"
-#include "vector.h"
-#include "generic.h"
+
 #include "file_utils.h"
+#include "generic.h"
+#include "sort.h"
 #include "ut_utils.h"
+#include "vector.h"
 
 void print_array(ugeneric_t *base, size_t nmemb);
 typedef void (*sort_func)(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);

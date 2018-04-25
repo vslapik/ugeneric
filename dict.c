@@ -1,10 +1,9 @@
-#include <stdlib.h>
-#include <string.h>
-#include "generic.h"
-#include "mem.h"
 #include "dict.h"
-#include "htbl.h"
+
+#include "asserts.h"
 #include "bst.h"
+#include "htbl.h"
+#include "mem.h"
 #include "string_utils.h"
 
 static const udict_vtable_t _uhtbl_vtable = {

@@ -1,11 +1,10 @@
-#ifndef UFILE_UTIL_H__
-#define UFILE_UTIL_H__
+#ifndef UFILE_UTILS_H__
+#define UFILE_UTILS_H__
 
-#include <string.h>
-#include <errno.h>
 #include "generic.h"
 #include "string_utils.h"
 #include "vector.h"
+#include <errno.h>
 
 #define IO_ERROR_MSG "I/O error at %s:%u:%s(): %s."
 #define G_ERROR_IO G_ERROR(ustring_fmt(IO_ERROR_MSG, __FILE__, __LINE__, __func__, strerror(errno)))

@@ -2,7 +2,6 @@
 #define USTRING_UTILS_H__
 
 #include "vector.h"
-#include "mem.h"
 
 uvector_t *ustring_split(const char *str, const char *sep);
 char *ustring_replace_char(const char *str, char from, char to);

@@ -1,9 +1,8 @@
-#include <stdio.h>
-#include <string.h>
 #include "stack.h"
+
 #include "asserts.h"
-#include "ut_utils.h"
 #include "string_utils.h"
+#include "ut_utils.h"
 
 #define N 129
 

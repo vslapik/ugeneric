@@ -1,4 +1,6 @@
 #include "struct.h"
+
+#include "asserts.h"
 #include "string_utils.h"
 
 struct _array_placeholder {

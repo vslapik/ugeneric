@@ -1,4 +1,3 @@
-#include <limits.h>
 #include "ut_utils.h"
 #include "string_utils.h"
 

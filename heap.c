@@ -1,9 +1,10 @@
-#include <stddef.h>
-#include <inttypes.h>
 #include "heap.h"
-#include "vector.h"
+
+#include "asserts.h"
 #include "mem.h"
 #include "string_utils.h"
+#include "vector.h"
+#include <inttypes.h>
 
 #define HEAP_INITIAL_CAPACITY 16
 

@@ -3,20 +3,21 @@ extern "C" {
 #endif
 
 #include "generic.h"
-#include "dict.h"
-#include "vector.h"
-#include "list.h"
-#include "htbl.h"
-#include "dsu.h"
-#include "heap.h"
-#include "bst.h"
-#include "sort.h"
-#include "heap.h"
-#include "queue.h"
-#include "mem.h"
+
 #include "bitmap.h"
-#include "string_utils.h"
+#include "bst.h"
+#include "dict.h"
+#include "dsu.h"
 #include "file_utils.h"
+#include "heap.h"
+#include "htbl.h"
+#include "list.h"
+#include "mem.h"
+#include "queue.h"
+#include "set.h"
+#include "sort.h"
+#include "string_utils.h"
+#include "vector.h"
 
 #if defined(__cplusplus)
 }

@@ -1,11 +1,9 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include "ut_utils.h"
-#include "mem.h"
 #include "bst.h"
-#include "string_utils.h"
+
 #include "file_utils.h"
+#include "mem.h"
+#include "string_utils.h"
+#include "ut_utils.h"
 #include "vector.h"
 
 const char *inorder_keys = "[-311, 0, 1, 2, 15, 42, 100, 123, 140, 143, 144, 145, 146, 150, 1000, 2000, 3000, 4000]";

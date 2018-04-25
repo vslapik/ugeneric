@@ -1,7 +1,6 @@
 #ifndef USET_H__
 #define USET_H__
 
-#include <stdio.h>
 #include "dict.h"
 
 typedef struct {

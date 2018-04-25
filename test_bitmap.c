@@ -1,7 +1,7 @@
-#include <stdbool.h>
-#include "ut_utils.h"
 #include "bitmap.h"
+
 #include "mem.h"
+#include "ut_utils.h"
 
 #define CHECK_BITMAP(bmp, len, as_string) do {              \
     char *__s = ubitmap_as_str(bmp, len);                   \

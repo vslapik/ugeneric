@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "heap.h"
+
+#include "asserts.h"
 #include "ut_utils.h"
 
 void test_uheap_api(void)
