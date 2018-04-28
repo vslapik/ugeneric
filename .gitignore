@@ -11,6 +11,7 @@ tags
 *.s
 *.i
 massif.out.*
+default.profraw
 
 test_bitmap
 test_bst

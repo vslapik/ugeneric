@@ -896,5 +896,5 @@ int ugeneric_random_from_range(int l, int h)
     }
 
     /* TODO: quality of this randomness is an open question. */
-    return l + rand() / ((double)RAND_MAX / (h - l + 1));
+    return l + (int)(rand() / ((double)RAND_MAX / (h - l + 1)));
 }

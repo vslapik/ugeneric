@@ -247,7 +247,7 @@ void test_uvector_api()
     uvector_shrink_to_size(v);
     uvector_destroy(v);
 
-#ifdef __unix__
+#if defined(__unix__) && defined(ENABLE_UASSERT_INPUT)
     // Check asserts.
     UASSERT_ABORTS(uvector_append(NULL, G_INT(0)));
     UASSERT_ABORTS(uvector_pop_back(NULL));
@@ -312,13 +312,13 @@ void test_uvector_compare(void)
     UASSERT(cmp("[3, 2, 3]", "[1, 2, 3]") > 0);
 }
 
-
+/*
 double f(double x, void *p)
 {
     uvector_t *v = p;
     return G_AS_REAL(uvector_get_at(v, x));
 }
-/*
+
 void test_gnuplot(void)
 {
 #include <gsl/gsl_math.h>
