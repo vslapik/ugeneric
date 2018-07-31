@@ -83,6 +83,31 @@ char *ustring_remove_char(const char *str, char remove)
     return out;
 }
 
+char *ustring_insert_char(const char *str, size_t pos, char insert)
+{
+    char *t, *out = NULL;
+    size_t len;
+    size_t i = 0;
+
+    UASSERT_INPUT(str);
+    len = strlen(str);
+    UASSERT_INPUT(pos <= len);
+
+    t = out = umalloc(len + 2);
+    while (*str)
+    {
+        if (i++ != pos)
+        {
+            *t = *str++;
+        }
+        t++;
+    }
+    out[pos] = insert;
+    out[len + 1] = '\0';
+
+    return out;
+}
+
 /*
  * Analog of POSIX strdup().
  */

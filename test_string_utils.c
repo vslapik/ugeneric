@@ -96,6 +96,27 @@ void test_ustring_remove_char(void)
     ufree(out);
 }
 
+void test_ustring_insert_char(void)
+{
+    char *out;
+
+    out = ustring_insert_char("123", 0, 'a');
+    UASSERT_STR_EQ(out, "a123");
+    ufree(out);
+
+    out = ustring_insert_char("123", 3, 'a');
+    UASSERT_STR_EQ(out, "123a");
+    ufree(out);
+
+    out = ustring_insert_char("123", 2, 'a');
+    UASSERT_STR_EQ(out, "12a3");
+    ufree(out);
+
+    out = ustring_insert_char("", 0, 'a');
+    UASSERT_STR_EQ(out, "a");
+    ufree(out);
+}
+
 void test_ustring_starts_with(void)
 {
     typedef struct {
@@ -130,6 +151,7 @@ int main(void)
     test_ustring_fmt();
     test_ustring_replace_char();
     test_ustring_remove_char();
+    test_ustring_insert_char();
     test_ustring_starts_with();
 
     return EXIT_SUCCESS;
