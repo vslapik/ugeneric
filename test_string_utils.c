@@ -75,6 +75,27 @@ void test_ustring_replace_char(void)
     ufree(out);
 }
 
+void test_ustring_remove_char(void)
+{
+    char *out;
+
+    out = ustring_remove_char("123", '1');
+    UASSERT_STR_EQ(out, "23");
+    ufree(out);
+
+    out = ustring_remove_char("---", '-');
+    UASSERT_STR_EQ(out, "");
+    ufree(out);
+
+    out = ustring_remove_char("", '-');
+    UASSERT_STR_EQ(out, "");
+    ufree(out);
+
+    out = ustring_remove_char("abcdef\n", '\n');
+    UASSERT_STR_EQ(out, "abcdef");
+    ufree(out);
+}
+
 void test_ustring_starts_with(void)
 {
     typedef struct {
@@ -108,6 +129,7 @@ int main(void)
     test_ustring_split();
     test_ustring_fmt();
     test_ustring_replace_char();
+    test_ustring_remove_char();
     test_ustring_starts_with();
 
     return EXIT_SUCCESS;

@@ -370,7 +370,7 @@ static ugeneric_t _parse_memchunk(const char **str)
 
     if (len % 2)
     {
-        return G_ERROR(ustring_dup("invalid memchunk size"));
+        return G_ERROR(ustring_dup("invalid size"));
     }
 
     char *m = umalloc(len / 2);

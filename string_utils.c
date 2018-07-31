@@ -62,6 +62,27 @@ char *ustring_replace_char(const char *str, char from, char to)
     return out;
 }
 
+char *ustring_remove_char(const char *str, char remove)
+{
+    char *t, *out = NULL;
+
+    if (str)
+    {
+        t = out = umalloc(strlen(str) + 1);
+        while (*str)
+        {
+            if (*str != remove)
+            {
+                *t++ = *str;
+            }
+            str++;
+        }
+        *t = '\0';
+    }
+
+    return out;
+}
+
 /*
  * Analog of POSIX strdup().
  */
