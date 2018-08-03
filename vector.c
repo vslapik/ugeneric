@@ -441,6 +441,19 @@ uvector_t *uvector_get_slice(const uvector_t *v, size_t begin, size_t end,
     return slice;
 }
 
+bool uvector_contains(const uvector_t *v, ugeneric_t e)
+{
+    for (size_t i = 0; i < v->size; i++)
+    {
+        if (ugeneric_compare(v->cells[i], e, v->void_handlers.cmp) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs, FILE *out)
 {
     fprintf(out,

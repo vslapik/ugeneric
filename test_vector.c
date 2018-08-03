@@ -247,6 +247,20 @@ void test_uvector_api()
     uvector_shrink_to_size(v);
     uvector_destroy(v);
 
+    v = uvector_create();
+    uvector_append(v, G_STR(ustring_dup("1")));
+    uvector_append(v, G_INT(42));
+    uvector_append(v, G_BOOL(false));
+    UASSERT(uvector_contains(v, G_STR("1")));
+    UASSERT(uvector_contains(v, G_CSTR("1")));
+    UASSERT(uvector_contains(v, G_BOOL(false)));
+    UASSERT(uvector_contains(v, G_INT(42)));
+    UASSERT(!uvector_contains(v, G_STR("2")));
+    UASSERT(!uvector_contains(v, G_BOOL(true)));
+    UASSERT(!uvector_contains(v, G_INT(100)));
+    uvector_destroy(v);
+
+
 #if defined(__unix__) && defined(ENABLE_UASSERT_INPUT)
     // Check asserts.
     UASSERT_ABORTS(uvector_append(NULL, G_INT(0)));
