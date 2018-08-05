@@ -788,6 +788,7 @@ ubst_iterator_t *ubst_iterator_create(const ubst_t *b)
     ubst_iterator_t *bi = umalloc(sizeof(*bi));
     bi->bst = b;
     bi->stack = ustack_create();
+    ustack_drop_data_ownership(bi->stack);
     bi->node = b->root;
     return bi;
 }

@@ -327,6 +327,24 @@ void test_ubst_iterator(void)
 
     ubst_iterator_destroy(bi);
     ubst_destroy(b);
+
+    //
+    ubst_t *b2 = ubst_create();
+    ubst_put(b2, G_INT(6), G_STR(ustring_dup("6")));
+    ubst_put(b2, G_INT(5), G_STR(ustring_dup("5")));
+    ubst_put(b2, G_INT(4), G_STR(ustring_dup("4")));
+    ubst_put(b2, G_INT(3), G_STR(ustring_dup("3")));
+    ubst_put(b2, G_INT(2), G_STR(ustring_dup("2")));
+    ubst_put(b2, G_INT(1), G_STR(ustring_dup("1")));
+    ubst_put(b2, G_INT(0), G_STR(ustring_dup("0")));
+    ubst_iterator_t *bi2 = ubst_iterator_create(b2);
+
+    UASSERT_STR_EQ(G_AS_STR(ubst_iterator_get_next(bi2).v), "0");
+    UASSERT_STR_EQ(G_AS_STR(ubst_iterator_get_next(bi2).v), "1");
+    UASSERT_STR_EQ(G_AS_STR(ubst_iterator_get_next(bi2).v), "2");
+
+    ubst_iterator_destroy(bi2);
+    ubst_destroy(b2);
 }
 
 void test_rb_put(void)
@@ -385,7 +403,6 @@ void test_bst_cmp(void)
 */
 int main(int argc, char **argv)
 {
-
     if (argc == 2)
     {
         if (!strcmp(argv[1], "rb"))
