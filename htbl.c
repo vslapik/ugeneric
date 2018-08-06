@@ -41,8 +41,8 @@ static void _destroy_buckets(uhtbl_t *h)
             uhtbl_record_t *hr_next = hr->next;
             if (h->is_data_owner)
             {
-                ugeneric_destroy(hr->k, h->void_handlers.dtr);
-                ugeneric_destroy(hr->v, h->void_handlers.dtr);
+                ugeneric_destroy_v(hr->k, h->void_handlers.dtr);
+                ugeneric_destroy_v(hr->v, h->void_handlers.dtr);
             }
             ufree(hr);
             hr = hr_next;
@@ -90,7 +90,7 @@ static uhtbl_record_t **_find_by_key(const uhtbl_t *h, ugeneric_t k)
     hr = &h->buckets[ugeneric_hash(k, h->hasher) % h->number_of_buckets];
     while (*hr)
     {
-        if (ugeneric_compare((*hr)->k, k, h->key_cmp) == 0)
+        if (ugeneric_compare_v((*hr)->k, k, h->key_cmp) == 0)
         {
             break;
         }
@@ -114,8 +114,8 @@ void _put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
         // Update existing.
         if (h->is_data_owner)
         {
-            ugeneric_destroy((*hr)->k, h->void_handlers.dtr);
-            ugeneric_destroy((*hr)->v, h->void_handlers.dtr);
+            ugeneric_destroy_v((*hr)->k, h->void_handlers.dtr);
+            ugeneric_destroy_v((*hr)->v, h->void_handlers.dtr);
         }
         (*hr)->k = k;
         (*hr)->v = v;
@@ -233,7 +233,7 @@ ugeneric_t uhtbl_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t vdef)
     {
         uhtbl_record_t *del = *hr;
         ret = del->v;
-        ugeneric_destroy(del->k, h->void_handlers.dtr);
+        ugeneric_destroy_v(del->k, h->void_handlers.dtr);
         *hr = (*hr)->next;
         ufree(del);
         h->number_of_records -= 1;

@@ -138,11 +138,10 @@ void test_struct_convertor(void)
     UASSERT_NO_ERROR(__);
     ustruct_destroy_by_descriptor(G_AS_PTR(__), sdd3);
 
-    ugeneric_destroy(empty, NULL);
-    ugeneric_destroy(g, NULL);
-    ugeneric_destroy(g1, NULL);
+    ugeneric_destroy(empty);
+    ugeneric_destroy(g);
+    ugeneric_destroy(g1);
 }
-
 
 int main(void)
 {

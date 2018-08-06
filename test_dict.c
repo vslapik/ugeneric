@@ -67,11 +67,11 @@ void test_udict_put(udict_backend_t backend)
     ugeneric_t k = G_STR(ustring_dup("k"));
     ugeneric_t v = G_STR(ustring_dup("v"));
 
-    udict_put(d, ugeneric_copy(k, NULL), ugeneric_copy(v, NULL));
-    udict_put(d, ugeneric_copy(k, NULL), ugeneric_copy(v, NULL));
+    udict_put(d, ugeneric_copy(k), ugeneric_copy(v));
+    udict_put(d, ugeneric_copy(k), ugeneric_copy(v));
 
-    ugeneric_destroy(k, NULL);
-    ugeneric_destroy(v, NULL);
+    ugeneric_destroy(k);
+    ugeneric_destroy(v);
     udict_destroy(d);
 }
 

@@ -61,7 +61,7 @@ void uheap_push(uheap_t *h, ugeneric_t e)
     void_cmp_t cmp = uvector_get_void_comparator(h->data);
     while (i != ROOT_IDX)
     {
-        if (h->type * ugeneric_compare(a[i], a[PARENT_IDX(i)], cmp) < 0)
+        if (h->type * ugeneric_compare_v(a[i], a[PARENT_IDX(i)], cmp) < 0)
         {
             ugeneric_swap(&a[i], &a[PARENT_IDX(i)]);
             i = PARENT_IDX(i);
@@ -97,7 +97,7 @@ ugeneric_t uheap_pop(uheap_t *h)
             if (r < n)
             {
                 t = LCHILD_IDX(i);
-                if (h->type * ugeneric_compare(a[l], a[r], cmp) > 0)
+                if (h->type * ugeneric_compare_v(a[l], a[r], cmp) > 0)
                 {
                     t = RCHILD_IDX(i);
                 }
@@ -106,7 +106,7 @@ ugeneric_t uheap_pop(uheap_t *h)
             {
                 t = LCHILD_IDX(i);
             }
-            if (h->type * ugeneric_compare(a[i], a[t], cmp) > 0)
+            if (h->type * ugeneric_compare_v(a[i], a[t], cmp) > 0)
             {
                 ugeneric_swap(&a[i], &a[t]);
                 i = t;

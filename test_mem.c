@@ -59,7 +59,7 @@ void test_memchunk(void)
     umemchunk_t t = {.data = data, .size = 5};
     ugeneric_t gm = G_MEMCHUNK(t.data, t.size);
     uvector_append(v, gm);
-    uvector_append(v, ugeneric_copy(gm, NULL));
+    uvector_append(v, ugeneric_copy(gm));
     uvector_append(v, G_VECTOR(uvector_copy(v)));
 
     char *str = uvector_as_str(v);

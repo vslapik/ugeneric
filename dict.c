@@ -224,8 +224,8 @@ udict_t *_dcpy(const udict_t *d, bool deep)
     while (udict_iterator_has_next(di))
     {
         ugeneric_kv_t kv = udict_iterator_get_next(di);
-        ugeneric_t k = deep ? ugeneric_copy(kv.k, cpy) : kv.k;
-        ugeneric_t v = deep ? ugeneric_copy(kv.v, cpy) : kv.v;
+        ugeneric_t k = deep ? ugeneric_copy_v(kv.k, cpy) : kv.k;
+        ugeneric_t v = deep ? ugeneric_copy_v(kv.v, cpy) : kv.v;
         udict_put(copy, k, v);
     }
     udict_iterator_destroy(di);

@@ -100,6 +100,6 @@ void uset_update_from_vector(uset_t *s, uvector_t *v, bool deep)
     for (size_t i = 0; i < size; i++)
     {
         ugeneric_t g = uvector_get_at(v, i);
-        uset_put(s, deep ? ugeneric_copy(g, uvector_get_void_copier(v)) : g);
+        uset_put(s, deep ? ugeneric_copy_v(g, uvector_get_void_copier(v)) : g);
     }
 }

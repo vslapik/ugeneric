@@ -44,7 +44,7 @@ static uvector_t *_vcpy(const uvector_t *v, bool deep)
     {
         for (size_t i = 0; i < v->size; i++)
         {
-            copy->cells[i] = ugeneric_copy(v->cells[i], v->void_handlers.cpy);
+            copy->cells[i] = ugeneric_copy_v(v->cells[i], v->void_handlers.cpy);
         }
     }
     else
@@ -72,7 +72,7 @@ int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp)
     size_t len = MIN(v1->size, v2->size);
     for (size_t i = 0; i < len; i++)
     {
-        diff = ugeneric_compare(v1->cells[i], v2->cells[i], cmp);
+        diff = ugeneric_compare_v(v1->cells[i], v2->cells[i], cmp);
         if (diff)
         {
             break;
@@ -139,7 +139,7 @@ void uvector_destroy(uvector_t *v)
         {
             for (size_t i = 0; i < v->size; i++)
             {
-                ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
+                ugeneric_destroy_v(v->cells[i], v->void_handlers.dtr);
             }
         }
         ufree(v->cells);
@@ -167,7 +167,7 @@ void uvector_set_at(uvector_t *v, size_t i, ugeneric_t e)
 
     if (v->is_data_owner)
     {
-        ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
+        ugeneric_destroy_v(v->cells[i], v->void_handlers.dtr);
     }
     v->cells[i] = e;
 }
@@ -200,7 +200,7 @@ void uvector_resize(uvector_t *v, size_t new_size, ugeneric_t value)
     {
         for (size_t i = new_size; i < v->size; i++)
         {
-            ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
+            ugeneric_destroy_v(v->cells[i], v->void_handlers.dtr);
         }
     }
     v->size = new_size;
@@ -266,7 +266,7 @@ void uvector_remove_at(uvector_t *v, size_t i)
 
     if (v->is_data_owner)
     {
-        ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
+        ugeneric_destroy_v(v->cells[i], v->void_handlers.dtr);
     }
     memmove(v->cells + i, v->cells + i + 1, (v->size - i - 1) * sizeof(v->cells[0]));
     v->size--;
@@ -282,7 +282,7 @@ void uvector_clear(uvector_t *v)
         {
             for (size_t i = 0; i < v->size; i++)
             {
-                ugeneric_destroy(v->cells[i], v->void_handlers.dtr);
+                ugeneric_destroy_v(v->cells[i], v->void_handlers.dtr);
             }
         }
     }
@@ -445,7 +445,7 @@ bool uvector_contains(const uvector_t *v, ugeneric_t e)
 {
     for (size_t i = 0; i < v->size; i++)
     {
-        if (ugeneric_compare(v->cells[i], e, v->void_handlers.cmp) == 0)
+        if (ugeneric_compare_v(v->cells[i], e, v->void_handlers.cmp) == 0)
         {
             return true;
         }

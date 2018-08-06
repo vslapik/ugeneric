@@ -142,11 +142,12 @@ typedef size_t (*void_hasher_t)(const void *ptr);
 typedef bool (*ugeneric_kv_iter_t)(ugeneric_t k, ugeneric_t v, void *data);
 typedef void (*ugeneric_sorter_t)(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
 
-ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy);
-int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp);
-void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr);
 void ugeneric_swap(ugeneric_t *g1, ugeneric_t *g2);
 size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher);
+
+ugeneric_t ugeneric_copy_v(ugeneric_t g, void_cpy_t cpy);
+int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp);
+void ugeneric_destroy_v(ugeneric_t g, void_dtr_t dtr);
 
 void ugeneric_error_destroy(ugeneric_t g);
 void ugeneric_error_print(ugeneric_t g);
@@ -167,6 +168,10 @@ int ugeneric_random_from_range(int l, int h);
 char *ugeneric_as_str_v(ugeneric_t g, void_s8r_t void_serializer);
 void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializer);
 int ugeneric_fprint_v(ugeneric_t g, FILE *out, void_s8r_t void_serializer);
+
+#define ugeneric_copy(g) ugeneric_copy_v(g, NULL)
+#define ugeneric_compare(g1, g2) ugeneric_compare_v(g1, g2, NULL)
+#define ugeneric_destroy(g) ugeneric_destroy_v(g, NULL);
 
 #define ugeneric_serialize(g, buf)           ugeneric_serialize_v(g, buf, NULL)
 #define ugeneric_as_str(g)                   ugeneric_as_str_v(g, NULL)

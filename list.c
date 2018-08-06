@@ -44,7 +44,7 @@ static ulist_t *_lcpy(const ulist_t *l, bool deep)
         while (from)
         {
             *to = umalloc(sizeof(**to));
-            (*to)->data = ugeneric_copy(from->data, l->void_handlers.cpy);
+            (*to)->data = ugeneric_copy_v(from->data, l->void_handlers.cpy);
             (*to)->next = NULL;
             to = &(*to)->next;
             from = from->next;
@@ -140,7 +140,7 @@ void ulist_destroy(ulist_t *l)
             while (li)
             {
                 g = li->data;
-                ugeneric_destroy(g, l->void_handlers.dtr);
+                ugeneric_destroy_v(g, l->void_handlers.dtr);
                 li = li->next;
             }
         }
@@ -237,7 +237,7 @@ bool ulist_contains(const ulist_t *l, ugeneric_t e)
     {
         t = li;
         li = li->next;
-        if (ugeneric_compare(t->data, e, l->void_handlers.cmp) == 0)
+        if (ugeneric_compare_v(t->data, e, l->void_handlers.cmp) == 0)
         {
             ret = true;
             break;
@@ -268,7 +268,7 @@ int ulist_compare(const ulist_t *l1, const ulist_t *l2, void_cmp_t cmp)
 
     while (l && r)
     {
-        int diff = ugeneric_compare(l->data, r->data, cmp);
+        int diff = ugeneric_compare_v(l->data, r->data, cmp);
         if (diff == 0)
         {
             l = l->next;

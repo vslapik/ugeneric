@@ -19,7 +19,7 @@ static inline void _skip_whitespaces(const char **str)
     }
 }
 
-int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
+int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
     double f1, f2;
     size_t s1, s2;
@@ -113,7 +113,7 @@ int ugeneric_compare(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
     return ret;
 }
 
-void ugeneric_destroy(ugeneric_t g, void_dtr_t dtr)
+void ugeneric_destroy_v(ugeneric_t g, void_dtr_t dtr)
 {
     double d;
 
@@ -183,7 +183,7 @@ void ugeneric_error_destroy(ugeneric_t g)
     ufree(G_AS_STR(g));
 }
 
-ugeneric_t ugeneric_copy(ugeneric_t g, void_cpy_t cpy)
+ugeneric_t ugeneric_copy_v(ugeneric_t g, void_cpy_t cpy)
 {
     ugeneric_t ret;
     size_t size;
@@ -563,7 +563,7 @@ static ugeneric_t _parse_dict(const char **str)
 
         if (**str != ':')
         {
-            ugeneric_destroy(k, NULL);
+            ugeneric_destroy(k);
             g = G_ERROR(ustring_dup("expected ':' was not found"));
             udict_destroy(d);
             return g;
@@ -573,7 +573,7 @@ static ugeneric_t _parse_dict(const char **str)
 
         if (G_IS_ERROR(v = _parse_item(str)))
         {
-            ugeneric_destroy(k, NULL);
+            ugeneric_destroy(k);
             udict_destroy(d);
             return v;
         }
@@ -657,7 +657,7 @@ ugeneric_t ugeneric_parse(const char *str)
     ugeneric_t g = _parse_item(&pos);
     if (*pos != 0 && !G_IS_ERROR(g))
     {
-        ugeneric_destroy(g, NULL);
+        ugeneric_destroy(g);
         g = G_ERROR(ustring_fmt(err_msg, pos - str, "unexpected end of text"));
     }
     else if (G_IS_ERROR(g))
@@ -688,7 +688,7 @@ bool ugeneric_array_is_sorted(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
     {
         for (size_t i = 0; i < nmemb - 1; i++)
         {
-            if (ugeneric_compare(base[i], base[i + 1], cmp) > 0)
+            if (ugeneric_compare_v(base[i], base[i + 1], cmp) > 0)
             {
                 return false;
             }
@@ -704,7 +704,7 @@ bool ugeneric_array_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t 
         UASSERT_INPUT(base);
 
         size_t i = nmemb - 1;
-        while (i > 0 && ugeneric_compare(base[i - 1], base[i], cmp) >= 0)
+        while (i > 0 && ugeneric_compare_v(base[i - 1], base[i], cmp) >= 0)
         {
            i--;
         }
@@ -715,7 +715,7 @@ bool ugeneric_array_next_permutation(ugeneric_t *base, size_t nmemb, void_cmp_t 
         }
 
         size_t j = nmemb - 1;
-        while (ugeneric_compare(base[j], base[i - 1], cmp) <= 0)
+        while (ugeneric_compare_v(base[j], base[i - 1], cmp) <= 0)
         {
             j--;
         }
@@ -732,7 +732,7 @@ static size_t _bsearch(ugeneric_t base[], size_t l, size_t r,
                        ugeneric_t e, void_cmp_t cmp)
 {
     size_t m = l + (r - l) / 2;
-    int ret = ugeneric_compare(e, base[m], cmp);
+    int ret = ugeneric_compare_v(e, base[m], cmp);
 
     if ((l == r) && ret)
     {

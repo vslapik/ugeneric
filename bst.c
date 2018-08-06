@@ -50,7 +50,7 @@ ubst_node_t **_lookup(ubst_t *b, ubst_node_t **root, ugeneric_t k)
 
     while (*node)
     {
-        int cmp = ugeneric_compare(k, (*node)->k, b->void_handlers.cmp);
+        int cmp = ugeneric_compare_v(k, (*node)->k, b->void_handlers.cmp);
         if (cmp < 0)
         {
             node = &(*node)->left;
@@ -106,7 +106,7 @@ static ubst_node_t **_get_inorder_predecessor(ubst_t *b, ubst_node_t **node)
         ubst_node_t **pos = &b->root;
         while (*pos)
         {
-            int cmp = ugeneric_compare(k, (*pos)->k, b->void_handlers.cmp);
+            int cmp = ugeneric_compare_v(k, (*pos)->k, b->void_handlers.cmp);
             if (cmp < 0)
             {
                 pos = &(*pos)->left;
@@ -140,7 +140,7 @@ static ubst_node_t **_get_inorder_successor(ubst_t *b, ubst_node_t **node)
         ubst_node_t **pos = &b->root;
         while (*pos)
         {
-            int cmp = ugeneric_compare(k, (*pos)->k, b->void_handlers.cmp);
+            int cmp = ugeneric_compare_v(k, (*pos)->k, b->void_handlers.cmp);
             if (cmp < 0)
             {
                 successor = pos;
@@ -168,8 +168,8 @@ void _ubst_nodes_destroy(ubst_t *b, ubst_node_t *node)
         _ubst_nodes_destroy(b, node->right);
         if (b->is_data_owner)
         {
-            ugeneric_destroy(node->k, b->void_handlers.dtr);
-            ugeneric_destroy(node->v, b->void_handlers.dtr);
+            ugeneric_destroy_v(node->k, b->void_handlers.dtr);
+            ugeneric_destroy_v(node->v, b->void_handlers.dtr);
         }
         ufree(node);
     }
@@ -305,8 +305,8 @@ static void _put_not_balanced(ubst_t *b, ugeneric_t k, ugeneric_t v)
     if (*node)
     {
         /* Update case. */
-        ugeneric_destroy((*node)->k, b->void_handlers.dtr);
-        ugeneric_destroy((*node)->v, b->void_handlers.dtr);
+        ugeneric_destroy_v((*node)->k, b->void_handlers.dtr);
+        ugeneric_destroy_v((*node)->v, b->void_handlers.dtr);
         (*node)->k = k;
         (*node)->v = v;
     }
@@ -386,7 +386,7 @@ static void _put_red_black(ubst_t *b, ugeneric_t k, ugeneric_t v)
         }
         g = p;
         p = x;
-        int cmp = ugeneric_compare(k, x->k, b->void_handlers.cmp);
+        int cmp = ugeneric_compare_v(k, x->k, b->void_handlers.cmp);
         if (cmp < 0)
         {
             npos = &x->left;
@@ -402,8 +402,8 @@ static void _put_red_black(ubst_t *b, ugeneric_t k, ugeneric_t v)
         else
         {
             // Found the node to be updated, update and get out of here.
-            ugeneric_destroy(p->k, b->void_handlers.dtr);
-            ugeneric_destroy(p->v, b->void_handlers.dtr);
+            ugeneric_destroy_v(p->k, b->void_handlers.dtr);
+            ugeneric_destroy_v(p->v, b->void_handlers.dtr);
             p->k = k;
             p->v = v;
             break;
@@ -451,7 +451,7 @@ static ugeneric_t _pop_not_balanced(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
     while (*pos)
     {
         /* Look up for the node to be deleted */
-        int cmp = ugeneric_compare(k, (*pos)->k, b->void_handlers.cmp);
+        int cmp = ugeneric_compare_v(k, (*pos)->k, b->void_handlers.cmp);
         if (cmp < 0)
         {
             pos = &(*pos)->left;
@@ -473,7 +473,7 @@ static ugeneric_t _pop_not_balanced(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
             ret = (*pos)->v;
             if (b->is_data_owner)
             {
-                ugeneric_destroy((*pos)->k, b->void_handlers.dtr);
+                ugeneric_destroy_v((*pos)->k, b->void_handlers.dtr);
             }
             b->size -= 1;
 
@@ -599,12 +599,12 @@ int ubst_compare(const ubst_t *b1, const ubst_t *b2, void_cmp_t cmp)
     {
         ugeneric_kv_t kv1 = ubst_iterator_get_next(bi1);
         ugeneric_kv_t kv2 = ubst_iterator_get_next(bi2);
-        diff = ugeneric_compare(kv1.k, kv2.k, cmp);
+        diff = ugeneric_compare_v(kv1.k, kv2.k, cmp);
         if (diff != 0)
         {
             break;
         }
-        diff = ugeneric_compare(kv1.v, kv2.v, cmp);
+        diff = ugeneric_compare_v(kv1.v, kv2.v, cmp);
         if (diff != 0)
         {
             break;

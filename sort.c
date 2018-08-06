@@ -26,14 +26,14 @@ static size_t _hoar_partition(ugeneric_t *base, size_t l, size_t r, void_cmp_t c
     /* Choosing a good pivot is a black magic, use median-of-three pivoting
      * here, attributes to Robert Sedgewick.
      */
-    if (ugeneric_compare(base[m], base[i], cmp) < 0)
+    if (ugeneric_compare_v(base[m], base[i], cmp) < 0)
     {
         ugeneric_swap(base + m, base + i);
     }
-    if (ugeneric_compare(base[j], base[m], cmp) < 0)
+    if (ugeneric_compare_v(base[j], base[m], cmp) < 0)
     {
         ugeneric_swap(base + j, base + m);
-        if (ugeneric_compare(base[m], base[i], cmp) < 0)
+        if (ugeneric_compare_v(base[m], base[i], cmp) < 0)
         {
             ugeneric_swap(base + m, base + i);
         }
@@ -43,8 +43,8 @@ static size_t _hoar_partition(ugeneric_t *base, size_t l, size_t r, void_cmp_t c
     for (;;)
     {
         /* Collapsing walls. */
-        do { i++; } while (ugeneric_compare(p, base[i], cmp) > 0);
-        do { j--; } while (ugeneric_compare(p, base[j], cmp) < 0);
+        do { i++; } while (ugeneric_compare_v(p, base[i], cmp) > 0);
+        do { j--; } while (ugeneric_compare_v(p, base[j], cmp) < 0);
 
         if (i >= j)
         {
@@ -77,7 +77,7 @@ static size_t _insertion_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
     {
         size_t j = i;
         ugeneric_t t = base[i];
-        while (j > 0 && (ugeneric_compare(base[j - 1], t, cmp) > 0))
+        while (j > 0 && (ugeneric_compare_v(base[j - 1], t, cmp) > 0))
         {
             base[j] = base[j - 1];
             inv++;
@@ -98,7 +98,7 @@ static size_t _merge(ugeneric_t *lbase, size_t lsize, ugeneric_t *rbase,
 
     while ((i < lsize) && (j < rsize))
     {
-        if (ugeneric_compare(lbase[i], rbase[j], cmp) <= 0)
+        if (ugeneric_compare_v(lbase[i], rbase[j], cmp) <= 0)
         {
             aux[k++] = lbase[i++];
         }
@@ -186,7 +186,7 @@ void selection_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
             size_t min = i;
             for (size_t j = i + 1; j < nmemb; j++)
             {
-                if (ugeneric_compare(base[min], base[j], cmp) > 0)
+                if (ugeneric_compare_v(base[min], base[j], cmp) > 0)
                 {
                     min = j;
                 }

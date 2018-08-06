@@ -38,17 +38,17 @@ void test_types(void)
     UASSERT(G_AS_MEMCHUNK_DATA(g_memchunk) == m);
     UASSERT(G_AS_MEMCHUNK_SIZE(g_memchunk) == strlen(m));
 
-    ugeneric_t g_integer_copy = ugeneric_copy(g_integer, NULL);
-    ugeneric_t g_real_copy = ugeneric_copy(g_real, NULL);
-    ugeneric_t g_string_copy = ugeneric_copy(g_string, NULL);
-    ugeneric_t g_cstring_copy = ugeneric_copy(g_cstring, NULL);
-    ugeneric_t g_size_copy = ugeneric_copy(g_size, NULL);
-    ugeneric_t g_null_copy = ugeneric_copy(g_null, NULL);
-    ugeneric_t g_true_copy = ugeneric_copy(g_true, NULL);
-    ugeneric_t g_false_copy = ugeneric_copy(g_false, NULL);
-    ugeneric_t g_vector_copy = ugeneric_copy(g_vector, NULL);
-    ugeneric_t g_dict_copy = ugeneric_copy(g_dict, NULL);
-    ugeneric_t g_memchunk_copy = ugeneric_copy(g_memchunk, NULL);
+    ugeneric_t g_integer_copy = ugeneric_copy(g_integer);
+    ugeneric_t g_real_copy = ugeneric_copy(g_real);
+    ugeneric_t g_string_copy = ugeneric_copy(g_string);
+    ugeneric_t g_cstring_copy = ugeneric_copy(g_cstring);
+    ugeneric_t g_size_copy = ugeneric_copy(g_size);
+    ugeneric_t g_null_copy = ugeneric_copy(g_null);
+    ugeneric_t g_true_copy = ugeneric_copy(g_true);
+    ugeneric_t g_false_copy = ugeneric_copy(g_false);
+    ugeneric_t g_vector_copy = ugeneric_copy(g_vector);
+    ugeneric_t g_dict_copy = ugeneric_copy(g_dict);
+    ugeneric_t g_memchunk_copy = ugeneric_copy(g_memchunk);
 
     UASSERT(G_IS_INT(g_integer_copy));
     UASSERT(G_IS_REAL(g_real_copy));
@@ -66,43 +66,43 @@ void test_types(void)
     UASSERT(G_AS_MEMCHUNK_DATA(g_memchunk_copy) != m);
     UASSERT(G_AS_MEMCHUNK_SIZE(g_memchunk_copy) == strlen(m));
 
-    UASSERT(ugeneric_compare(g_integer, g_integer_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_real, g_real_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_string, g_string_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_cstring, g_cstring_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_size, g_size_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_null, g_null_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_true, g_true_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_false, g_false_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_vector, g_vector_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_dict, g_dict_copy, NULL) == 0);
-    UASSERT(ugeneric_compare(g_memchunk, g_memchunk_copy, NULL) == 0);
+    UASSERT(ugeneric_compare(g_integer, g_integer_copy) == 0);
+    UASSERT(ugeneric_compare(g_real, g_real_copy) == 0);
+    UASSERT(ugeneric_compare(g_string, g_string_copy) == 0);
+    UASSERT(ugeneric_compare(g_cstring, g_cstring_copy) == 0);
+    UASSERT(ugeneric_compare(g_size, g_size_copy) == 0);
+    UASSERT(ugeneric_compare(g_null, g_null_copy) == 0);
+    UASSERT(ugeneric_compare(g_true, g_true_copy) == 0);
+    UASSERT(ugeneric_compare(g_false, g_false_copy) == 0);
+    UASSERT(ugeneric_compare(g_vector, g_vector_copy) == 0);
+    UASSERT(ugeneric_compare(g_dict, g_dict_copy) == 0);
+    UASSERT(ugeneric_compare(g_memchunk, g_memchunk_copy) == 0);
 
-    UASSERT(ugeneric_compare(g_memchunk, g_integer, NULL) != 0);
+    UASSERT(ugeneric_compare(g_memchunk, g_integer) != 0);
 
-    ugeneric_destroy(g_integer, NULL);
-    ugeneric_destroy(g_real, NULL);
-    ugeneric_destroy(g_string, NULL);
-    ugeneric_destroy(g_cstring, NULL);
-    ugeneric_destroy(g_size, NULL);
-    ugeneric_destroy(g_null, NULL);
-    ugeneric_destroy(g_true, NULL);
-    ugeneric_destroy(g_false, NULL);
-    ugeneric_destroy(g_vector, NULL);
-    ugeneric_destroy(g_dict, NULL);
-    ugeneric_destroy(g_memchunk, NULL);
+    ugeneric_destroy(g_integer);
+    ugeneric_destroy(g_real);
+    ugeneric_destroy(g_string);
+    ugeneric_destroy(g_cstring);
+    ugeneric_destroy(g_size);
+    ugeneric_destroy(g_null);
+    ugeneric_destroy(g_true);
+    ugeneric_destroy(g_false);
+    ugeneric_destroy(g_vector);
+    ugeneric_destroy(g_dict);
+    ugeneric_destroy(g_memchunk);
 
-    ugeneric_destroy(g_integer_copy, NULL);
-    ugeneric_destroy(g_real_copy, NULL);
-    ugeneric_destroy(g_string_copy, NULL);
-    ugeneric_destroy(g_cstring_copy, NULL);
-    ugeneric_destroy(g_size_copy, NULL);
-    ugeneric_destroy(g_null_copy, NULL);
-    ugeneric_destroy(g_true_copy, NULL);
-    ugeneric_destroy(g_false_copy, NULL);
-    ugeneric_destroy(g_vector_copy, NULL);
-    ugeneric_destroy(g_dict_copy, NULL);
-    ugeneric_destroy(g_memchunk_copy, NULL);
+    ugeneric_destroy(g_integer_copy);
+    ugeneric_destroy(g_real_copy);
+    ugeneric_destroy(g_string_copy);
+    ugeneric_destroy(g_cstring_copy);
+    ugeneric_destroy(g_size_copy);
+    ugeneric_destroy(g_null_copy);
+    ugeneric_destroy(g_true_copy);
+    ugeneric_destroy(g_false_copy);
+    ugeneric_destroy(g_vector_copy);
+    ugeneric_destroy(g_dict_copy);
+    ugeneric_destroy(g_memchunk_copy);
 }
 
 void test_generic(void)
@@ -232,7 +232,7 @@ void test_parse(void)
             UASSERT_STR_EQ(out, t->out);
             ufree(out);
             //ugeneric_print(g);
-            ugeneric_destroy(g, NULL);
+            ugeneric_destroy(g);
         }
         else
         {
@@ -265,7 +265,7 @@ void test_large_parse(void)
 
     //ugeneric_print(g);
 
-    ugeneric_destroy(g, NULL);
+    ugeneric_destroy(g);
 }
 
 void test_serialize(void)

@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     char *t1 = ugeneric_as_str(rv);
     printf("Serialization done================ %u ==============================\n", seed);
 
-    ugeneric_t rv_copy = ugeneric_copy(rv, NULL);
+    ugeneric_t rv_copy = ugeneric_copy(rv);
     uvector_sort(G_AS_PTR(rv_copy));
     UASSERT(uvector_is_sorted(G_AS_PTR(rv_copy)));
     printf("Copy is ready ==================== %u ==============================\n", seed);
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     char *t2 = ugeneric_as_str(rv_copy);
     printf("Copy serialization done=========== %u ==============================\n", seed);
 
-    UASSERT(ugeneric_compare(rv, rv_copy, uvector_get_void_comparator(vector)) == 0);
+    UASSERT(ugeneric_compare_v(rv, rv_copy, uvector_get_void_comparator(vector)) == 0);
 
     ugeneric_t g = ugeneric_parse(t2);
     if (G_IS_ERROR(g))
@@ -49,12 +49,12 @@ int main(int argc, char **argv)
     uvector_sort(G_AS_PTR(g));
     UASSERT(uvector_is_sorted(G_AS_PTR(g)));
 
-    UASSERT(ugeneric_compare(rv, g, uvector_get_void_comparator(vector)) == 0);
+    UASSERT(ugeneric_compare_v(rv, g, uvector_get_void_comparator(vector)) == 0);
 
     ufree(t1);
     ufree(t2);
-    ugeneric_destroy(rv_copy, NULL);
-    ugeneric_destroy(rv, NULL);
-    ugeneric_destroy(g, NULL);
+    ugeneric_destroy(rv_copy);
+    ugeneric_destroy(rv);
+    ugeneric_destroy(g);
     printf("Destoyed ========================= %u ==============================\n", seed);
 }
