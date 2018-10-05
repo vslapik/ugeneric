@@ -21,20 +21,19 @@ ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable
 
         switch(gtype)
         {
-            case G_NULL_T:     g = G_NULL(); break;
-            case G_PTR_T:      g = gen_random_void_data(depth - 1, verbose); break;
-            case G_STR_T:      g = gen_random_string(depth, verbose); break;
-            case G_CSTR_T:     break;
-            case G_INT_T:      g = G_INT(ugeneric_random_from_range(-100, 100)); break;
-            case G_REAL_T:     g = G_REAL(ugeneric_random_from_range(-1000 , 1000)/10.0); break;
-            case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(200, 300)); break;
-            case G_BOOL_T:     g = G_BOOL(ugeneric_random_from_range(0, 2)); break;
-            case G_VECTOR_T:   g = gen_random_vector(depth - 1, verbose); break;
-            case G_DICT_T:     g = gen_random_dict(depth - 1, verbose); break;
-            case G_MEMCHUNK_T: g = gen_random_memchunk(depth - 1, verbose); break;
-            default: ;
+            case G_NULL_T:     g = G_NULL();                                              break;
+            case G_PTR_T:      g = gen_random_void_data(depth - 1, verbose);              break;
+            case G_STR_T:      g = gen_random_string(depth, verbose);                     break;
+            case G_CSTR_T:                                                                break;
+            case G_INT_T:      g = G_INT(ugeneric_random_from_range(-100, 100));          break;
+            case G_REAL_T:     g = G_REAL(ugeneric_random_from_range(-1000, 1000)/10.0);  break;
+            case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(200, 300));          break;
+            case G_BOOL_T:     g = G_BOOL(ugeneric_random_from_range(0, 2));              break;
+            case G_VECTOR_T:   g = gen_random_vector(depth - 1, verbose);                 break;
+            case G_DICT_T:     g = gen_random_dict(depth - 1, verbose);                   break;
+            case G_MEMCHUNK_T: g = gen_random_memchunk(depth - 1, verbose);               break;
+            default:                                                                           ;
         }
-
         return g;
     }
     else
@@ -149,13 +148,14 @@ ugeneric_t gen_random_string(int depth, bool verbose)
 
 ugeneric_t gen_random_dict(int depth, bool verbose)
 {
-    udict_backend_t backend = ugeneric_random_from_range(UDICT_BACKEND_DEFAULT + 1, UDICT_BACKENDS_COUNT - 1);
+    udict_backend_t backend = ugeneric_random_from_range(UDICT_BACKEND_DEFAULT + 1, UDICT_BACKEND_MAX - 1);
+    if (backend == UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING) backend = UDICT_BACKEND_HTBL_WITH_CHAINING;
     udict_t *d = udict_create_with_backend(backend);
     udict_set_void_destroyer(d, ufree);
     udict_set_void_comparator(d, _void_cmp);
-    udict_set_void_copier(d, _void_cpy);
+    udict_set_void_copier(d,     _void_cpy);
     udict_set_void_serializer(d, _void_s8r);
-    if (backend == UDICT_BACKEND_HTBL)
+    if (UDICT_ON_HTBL(d))
     {
         udict_set_void_hasher(d, _void_hash);
         udict_set_void_key_comparator(d, _void_cmp);

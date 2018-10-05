@@ -50,12 +50,12 @@ static const udict_iterator_vtable_t _ubst_iterator_vtable = {
 
 static udict_backend_t _default_backend = UDICT_BACKEND_BST_RB;
 //static udict_backend_t _default_backend = UDICT_BACKEND_BST_PLAIN;
-//static udict_backend_t _default_backend = UDICT_BACKEND_HTBL;
+//static udict_backend_t _default_backend = UDICT_BACKEND_HTBL_WITH_CHAINING;
 
 void libugeneric_udict_set_default_backend(udict_backend_t backend)
 {
     UASSERT_INPUT(backend > UDICT_BACKEND_DEFAULT);
-    UASSERT_INPUT(backend < UDICT_BACKENDS_COUNT);
+    UASSERT_INPUT(backend < UDICT_BACKEND_MAX);
     _default_backend = backend;
 }
 
@@ -72,14 +72,18 @@ udict_t *udict_create(void)
 udict_t *udict_create_with_backend(udict_backend_t backend)
 {
     UASSERT_INPUT(backend >= UDICT_BACKEND_DEFAULT);
-    UASSERT_INPUT(backend < UDICT_BACKENDS_COUNT);
+    UASSERT_INPUT(backend < UDICT_BACKEND_MAX);
 
     udict_t *d = umalloc(sizeof(*d));
     d->backend = (backend == UDICT_BACKEND_DEFAULT) ? _default_backend : backend;
     switch (d->backend)
     {
-        case UDICT_BACKEND_HTBL:
-            d->vobj = uhtbl_create();
+        case UDICT_BACKEND_HTBL_WITH_CHAINING:
+            d->vobj = uhtbl_create_with_type(UHTBL_TYPE_CHAINING);
+            d->vtable = &_uhtbl_vtable;
+            break;
+        case UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING:
+            d->vobj = uhtbl_create_with_type(UHTBL_TYPE_OPEN_ADDRESSING);
             d->vtable = &_uhtbl_vtable;
             break;
         case UDICT_BACKEND_BST_PLAIN:
@@ -102,7 +106,8 @@ void udict_destroy(udict_t *d)
 
     switch (d->backend)
     {
-        case UDICT_BACKEND_HTBL:
+        case UDICT_BACKEND_HTBL_WITH_CHAINING:
+        case UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING:
             uhtbl_destroy(d->vobj);
             break;
         case UDICT_BACKEND_BST_PLAIN:
@@ -123,7 +128,8 @@ udict_iterator_t *udict_iterator_create(const udict_t *d)
     di->dict = d;
     switch (d->backend)
     {
-        case UDICT_BACKEND_HTBL:
+        case UDICT_BACKEND_HTBL_WITH_CHAINING:
+        case UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING:
             di->vobj = uhtbl_iterator_create(d->vobj);
             di->vtable = &_uhtbl_iterator_vtable;
             break;
@@ -145,7 +151,8 @@ void udict_iterator_destroy(udict_iterator_t *di)
     {
         switch (di->dict->backend)
         {
-            case UDICT_BACKEND_HTBL:
+            case UDICT_BACKEND_HTBL_WITH_CHAINING:
+            case UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING:
                 uhtbl_iterator_destroy(di->vobj);
                 break;
             case UDICT_BACKEND_BST_PLAIN:
@@ -159,9 +166,6 @@ void udict_iterator_destroy(udict_iterator_t *di)
     }
 }
 
-#define UDICT_ON_BST(d) ((d->backend == UDICT_BACKEND_BST_PLAIN) || \
-                         (d->backend == UDICT_BACKEND_BST_RB))
-
 int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
 {
     int diff;
@@ -173,7 +177,7 @@ int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
         return 0;
     }
 
-    if ((d1->backend == UDICT_BACKEND_HTBL) && (d2->backend == UDICT_BACKEND_HTBL))
+    if (UDICT_ON_HTBL(d1) && (UDICT_ON_HTBL(d2)))
     {
         diff = uhtbl_compare(d1->vobj, d2->vobj, cmp);
     }
@@ -185,19 +189,24 @@ int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
     {
         uvector_t *items1 = udict_get_items(d1, UDICT_KV, false);
         uvector_t *items2 = udict_get_items(d2, UDICT_KV, false);
-        if (d1->backend == UDICT_BACKEND_HTBL)
+        if (UDICT_ON_HTBL(d1))
         {
             uvector_sort(items1);
         }
-        if (d2->backend == UDICT_BACKEND_HTBL)
+        if (UDICT_ON_HTBL(d2))
         {
             uvector_sort(items2);
         }
         diff = uvector_compare(items1, items2, cmp);
+        if (diff != 0)
+        {
+            uvector_fprint(items1, stdout);
+            uvector_fprint(items2, stdout);
+            abort();
+        }
         uvector_destroy(items1);
         uvector_destroy(items2);
     }
-
     return diff;
 }
 
@@ -206,7 +215,7 @@ udict_t *_dcpy(const udict_t *d, bool deep)
     udict_t *copy = udict_create_with_backend(d->backend);
     udict_iterator_t *di = udict_iterator_create(d);
 
-    if (d->backend == UDICT_BACKEND_HTBL)
+    if (UDICT_ON_HTBL(d))
     {
         uhtbl_t *h = (uhtbl_t *)d->vobj;
         uhtbl_t *hc = (uhtbl_t *)copy->vobj;
@@ -248,13 +257,13 @@ void *udict_deep_copy(const udict_t *d)
 void udict_set_void_hasher(udict_t *d, void_hasher_t hasher)
 {
     UASSERT_INPUT(d);
-    UASSERT_INPUT(d->backend == UDICT_BACKEND_HTBL);
+    UASSERT_INPUT(UDICT_ON_HTBL(d));
     uhtbl_set_void_hasher(d->vobj, hasher);
 }
 
 void udict_set_void_key_comparator(udict_t *d, void_cmp_t cmp)
 {
     UASSERT_INPUT(d);
-    UASSERT_INPUT(d->backend == UDICT_BACKEND_HTBL);
+    UASSERT_INPUT(UDICT_ON_HTBL(d));
     uhtbl_set_void_key_comparator(d->vobj, cmp);
 }

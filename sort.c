@@ -181,7 +181,8 @@ void selection_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
     if (nmemb > 1)
     {
         UASSERT_INPUT(base);
-        for (size_t i = 0; i < nmemb - 1; i++) // the very last element intentionally omitted
+        // the very last element is intentionally omitted
+        for (size_t i = 0; i < nmemb - 1; i++)
         {
             size_t min = i;
             for (size_t j = i + 1; j < nmemb; j++)

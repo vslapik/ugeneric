@@ -40,7 +40,7 @@ void test_udict_pop(udict_backend_t backend)
     UASSERT_INT_EQ(udict_get_size(d), 0);
     ufree(G_AS_STR(out));
 
-    UASSERT_STR_EQ(G_AS_STR(udict_pop(d, G_STR("key"), G_STR(""))), "");
+    UASSERT_G_EQ(udict_pop(d, G_STR("key"), G_STR("-")), G_STR("-"));
     UASSERT(udict_is_empty(d));
 
     udict_destroy(d);
@@ -162,15 +162,19 @@ void test_udict_serialize(udict_backend_t backend)
     udict_destroy(d);
 }
 
-void test_singe(udict_backend_t backend)
+void test_single(udict_backend_t backend)
 {
+    ugeneric_t out;
+
     udict_t *d = udict_create_with_backend(backend);
     UASSERT_INT_EQ(udict_get_size(d), 0);
-    ugeneric_t out;
+
     udict_put(d, G_STR(ustring_dup("key")), G_STR(ustring_dup("value")));
+
     out = udict_get(d, G_STR("key"), G_STR(""));
     UASSERT_STR_EQ(G_AS_STR(out), "value");
     UASSERT_INT_EQ(udict_get_size(d), 1);
+
     out = udict_pop(d, G_STR("key"), G_STR(""));
     UASSERT_STR_EQ(G_AS_STR(out), "value");
     UASSERT_INT_EQ(udict_get_size(d), 0);
@@ -210,7 +214,7 @@ void test_udict_iterator(udict_backend_t backend)
     udict_destroy(d);
 
     // More elements ...
-    d = udict_create_with_backend(UDICT_BACKEND_HTBL);
+    d = udict_create_with_backend(UDICT_BACKEND_HTBL_WITH_CHAINING);
     udict_put(d, G_INT(1), G_NULL());
     udict_put(d, G_INT(2), G_NULL());
     udict_put(d, G_INT(3), G_NULL());
@@ -246,29 +250,17 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    int i;
-    //for (int i = 0; i < UDICT_BACKENDS_COUNT; i++)
-    i = UDICT_BACKEND_HTBL;
+    for (int i = 1; i < UDICT_BACKEND_MAX; i++)
     {
+        if (i == UDICT_BACKEND_BST_RB)
+            continue;
         test_udict_iterator(i);
         test_udict_const_str(i);
         test_udict_pop(i);
         test_udict_api(i);
         test_udict_serialize(i);
         test_large_dict(i);
-        test_singe(i);
-        test_udict_put(i);
-    }
-
-    i = UDICT_BACKEND_BST_PLAIN;
-    {
-        test_udict_iterator(i);
-        test_udict_const_str(i);
-        test_udict_pop(i);
-        test_udict_api(i);
-        test_udict_serialize(i);
-        test_large_dict(i);
-        test_singe(i);
+        test_single(i);
         test_udict_put(i);
     }
 }

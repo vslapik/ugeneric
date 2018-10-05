@@ -63,6 +63,20 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
     }                                                                       \
 } while (0)
 
+#define UASSERT_G_EQ(g1, g2) do {                                           \
+    if (ugeneric_compare(g1, g2) != 0)                                      \
+    {                                                                       \
+        char *__s1 = ugeneric_as_str(g1);                                   \
+        char *__s2 = ugeneric_as_str(g2);                                   \
+        fprintf(stderr, "Assertion failed at %s:%d: %s != %s.\n",           \
+                __FILE__, __LINE__, __s1, __s2);                            \
+        utrace_print();                                                     \
+        ufree(__s1);                                                        \
+        ufree(__s2);                                                        \
+        abort();                                                            \
+    }                                                                       \
+} while (0)
+
 #ifdef __unix__
 
 #include <sys/types.h>

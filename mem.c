@@ -121,7 +121,7 @@ static void _reserve_capacity(ubuffer_t *buf, size_t new_capacity)
     UASSERT_INTERNAL(buf->data_size <= buf->capacity);
     if (buf->capacity < new_capacity)
     {
-        new_capacity = MAX(new_capacity * BUFFER_SCALE_FACTOR,
+        new_capacity = MAX(new_capacity * SCALE_FACTOR,
                            BUFFER_INITIAL_CAPACITY);
         void *p = urealloc(buf->data, new_capacity);
         buf->data = p;

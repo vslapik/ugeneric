@@ -4,10 +4,18 @@
 #include "generic.h"
 #include "vector.h"
 
+typedef enum {
+    UHTBL_TYPE_DEFAULT,
+    UHTBL_TYPE_CHAINING,
+    UHTBL_TYPE_OPEN_ADDRESSING,
+    UHTBL_TYPE_MAX, // keep it last
+} uhtbl_type_t;
+
 typedef struct uhtbl_opaq uhtbl_t;
 typedef struct uhtbl_iterator_opaq uhtbl_iterator_t;
 
 uhtbl_t *uhtbl_create(void);
+uhtbl_t *uhtbl_create_with_type(uhtbl_type_t type);
 void uhtbl_set_void_key_comparator(uhtbl_t *h, void_cmp_t cmp);
 void_cmp_t uhtbl_get_void_key_comparator(const uhtbl_t *h);
 void uhtbl_set_void_hasher(uhtbl_t *h, void_hasher_t hasher);
@@ -23,6 +31,7 @@ int uhtbl_compare(const uhtbl_t *h1, const uhtbl_t *h2, void_cmp_t cmp);
 void uhtbl_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v);
 ugeneric_t uhtbl_get(const uhtbl_t *h, ugeneric_t k, ugeneric_t vdef);
 ugeneric_t uhtbl_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t vdef);
+bool uhtbl_remove(uhtbl_t *h, ugeneric_t k);
 bool uhtbl_has_key(const uhtbl_t *h, ugeneric_t k);
 size_t uhtbl_get_size(const uhtbl_t *h);
 bool uhtbl_is_empty(const uhtbl_t *h);

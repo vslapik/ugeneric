@@ -18,7 +18,6 @@ void ufree(void *ptr);
 static inline void *uzalloc(size_t size) {return ucalloc(size, 1);}
 
 #define BUFFER_INITIAL_CAPACITY 16
-#define BUFFER_SCALE_FACTOR 2
 
 typedef struct {
     void *data;

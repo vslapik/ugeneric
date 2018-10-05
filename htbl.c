@@ -3,25 +3,47 @@
 #include "asserts.h"
 #include "mem.h"
 
-#define UHTBL_SCALE_FACTOR 2
-#define UHTBL_INITIAL_NUM_OF_BUCKETS 32
-#define UHTBL_REHASH_THRESHOLD (3.0)/(4.0)
+#define UHTBL_INITIAL_NUM_OF_BUCKETS 4
+#define UHTBL_C_LOAD_THRESHOLD 0.75
+#define UHTBL_OA_LOAD_THRESHOLD 0.5
+
+static uhtbl_type_t _default_type = UHTBL_TYPE_CHAINING;
+
+// Hack around internal types, G_NULL always contains 0 in value part
+#define _IS_EMPTY(x)         (G_IS_NULL((x)->k) && ((x)->k.v.integer == 0x01))
+#define _IS_TOMBSTONE(x)     (G_IS_NULL((x)->k) && ((x)->k.v.integer == 0x02))
+#define _SET_TO_EMPTY(x)     ((x)->k = G_NULL(), (x)->k.v.integer = 0x01)
+#define _SET_TO_TOMBSTONE(x) ((x)->k = G_NULL(), (x)->k.v.integer = 0x02)
 
 struct uhtbl_record {
-    ugeneric_t k;
-    ugeneric_t v;
+    ugeneric_kv_t kv;
     struct uhtbl_record *next;
 };
 typedef struct uhtbl_record uhtbl_record_t;
 
+typedef struct {
+    void (*destroy_buckets)(uhtbl_t *h);
+    void (*resize)(uhtbl_t *h);
+    void (*put)(uhtbl_t *h, ugeneric_t k, ugeneric_t v);
+    bool (*pop)(uhtbl_t *h, ugeneric_t k, ugeneric_t *out);
+    ugeneric_kv_t *(*find_kv)(const uhtbl_t *h, ugeneric_t k);
+    float load_threshold;
+} uhtbl_vtable_t;
+
 struct uhtbl_opaq {
     uvoid_handlers_t void_handlers;
     bool is_data_owner;
-    uhtbl_record_t **buckets;
-    size_t number_of_buckets;
+    uhtbl_type_t type;
+    union {
+        uhtbl_record_t **c_buckets; // chaining
+        ugeneric_kv_t *oa_buckets;  // open-addressing
+    };
     size_t number_of_records;
+    size_t number_of_buckets;
+    size_t number_of_occupied_buckets;
     void_hasher_t hasher;
     void_cmp_t key_cmp;
+    const uhtbl_vtable_t *vtable;
 };
 
 struct uhtbl_iterator_opaq {
@@ -31,31 +53,85 @@ struct uhtbl_iterator_opaq {
     size_t records_to_iterate;
 };
 
-static void _destroy_buckets(uhtbl_t *h)
+static void _oa_destroy_buckets(uhtbl_t *h);
+static void _oa_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v);
+static bool _oa_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t *out);
+static ugeneric_kv_t *_oa_find_kv(const uhtbl_t *h, ugeneric_t k);
+
+static void _c_destroy_buckets(uhtbl_t *h);
+static void _c_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v);
+static bool _c_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t *out);
+static ugeneric_kv_t *_c_find_kv(const uhtbl_t *h, ugeneric_t k);
+
+// Collision addressing with open addressing.
+static const uhtbl_vtable_t _uhtbl_oa_table = {
+    .destroy_buckets = _oa_destroy_buckets,
+    .put = _oa_put,
+    .pop = _oa_pop,
+    .find_kv = _oa_find_kv,
+    .load_threshold = UHTBL_OA_LOAD_THRESHOLD,
+};
+
+// Collision addressing with chaining.
+static const uhtbl_vtable_t _uhtbl_c_table = {
+    .destroy_buckets = _c_destroy_buckets,
+    .put = _c_put,
+    .pop = _c_pop,
+    .find_kv = _c_find_kv,
+    .load_threshold = UHTBL_C_LOAD_THRESHOLD,
+};
+
+static ugeneric_kv_t *_oa_allocate_buckets(size_t count)
+{
+    ugeneric_kv_t *buckets = umalloc(count * sizeof(*buckets));
+    for (size_t i = 0; i < count; i++)
+    {
+        _SET_TO_EMPTY(buckets + i);
+    }
+
+    return buckets;
+}
+
+static void _oa_destroy_buckets(uhtbl_t *h)
 {
     for (size_t i = 0; i < h->number_of_buckets; i++)
     {
-        uhtbl_record_t *hr = h->buckets[i];
+        ugeneric_kv_t *kv = &h->oa_buckets[i];
+        if (h->is_data_owner && !_IS_EMPTY(kv) && !_IS_TOMBSTONE(kv))
+        {
+            ugeneric_destroy_v(kv->k, h->void_handlers.dtr);
+            ugeneric_destroy_v(kv->v, h->void_handlers.dtr);
+        }
+        _SET_TO_EMPTY(h->oa_buckets + i);
+    }
+}
+
+static void _c_destroy_buckets(uhtbl_t *h)
+{
+    for (size_t i = 0; i < h->number_of_buckets; i++)
+    {
+        uhtbl_record_t *hr = h->c_buckets[i];
         while (hr)
         {
             uhtbl_record_t *hr_next = hr->next;
             if (h->is_data_owner)
             {
-                ugeneric_destroy_v(hr->k, h->void_handlers.dtr);
-                ugeneric_destroy_v(hr->v, h->void_handlers.dtr);
+                ugeneric_destroy_v(hr->kv.k, h->void_handlers.dtr);
+                ugeneric_destroy_v(hr->kv.v, h->void_handlers.dtr);
             }
             ufree(hr);
             hr = hr_next;
         }
+        h->c_buckets[i] = NULL;
     }
 }
 
 /*
  * Either a record pointer or NULL when we are at the end of table.
  */
-static uhtbl_record_t *_find_next_record(const uhtbl_t *h,
-                                         uhtbl_record_t *current_dr,
-                                         size_t *bucket)
+static uhtbl_record_t *_c_find_next_record(const uhtbl_t *h,
+                                           uhtbl_record_t *current_dr,
+                                           size_t *bucket)
 {
     uhtbl_record_t *next_record = NULL;
 
@@ -70,7 +146,7 @@ static uhtbl_record_t *_find_next_record(const uhtbl_t *h,
 
     while (!next_record && (*bucket < h->number_of_buckets))
     {
-        next_record = h->buckets[*bucket];
+        next_record = h->c_buckets[*bucket];
         if (!next_record)
         {
             *bucket += 1;
@@ -80,17 +156,36 @@ static uhtbl_record_t *_find_next_record(const uhtbl_t *h,
     return next_record;
 }
 
+static ugeneric_kv_t *_oa_find_next_kv(const uhtbl_t *h, size_t *bucket)
+{
+    ugeneric_kv_t *kv = NULL;
+    while (*bucket < h->number_of_buckets)
+    {
+        ugeneric_kv_t *t = &h->oa_buckets[*bucket];
+        *bucket += 1;
+        if (!_IS_EMPTY(t) && !_IS_TOMBSTONE(t))
+        {
+            kv = t;
+            break;
+        }
+    }
+
+    UASSERT_INTERNAL(kv);
+
+    return kv;
+}
+
 /*
- * Either return pointer to corresponded htbl record found by key
- * or return pointer to place where such a record should be placed.
+ * Return either a pointer to corresponded htbl record found by the key
+ * or a pointer to the place where the record should be placed.
  */
-static uhtbl_record_t **_find_by_key(const uhtbl_t *h, ugeneric_t k)
+static uhtbl_record_t **_c_find_record(const uhtbl_t *h, ugeneric_t k)
 {
     uhtbl_record_t **hr;
-    hr = &h->buckets[ugeneric_hash(k, h->hasher) % h->number_of_buckets];
+    hr = &h->c_buckets[ugeneric_hash(k, h->hasher) % h->number_of_buckets];
     while (*hr)
     {
-        if (ugeneric_compare_v((*hr)->k, k, h->key_cmp) == 0)
+        if (ugeneric_compare_v((*hr)->kv.k, k, h->key_cmp) == 0)
         {
             break;
         }
@@ -100,35 +195,174 @@ static uhtbl_record_t **_find_by_key(const uhtbl_t *h, ugeneric_t k)
     return hr;
 }
 
-static float _get_load_factor(const uhtbl_t *h)
+static ugeneric_kv_t *_c_find_kv(const uhtbl_t *h, ugeneric_t k)
 {
-    return (float)h->number_of_records / h->number_of_buckets;
+    uhtbl_record_t **hr = _c_find_record(h, k);
+    return (*hr) ? &(*hr)->kv : NULL;
 }
 
-void _put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
+/*
+ * Return either pointer to corresponded slot found by key
+ * or a pointer to place where such a record should be placed.
+ */
+static ugeneric_kv_t *_oa_find_slot(const uhtbl_t *h, ugeneric_t k)
 {
-    uhtbl_record_t **hr = _find_by_key(h, k);
+    size_t i = 0;
+    ugeneric_kv_t *ret = NULL;
+    size_t bucket = ugeneric_hash(k, h->hasher) % h->number_of_buckets;
+    ugeneric_kv_t *kv = &h->oa_buckets[bucket];
+
+    while (i < h->number_of_buckets)
+    {
+        kv = &h->oa_buckets[bucket];
+        if (_IS_EMPTY(kv))
+        {
+            // This is the place where to put the data (update case)
+            // or just indication that data for requested key is
+            // not present (lookup case).
+            if (!ret)
+            {
+                ret = kv;
+            }
+            break;
+        }
+        else if (_IS_TOMBSTONE(kv))
+        {
+            // Remember this bucket and keep going until an empty slot is
+            // found (insert position) or existing data for requested key
+            // is found (update position).
+            ret = kv;
+        }
+        else
+        {
+            if (ugeneric_compare_v(kv->k, k, h->key_cmp) == 0)
+            {
+                return kv;
+            }
+        }
+        bucket += 1;
+        bucket %= h->number_of_buckets;
+        i++;
+    }
+
+    if (ret)
+    {
+        return ret;
+    }
+
+    UABORT("internal error");
+}
+
+/* Return either pointer to record found by key or NULL */
+static ugeneric_kv_t *_oa_find_kv(const uhtbl_t *h, ugeneric_t k)
+{
+    ugeneric_kv_t *kv = _oa_find_slot(h, k);
+    if (_IS_EMPTY(kv) || _IS_TOMBSTONE(kv))
+    {
+        kv = NULL;
+    }
+
+    return kv;
+}
+
+static float _get_load_factor(const uhtbl_t *h)
+{
+    switch (h->type)
+    {
+        case UHTBL_TYPE_CHAINING:
+            return (float)h->number_of_records / h->number_of_buckets;
+        case UHTBL_TYPE_OPEN_ADDRESSING:
+            return (float)h->number_of_occupied_buckets / h->number_of_buckets;
+        default:
+            UABORT("internal error");
+    }
+}
+
+static void _replace_kv(uhtbl_t *h, ugeneric_kv_t *kv,
+                        ugeneric_t k, ugeneric_t v)
+{
+    if (h->is_data_owner)
+    {
+        ugeneric_destroy_v(kv->k, h->void_handlers.dtr);
+        ugeneric_destroy_v(kv->v, h->void_handlers.dtr);
+    }
+    kv->k = k;
+    kv->v = v;
+}
+
+static void _oa_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
+{
+    ugeneric_kv_t *kv = _oa_find_slot(h, k);
+    if (_IS_EMPTY(kv) || _IS_TOMBSTONE(kv))
+    {
+        kv->k = k;
+        kv->v = v;
+        h->number_of_records += 1;
+        if (!_IS_TOMBSTONE(kv))
+        {
+            h->number_of_occupied_buckets += 1;
+        }
+    }
+    else
+    {
+        _replace_kv(h, kv, k, v);
+    }
+}
+
+static void _c_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
+{
+    uhtbl_record_t **hr = _c_find_record(h, k);
 
     if (*hr)
     {
         // Update existing.
-        if (h->is_data_owner)
-        {
-            ugeneric_destroy_v((*hr)->k, h->void_handlers.dtr);
-            ugeneric_destroy_v((*hr)->v, h->void_handlers.dtr);
-        }
-        (*hr)->k = k;
-        (*hr)->v = v;
+        _replace_kv(h, &(*hr)->kv, k, v);
     }
     else
     {
         // Insert a new one.
         *hr = umalloc(sizeof(uhtbl_record_t));
-        (*hr)->k = k;
-        (*hr)->v = v;
+        (*hr)->kv.k = k;
+        (*hr)->kv.v = v;
         (*hr)->next = NULL;
         h->number_of_records += 1;
     }
+}
+
+static bool _oa_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t *out)
+{
+    bool ret = false;
+    ugeneric_kv_t *kv = _oa_find_kv(h, k);
+
+    if (kv)
+    {
+        ugeneric_destroy_v(kv->k, h->void_handlers.dtr);
+        *out = kv->v;
+        h->number_of_records -= 1;
+        _SET_TO_TOMBSTONE(kv);
+        ret = true;
+    }
+
+    return ret;
+}
+
+static bool _c_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t *out)
+{
+    bool ret = false;
+    uhtbl_record_t **hr = _c_find_record(h, k);
+
+    if (*hr)
+    {
+        uhtbl_record_t *del = *hr;
+        *out = del->kv.v;
+        ugeneric_destroy_v(del->kv.k, h->void_handlers.dtr);
+        *hr = (*hr)->next;
+        ufree(del);
+        h->number_of_records -= 1;
+        ret = true;
+    }
+
+    return ret;
 }
 
 static void _resize(uhtbl_t *h)
@@ -136,34 +370,78 @@ static void _resize(uhtbl_t *h)
     uhtbl_t new_table;
 
     memcpy(&new_table, h, sizeof(*h));
-    new_table.number_of_buckets = UHTBL_SCALE_FACTOR * h->number_of_buckets;
-    new_table.buckets = ucalloc(new_table.number_of_buckets,
-                                sizeof(new_table.buckets[0]));
     new_table.number_of_records = 0;
-
-    for (size_t i = 0; i < h->number_of_buckets; i++)
+    new_table.number_of_occupied_buckets = 0;
+    new_table.number_of_buckets = SCALE_FACTOR * h->number_of_buckets;
+    switch (h->type)
     {
-        uhtbl_record_t *hr = h->buckets[i];
-        while (hr)
-        {
-            uhtbl_record_t *t = hr->next;
-            _put(&new_table, hr->k, hr->v);
-            ufree(hr);
-            hr = t;
-        }
+        case UHTBL_TYPE_CHAINING:
+            new_table.oa_buckets = ucalloc(new_table.number_of_buckets,
+                                           sizeof(new_table.c_buckets[0]));
+            for (size_t i = 0; i < h->number_of_buckets; i++)
+            {
+                uhtbl_record_t *hr = h->c_buckets[i];
+                while (hr)
+                {
+                    uhtbl_record_t *t = hr->next;
+                    _c_put(&new_table, hr->kv.k, hr->kv.v);
+                    ufree(hr);
+                    hr = t;
+                }
+            }
+            ufree(h->c_buckets);
+            break;
+        case UHTBL_TYPE_OPEN_ADDRESSING:
+            new_table.oa_buckets = _oa_allocate_buckets(new_table.number_of_buckets);
+            for (size_t i = 0; i < h->number_of_buckets; i++)
+            {
+                ugeneric_kv_t *kv = &h->oa_buckets[i];
+                if (!_IS_EMPTY(kv) && !_IS_TOMBSTONE(kv))
+                {
+                    _oa_put(&new_table, kv->k, kv->v);
+                }
+            }
+            ufree(h->oa_buckets);
+            break;
+        default:
+            UABORT("internal error");
     }
-    UASSERT(new_table.number_of_records == h->number_of_records);
 
-    ufree(h->buckets);
+    UASSERT_INTERNAL(new_table.number_of_records == h->number_of_records);
     memcpy(h, &new_table, sizeof(*h));
 }
 
 uhtbl_t *uhtbl_create(void)
 {
+    return uhtbl_create_with_type(UHTBL_TYPE_DEFAULT);
+}
+
+uhtbl_t *uhtbl_create_with_type(uhtbl_type_t type)
+{
+    UASSERT_INPUT(type >= UHTBL_TYPE_DEFAULT);
+    UASSERT_INPUT(type < UHTBL_TYPE_MAX);
+
     uhtbl_t *h = umalloc(sizeof(*h));
-    h->buckets = ucalloc(UHTBL_INITIAL_NUM_OF_BUCKETS, sizeof(h->buckets[0]));
-    h->number_of_buckets = UHTBL_INITIAL_NUM_OF_BUCKETS;
+
+    h->type = (type == UHTBL_TYPE_DEFAULT) ? _default_type : type;
+
+    switch (h->type)
+    {
+        case UHTBL_TYPE_CHAINING:
+            h->vtable = &_uhtbl_c_table;
+            h->c_buckets = ucalloc(UHTBL_INITIAL_NUM_OF_BUCKETS, sizeof(h->c_buckets[0]));
+            break;
+        case UHTBL_TYPE_OPEN_ADDRESSING:
+            h->vtable = &_uhtbl_oa_table;
+            h->oa_buckets = _oa_allocate_buckets(UHTBL_INITIAL_NUM_OF_BUCKETS);
+            break;
+        default:
+            UABORT("internal error");
+    }
+
     h->number_of_records = 0;
+    h->number_of_buckets = UHTBL_INITIAL_NUM_OF_BUCKETS;
+    h->number_of_occupied_buckets = 0;
     memset(&h->void_handlers, 0, sizeof(h->void_handlers));
     h->is_data_owner = true;
     h->hasher = NULL;
@@ -204,39 +482,43 @@ void uhtbl_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
 {
     UASSERT_INPUT(h);
 
-    _put(h, k, v);
+    h->vtable->put(h, k, v);
 
-    if (_get_load_factor(h) >= UHTBL_REHASH_THRESHOLD)
+    if (_get_load_factor(h) >= h->vtable->load_threshold)
     {
-        _resize(h);
+       _resize(h);
     }
 }
 
-/* Returns either data stored in htbl or
- * vdef if data is not found by the key.
+/* Returns either data stored in htbl or vdef if data is not,
+ * found by the key; data remains in the container.
 */
 ugeneric_t uhtbl_get(const uhtbl_t *h, ugeneric_t k, ugeneric_t vdef)
 {
     UASSERT_INPUT(h);
-    uhtbl_record_t **hr = _find_by_key(h, k);
-
-    return (*hr) ? (*hr)->v : vdef;
+    const ugeneric_kv_t *kv = h->vtable->find_kv(h, k);
+    return kv ? kv->v : vdef;
 }
 
+/* Returns either data stored in htbl or vdef if data is not
+ * found by the key; data is popped out from container.
+*/
 ugeneric_t uhtbl_pop(uhtbl_t *h, ugeneric_t k, ugeneric_t vdef)
 {
     UASSERT_INPUT(h);
-    ugeneric_t ret = vdef;
-    uhtbl_record_t **hr = _find_by_key(h, k);
+    h->vtable->pop(h, k, &vdef);
+    return vdef;
+}
 
-    if (*hr)
+bool uhtbl_remove(uhtbl_t *h, ugeneric_t k)
+{
+    UASSERT_INPUT(h);
+
+    ugeneric_t v;
+    bool ret = h->vtable->pop(h, k, &v);
+    if (ret && h->is_data_owner)
     {
-        uhtbl_record_t *del = *hr;
-        ret = del->v;
-        ugeneric_destroy_v(del->k, h->void_handlers.dtr);
-        *hr = (*hr)->next;
-        ufree(del);
-        h->number_of_records -= 1;
+        ugeneric_destroy_v(v, h->void_handlers.dtr);
     }
 
     return ret;
@@ -246,8 +528,18 @@ void uhtbl_destroy(uhtbl_t *h)
 {
     if (h)
     {
-        _destroy_buckets(h);
-        ufree(h->buckets);
+        h->vtable->destroy_buckets(h);
+        switch (h->type)
+        {
+            case UHTBL_TYPE_CHAINING:
+                ufree(h->c_buckets);
+                break;
+            case UHTBL_TYPE_OPEN_ADDRESSING:
+                ufree(h->oa_buckets);
+                break;
+            default:
+                UABORT("internal error");
+        }
         ufree(h);
     }
 }
@@ -255,9 +547,9 @@ void uhtbl_destroy(uhtbl_t *h)
 void uhtbl_clear(uhtbl_t *h)
 {
     UASSERT_INPUT(h);
-    _destroy_buckets(h);
-    memset(h->buckets, 0, h->number_of_buckets * sizeof(h->buckets[0]));
+    h->vtable->destroy_buckets(h);
     h->number_of_records = 0;
+    h->number_of_occupied_buckets = 0;
 }
 
 int uhtbl_compare(const uhtbl_t *h1, const uhtbl_t *h2, void_cmp_t cmp)
@@ -333,43 +625,75 @@ void uhtbl_dump_to_dot(const uhtbl_t *h, FILE *out)
     UASSERT_INPUT(h);
     UASSERT_INPUT(out);
 
-    fprintf(out, "%s %s {\n", "higraph", "uhtbl_name");
-    fprintf(out, "    rankhir=LR;\n");
-    fprintf(out, "    node [shape=record];\n");
-
-    // buckets
-    fprintf(out, "    node0 [label = \"");
-    for (size_t i = 0; i < h->number_of_buckets; i++)
-    {
-        fprintf(out, "<f%zu>|", i);
-    }
-    fprintf(out, "\"];\n");
+    fprintf(out, "%s %s {\n", "digraph", "uhtbl_name");
+    fprintf(out, "\trankdir=LR;\n");
+    fprintf(out, "\tnode [shape=record];\n");
 
     size_t j = 1;
-    for (size_t i = 0; i < h->number_of_buckets; i++)
+    if (h->type == UHTBL_TYPE_CHAINING)
     {
-        uhtbl_record_t *hr = h->buckets[i];
-        if (hr)
+        // buckets
+        fprintf(out, "\tnode0 [label = \"");
+        for (size_t i = 0; i < h->number_of_buckets; i++)
         {
-            size_t k = j;
-            fprintf(out, "\n");
-            while (hr)
+            fprintf(out, "%s<f%zu>", i ? "|" : "", i);
+        }
+        fprintf(out, "\"];");
+
+        for (size_t i = 0; i < h->number_of_buckets; i++)
+        {
+            uhtbl_record_t *hr = h->c_buckets[i];
+            if (hr)
             {
-                char *k = ugeneric_as_str_v(hr->k, NULL);
-                char *v = ugeneric_as_str_v(hr->v, NULL);
-                fprintf(out, "    node%zu [label = \"{ <data> '%s':'%s' | <ref> }\"];\n",
-                        j++, k, v);
-                hr = hr->next;
+                size_t k = j;
+                fprintf(out, "\n");
+                while (hr)
+                {
+                    char *k = ugeneric_as_str_v(hr->kv.k, NULL);
+                    char *v = ugeneric_as_str_v(hr->kv.v, NULL);
+                    fprintf(out, "\tnode%zu [label = \"{ <data> %s:%s | <ref> }\"];\n",
+                            j++, k, v);
+                    hr = hr->next;
+                    ufree(k);
+                    ufree(v);
+                }
+                fprintf(out, "\tnode0:f%zu -> node%zu:data;\n", i, k);
+                while (k < (j - 1))
+                {
+                    fprintf(out, "\tnode%zu:ref -> node%zu:data;\n", k, k + 1);
+                    k++;
+                }
+            }
+        }
+    }
+    else if (h->type == UHTBL_TYPE_OPEN_ADDRESSING)
+    {
+        fprintf(out, "\tnode0 [label = \"");
+        for (size_t i = 0; i < h->number_of_buckets; i++)
+        {
+            ugeneric_kv_t *kv = &h->oa_buckets[i];
+            if (_IS_EMPTY(kv))
+            {
+                fprintf(out, "%sempty", i ? "|" : "");
+            }
+            else if _IS_TOMBSTONE(kv)
+            {
+                fprintf(out, "%sRIP", i ? "|" : "");
+            }
+            else
+            {
+                char *k = ugeneric_as_str_v(kv->k, NULL);
+                char *v = ugeneric_as_str_v(kv->v, NULL);
+                fprintf(out, "%s%s:%s", i ? "|" : "", k, v);
                 ufree(k);
                 ufree(v);
             }
-            fprintf(out, "    node0:f%zu -> node%zu:data;\n", i, k);
-            while (k < (j - 1))
-            {
-                fprintf(out, "    node%zu:ref -> node%zu:data;\n", k, k + 1);
-                k++;
-            }
         }
+        fprintf(out, "\"];\n");
+    }
+    else
+    {
+        UABORT("internal error");
     }
 
     fprintf(out, "}\n");
@@ -394,11 +718,23 @@ ugeneric_kv_t uhtbl_iterator_get_next(uhtbl_iterator_t *hi)
     UASSERT_MSG(hi->records_to_iterate, "iteration is done");
     UASSERT_MSG(hi->htbl->number_of_records, "container is empty");
 
-    hi->current_dr = _find_next_record(hi->htbl, hi->current_dr, &hi->bucket);
-    ugeneric_kv_t kv = {.k = hi->current_dr->k, .v = hi->current_dr->v};
+    ugeneric_kv_t *kv = NULL;
     hi->records_to_iterate -= 1;
 
-    return kv;
+    switch (hi->htbl->type)
+    {
+        case UHTBL_TYPE_CHAINING:
+            hi->current_dr = _c_find_next_record(hi->htbl, hi->current_dr, &hi->bucket);
+            kv = &hi->current_dr->kv;
+            break;
+        case UHTBL_TYPE_OPEN_ADDRESSING:
+            kv = _oa_find_next_kv(hi->htbl, &hi->bucket);
+            break;
+        default:
+            UABORT("internal error");
+    }
+
+    return *kv;
 }
 
 bool uhtbl_iterator_has_next(const uhtbl_iterator_t *hi)
@@ -411,7 +747,7 @@ void uhtbl_iterator_reset(uhtbl_iterator_t *hi)
 {
     UASSERT_INPUT(hi);
     hi->bucket = 0;
-    hi->current_dr = hi->htbl->buckets[0];
+    hi->current_dr = hi->htbl->c_buckets[0];
     hi->records_to_iterate = hi->htbl->number_of_records;
 }
 
@@ -438,7 +774,9 @@ bool uhtbl_is_empty(const uhtbl_t *h)
 bool uhtbl_has_key(const uhtbl_t *h, ugeneric_t k)
 {
     UASSERT_INPUT(h);
-    return *_find_by_key(h, k) != NULL;
+
+    ugeneric_kv_t *kv = h->vtable->find_kv(h, k);
+    return kv != NULL;
 }
 
 uvector_t *uhtbl_get_items(const uhtbl_t *h, udict_items_kind_t kind, bool deep)

@@ -275,9 +275,10 @@ void test_large_bst(void)
        uvector_destroy(v2);
     }
     uvector_destroy(v);
-    //ugeneric_destroy(ubst_pop(b, G_STR("PQr"), G_STR("")), ufree);
-    //ubst_dump_to_dot(b, "large_bst", false, stdout);
     UASSERT_INT_EQ(500, ubst_get_size(b));
+
+    //ubst_dump_to_dot(b, "large_bst", false, stdout);
+    uvector_destroy(items);
     ubst_destroy(b);
 
     size_t N = 100;
@@ -295,6 +296,7 @@ void test_large_bst(void)
        ubst_put(b, G_INT(i), G_INT(i));
     }
     //ubst_dump_to_dot(b, "large_bst", false, stdout);
+
     ubst_destroy(b);
 
     b = ubst_create_ext(UBST_RB_BALANCING);
@@ -304,6 +306,7 @@ void test_large_bst(void)
        ubst_put(b, G_INT(i), G_INT(i));
     }
     //ubst_dump_to_dot(b, "large_bst", false, stdout);
+
     ubst_destroy(b);
 }
 
@@ -398,7 +401,7 @@ void test_bst_cmp(void)
 }
 
 /*
- * test_bst [rb|splay]
+ * test_bst [rb|splay|nb]
  *
 */
 int main(int argc, char **argv)

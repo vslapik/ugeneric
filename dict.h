@@ -5,13 +5,21 @@
 #include "vector.h"
 
 typedef enum {
-    UDICT_BACKEND_DEFAULT,
+    UDICT_BACKEND_DEFAULT = 0,
     UDICT_BACKEND_BST_PLAIN,
     UDICT_BACKEND_BST_RB,
     //UDICT_BACKEND_BST_SPLAY,
-    UDICT_BACKEND_HTBL,
-    UDICT_BACKENDS_COUNT, // keep it last
+    UDICT_BACKEND_HTBL_WITH_CHAINING,
+    UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING,
+    UDICT_BACKEND_MAX, // keep it last
 } udict_backend_t;
+
+#define UDICT_ON_BST(d) ((d->backend == UDICT_BACKEND_BST_PLAIN) || \
+                         (d->backend == UDICT_BACKEND_BST_RB))
+
+#define UDICT_ON_HTBL(d) ((d->backend == UDICT_BACKEND_HTBL_WITH_CHAINING) || \
+                          (d->backend == UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING))
+
 
 void libugeneric_udict_set_default_backend(udict_backend_t backend);
 udict_backend_t libugeneric_udict_get_default_backend(void);
