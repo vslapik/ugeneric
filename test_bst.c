@@ -278,7 +278,6 @@ void test_large_bst(void)
     UASSERT_INT_EQ(500, ubst_get_size(b));
 
     //ubst_dump_to_dot(b, "large_bst", false, stdout);
-    uvector_destroy(items);
     ubst_destroy(b);
 
     size_t N = 100;
