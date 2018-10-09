@@ -33,8 +33,8 @@ static void ubst_take_data_ownership(ubst_t *b);
 
 void ubst_put(ubst_t *b, ugeneric_t k, ugeneric_t v);
 ugeneric_t ubst_pop(ubst_t *b, ugeneric_t k, ugeneric_t vdef);
-int ubst_compare(const ubst_t *b1, const ubst_t *b2, void_cmp_t cmp);
 ugeneric_t ubst_get(ubst_t *b, ugeneric_t k, ugeneric_t vdef);
+bool ubst_remove(ubst_t *b, ugeneric_t k);
 bool ubst_has_key(const ubst_t *b, ugeneric_t k);
 ugeneric_t ubst_get_min(ubst_t *b);
 ugeneric_t ubst_get_max(ubst_t *b);

@@ -81,7 +81,7 @@ static inline ugeneric_t G_SIZE(size_t v)      {ugeneric_t g; g.t.type = G_SIZE_
 static inline ugeneric_t G_VECTOR(void *v)     {ugeneric_t g; g.t.type = G_VECTOR_T; g.v.ptr = v;         return g;}
 static inline ugeneric_t G_DICT(void *v)       {ugeneric_t g; g.t.type = G_DICT_T;   g.v.ptr = v;         return g;}
 static inline ugeneric_t G_BOOL(bool v)        {ugeneric_t g; g.t.type = G_BOOL_T;   g.v.boolean = v;     return g;}
-static inline ugeneric_t G_NULL(void)          {ugeneric_t g; g.t.type = G_NULL_T;                        return g;}
+static inline ugeneric_t G_NULL(void)          {ugeneric_t g; g.t.type = G_NULL_T;   g.v.integer = 0;     return g;}
 static inline ugeneric_t G_TRUE(void)          {ugeneric_t g; g.t.type = G_BOOL_T;   g.v.boolean = true;  return g;}
 static inline ugeneric_t G_FALSE(void)         {ugeneric_t g; g.t.type = G_BOOL_T;   g.v.boolean = false; return g;}
 

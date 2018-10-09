@@ -28,6 +28,7 @@ typedef void       (*f_udict_clear)(void *d);
 typedef void       (*f_udict_put)(void *d, ugeneric_t k, ugeneric_t v);
 typedef ugeneric_t (*f_udict_get)(const void *d, ugeneric_t k, ugeneric_t vdef);
 typedef ugeneric_t (*f_udict_pop)(void *d, ugeneric_t k, ugeneric_t vdef);
+typedef bool       (*f_udict_remove)(void *d, ugeneric_t k);
 typedef bool       (*f_udict_has_key)(const void *d, ugeneric_t k);
 typedef size_t     (*f_udict_get_size)(const void *d);
 typedef bool       (*f_udict_is_empty)(const void *d);
@@ -47,6 +48,7 @@ typedef struct {
     f_udict_put                 put;
     f_udict_get                 get;
     f_udict_pop                 pop;
+    f_udict_remove              remove;
     f_udict_has_key             has_key;
     f_udict_get_size            get_size;
     f_udict_is_empty            is_empty;
@@ -78,6 +80,7 @@ typedef struct {
 
 udict_t *udict_create(void);
 udict_t *udict_create_with_backend(udict_backend_t backend);
+void udict_update(udict_t *d, udict_t *update);
 
 static void udict_take_data_ownership(udict_t *d);
 static void udict_drop_data_ownership(udict_t *d);
@@ -87,6 +90,7 @@ static inline void udict_clear(udict_t *d) {d->vtable->clear(d->vobj);}
 static inline void udict_put(udict_t *d, ugeneric_t k, ugeneric_t v) {d->vtable->put(d->vobj, k, v);}
 static inline ugeneric_t udict_get(const udict_t *d, ugeneric_t k, ugeneric_t vdef) {return d->vtable->get(d->vobj, k, vdef);}
 static inline ugeneric_t udict_pop(udict_t *d, ugeneric_t k, ugeneric_t vdef) {return d->vtable->pop(d->vobj, k, vdef);}
+static inline bool udict_remove(udict_t *d, ugeneric_t k) {return d->vtable->remove(d->vobj, k);}
 static inline bool udict_has_key(const udict_t *d, ugeneric_t k) {return d->vtable->has_key(d->vobj, k);}
 static inline size_t udict_get_size(const udict_t *d) {return d->vtable->get_size(d->vobj);}
 static inline bool udict_is_empty(const udict_t *d) {return d->vtable->is_empty(d->vobj);}

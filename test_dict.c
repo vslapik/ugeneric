@@ -245,6 +245,99 @@ void test_udict_iterator(udict_backend_t backend)
     ufree(str);
 }
 
+
+void _test_udict_cmp(udict_backend_t b1, udict_backend_t b2)
+{
+    typedef enum {
+        UCMP_LESS = -1,
+        UCMP_EQUAL = 0,
+        UCMP_GREATER = 1,
+    } ucmp_result_t;
+
+    typedef struct {
+        const char *d1;
+        const char *d2;
+        ucmp_result_t result;
+    } cmp_test_case_t;
+
+    cmp_test_case_t cmp_test_cases[] = {
+        {"{}",               "{}",       UCMP_EQUAL},
+        {"{'a': 3}",         "{'a': 3}", UCMP_EQUAL},
+        {"{'c': 3}",         "{'a': 3}", UCMP_GREATER},
+        {"{'a': 3}",         "{'x': 3}", UCMP_LESS},
+        {"{'a': 3, 'x': 3}", "{'x': 3}", UCMP_GREATER},
+        {"{'a': 3}", "{'a': 3, 'x': 3}", UCMP_LESS},
+        {"{'a': 3}",         "{'a': 4}", UCMP_LESS},
+        {"{'a': 4}",         "{'a': 3}", UCMP_GREATER},
+        {0}
+    };
+
+    int r;
+    bool fail = false;
+    cmp_test_case_t *tc = cmp_test_cases;
+    while (tc->d1)
+    {
+        ugeneric_t g1 = ugeneric_parse(tc->d1);
+        ugeneric_t g2 = ugeneric_parse(tc->d2);
+        UASSERT(G_IS_DICT(g1));
+        UASSERT(G_IS_DICT(g2));
+
+        udict_t *d1 = udict_create_with_backend(b1);
+        udict_t *d2 = udict_create_with_backend(b2);
+        udict_update(d1, G_AS_PTR(g1));
+        udict_update(d2, G_AS_PTR(g2));
+        ugeneric_destroy(g1);
+        ugeneric_destroy(g2);
+
+        r = udict_compare(d1, d2, NULL);
+        switch (tc->result)
+        {
+            case UCMP_LESS:
+                fail = (r >= 0);
+                break;
+
+            case UCMP_EQUAL:
+                fail = (r != 0);
+                break;
+            case UCMP_GREATER:
+                fail = (r <= 0);
+                break;
+            default:
+                UABORT("internal error");
+        }
+
+        if (fail)
+        {
+            udict_print(d1);
+            udict_print(d2);
+            printf("%d\n", r);
+        }
+
+        udict_destroy(d1);
+        udict_destroy(d2);
+
+        if (fail)
+        {
+            UABORT("test failed");
+        }
+
+        tc++;
+    }
+
+    return;
+}
+
+void test_udict_cmp(udict_backend_t backend)
+{
+    for (int i = 1; i < UDICT_BACKEND_MAX; i++)
+    {
+        if (i == UDICT_BACKEND_BST_RB)
+            continue;
+        //printf("%d %d\n", backend, i);
+        _test_udict_cmp(backend, i);
+    }
+}
+
 int main(int argc, char **argv)
 {
     (void)argc;
@@ -262,5 +355,6 @@ int main(int argc, char **argv)
         test_large_dict(i);
         test_single(i);
         test_udict_put(i);
+        test_udict_cmp(i);
     }
 }

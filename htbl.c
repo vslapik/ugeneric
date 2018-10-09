@@ -552,29 +552,6 @@ void uhtbl_clear(uhtbl_t *h)
     h->number_of_occupied_buckets = 0;
 }
 
-int uhtbl_compare(const uhtbl_t *h1, const uhtbl_t *h2, void_cmp_t cmp)
-{
-    UASSERT_INPUT(h1);
-    UASSERT_INPUT(h2);
-
-    if (h1 == h2)
-    {
-        return 0;
-    }
-
-    uvector_t *items1 = uhtbl_get_items(h1, UDICT_KV, false);
-    uvector_t *items2 = uhtbl_get_items(h2, UDICT_KV, false);
-    uvector_sort(items1);
-    uvector_sort(items2);
-
-    int diff = uvector_compare(items1, items2, cmp);
-
-    uvector_destroy(items1);
-    uvector_destroy(items2);
-
-    return diff;
-}
-
 void uhtbl_serialize(const uhtbl_t *h, ubuffer_t *buf)
 {
     UASSERT_INPUT(h);

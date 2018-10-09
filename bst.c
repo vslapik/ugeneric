@@ -586,47 +586,11 @@ ugeneric_t ubst_pop(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
     return ret;
 }
 
-int ubst_compare(const ubst_t *b1, const ubst_t *b2, void_cmp_t cmp)
+bool ubst_remove(ubst_t *b, ugeneric_t k)
 {
-    UASSERT_INPUT(b1);
-    UASSERT_INPUT(b2);
+    ugeneric_t r = ubst_pop(b, k, G_ERROR(""));
+    return G_IS_ERROR(r);
 
-    int diff = 0;
-    ubst_iterator_t *bi1 = ubst_iterator_create(b1);
-    ubst_iterator_t *bi2 = ubst_iterator_create(b2);
-
-    while (ubst_iterator_has_next(bi1) && ubst_iterator_has_next(bi2))
-    {
-        ugeneric_kv_t kv1 = ubst_iterator_get_next(bi1);
-        ugeneric_kv_t kv2 = ubst_iterator_get_next(bi2);
-        diff = ugeneric_compare_v(kv1.k, kv2.k, cmp);
-        if (diff != 0)
-        {
-            break;
-        }
-        diff = ugeneric_compare_v(kv1.v, kv2.v, cmp);
-        if (diff != 0)
-        {
-            break;
-        }
-    }
-
-    if (diff == 0)
-    {
-        if (ubst_iterator_has_next(bi1) && !ubst_iterator_has_next(bi2))
-        {
-            diff = 1;
-        }
-        else if (!ubst_iterator_has_next(bi1) && ubst_iterator_has_next(bi2))
-        {
-            diff = -1;
-        }
-    }
-
-    ubst_iterator_destroy(bi1);
-    ubst_iterator_destroy(bi2);
-
-    return diff;
 }
 
 ugeneric_t ubst_get(ubst_t *b, ugeneric_t k, ugeneric_t vdef)

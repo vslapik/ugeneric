@@ -15,22 +15,15 @@ int main(int argc, char **argv)
     {
         seed = ugeneric_random_init();
     }
-/*
-    udict_t *d = udict_create_with_backend(UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING);
-    for (int i = 0; i < 100000; i++)
-    {
-        ugeneric_t k = gen_random_string(1, verbose);
-        ugeneric_t v = gen_random_string(1, verbose);
-        udict_put(d, k, v);
-    }
-    udict_destroy(d);
-    return 0;
-*/
 
     printf("================================== %u ==============================\n", seed);
     ugeneric_t rv = gen_random_vector(7, verbose);
     uvector_t *vector = G_AS_PTR(rv);
     printf("Generation done ================== %u ==============================\n", seed);
+    if (verbose)
+    {
+        uvector_print(vector);
+    }
 
     uvector_sort(G_AS_PTR(rv));
     UASSERT(uvector_is_sorted(G_AS_PTR(rv)));
@@ -60,8 +53,11 @@ int main(int argc, char **argv)
     uvector_sort(G_AS_PTR(g));
     UASSERT(uvector_is_sorted(G_AS_PTR(g)));
 
- //   ugeneric_print(rv);
-  //  ugeneric_print(g);
+    if (verbose)
+    {
+        ugeneric_print(rv);
+        ugeneric_print(g);
+    }
     UASSERT(ugeneric_compare_v(rv, g, uvector_get_void_comparator(vector)) == 0);
 
     ufree(t1);

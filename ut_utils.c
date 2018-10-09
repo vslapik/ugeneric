@@ -7,39 +7,40 @@ typedef struct {
     int i3;
 } void_t;
 
-ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable)
+ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_containers)
 {
-    if (depth > 0)
-    {
-        ugeneric_t g = G_CSTR("g");
-        ugeneric_type_e gtype;
-        do {
-            gtype = ugeneric_random_from_range(G_NULL_T, G_MEMCHUNK_T);
-            UASSERT(gtype > G_ERROR_T);
-            UASSERT(gtype <= G_MEMCHUNK_T);
-        } while (exclude_non_hashable && ((gtype == G_VECTOR_T) || (gtype == G_DICT_T)));
+    UASSERT(depth >= 0);
 
-        switch(gtype)
-        {
-            case G_NULL_T:     g = G_NULL();                                              break;
-            case G_PTR_T:      g = gen_random_void_data(depth - 1, verbose);              break;
-            case G_STR_T:      g = gen_random_string(depth, verbose);                     break;
-            case G_CSTR_T:                                                                break;
-            case G_INT_T:      g = G_INT(ugeneric_random_from_range(-100, 100));          break;
-            case G_REAL_T:     g = G_REAL(ugeneric_random_from_range(-1000, 1000)/10.0);  break;
-            case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(200, 300));          break;
-            case G_BOOL_T:     g = G_BOOL(ugeneric_random_from_range(0, 2));              break;
-            case G_VECTOR_T:   g = gen_random_vector(depth - 1, verbose);                 break;
-            case G_DICT_T:     g = gen_random_dict(depth - 1, verbose);                   break;
-            case G_MEMCHUNK_T: g = gen_random_memchunk(depth - 1, verbose);               break;
-            default:                                                                           ;
-        }
-        return g;
-    }
-    else
+    // G_VECTOR_T and G_DICT_T are the last two, optionally can be excluded
+    int types[] = {G_NULL_T, /*G_PTR_T,*/ G_STR_T, G_CSTR_T, G_INT_T,
+                   G_REAL_T, G_BOOL_T, G_MEMCHUNK_T, G_VECTOR_T, G_DICT_T};
+    if (!depth)
     {
-        return G_STR(ustring_fmt("%d", depth));
+        exclude_containers = true;
     }
+    ugeneric_type_e gtype = types[
+        ugeneric_random_from_range(0, ARR_LEN(types) - 2 * exclude_containers - 1)
+    ];
+
+    ugeneric_t g;
+    switch (gtype)
+    {
+        case G_NULL_T:     g = G_NULL();                                            break;
+//            case G_PTR_T:      g = gen_random_void_data(depth, verbose);              break;
+        case G_STR_T:      g = gen_random_string(depth, verbose);                   break;
+        case G_CSTR_T:     g = gen_random_string(depth, verbose);                   break;
+        case G_INT_T:      g = G_INT(ugeneric_random_from_range(-100, 100));        break;
+        case G_REAL_T:     g = G_REAL(ugeneric_random_from_range(100, 200)/1000.0); break;
+//            case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(200, 300));      break;
+        case G_BOOL_T:     g = G_BOOL(ugeneric_random_from_range(0, 1));            break;
+        case G_VECTOR_T:   g = gen_random_vector(depth, verbose);                   break;
+        case G_DICT_T:     g = gen_random_dict(depth, verbose);                     break;
+        case G_MEMCHUNK_T: g = gen_random_memchunk(depth, verbose);                 break;
+        default:                                                                           ;
+            UABORT("internal error");
+    }
+
+    return g;
 }
 
 int _void_cmp(const void *ptr1, const void *ptr2)
@@ -89,44 +90,28 @@ char *_void_s8r(const void *ptr, size_t *output_size)
 
 ugeneric_t gen_random_vector(int depth, bool verbose)
 {
-    ugeneric_t g = G_CSTR("v");
-    if (depth > 1)
-    {
-        uvector_t *v = uvector_create();
-        uvector_set_void_destroyer(v, _void_dtr);
-        uvector_set_void_comparator(v, _void_cmp);
-        uvector_set_void_copier(v, _void_cpy);
-        uvector_set_void_serializer(v, _void_s8r);
-        int size = ugeneric_random_from_range(0, 50);
-        if (verbose)
-        {
-            printf("[%02d] Generate vector of size %d\n", depth, size);
-        }
-        for (int i = 0; i < size; i++)
-        {
-            uvector_append(v, gen_random_generic(depth - 1, verbose, false));
-        }
-        uvector_shrink_to_size(v);
-/*
-        if (size > 1)
-        {
-            size_t i = ugeneric_random_from_range(0, size - 1);
-            ugeneric_t e = uvector_pop_at(v, i);
-            size_t j = ugeneric_random_from_range(0, size - 2);
-            uvector_insert_at(v, j, e);
-            size_t k = ugeneric_random_from_range(0, size - 1);
-            uvector_remove_at(v, k);
-        }
-        */
+    UASSERT(depth);
 
-        if (verbose)
-        {
-            uvector_print(v);
-        }
-        g = G_VECTOR(v);
+    uvector_t *v = uvector_create();
+    uvector_set_void_destroyer(v, _void_dtr);
+    uvector_set_void_comparator(v, _void_cmp);
+    uvector_set_void_copier(v, _void_cpy);
+    uvector_set_void_serializer(v, _void_s8r);
+    int size = ugeneric_random_from_range(0, 50);
+
+    for (int i = 0; i < size; i++)
+    {
+        uvector_append(v, gen_random_generic(depth - 1, verbose, false));
+    }
+    uvector_shrink_to_size(v);
+
+    if (verbose)
+    {
+        printf("[%02d] Generate vector of size %d\n", depth, size);
+        uvector_print(v);
     }
 
-    return g;
+    return G_VECTOR(v);
 }
 
 ugeneric_t gen_random_string(int depth, bool verbose)
@@ -148,8 +133,9 @@ ugeneric_t gen_random_string(int depth, bool verbose)
 
 ugeneric_t gen_random_dict(int depth, bool verbose)
 {
+    UASSERT(depth);
+
     udict_backend_t backend = ugeneric_random_from_range(UDICT_BACKEND_DEFAULT + 1, UDICT_BACKEND_MAX - 1);
-    if (backend == UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING) backend = UDICT_BACKEND_HTBL_WITH_CHAINING;
     udict_t *d = udict_create_with_backend(backend);
     udict_set_void_destroyer(d, ufree);
     udict_set_void_comparator(d, _void_cmp);
@@ -162,15 +148,16 @@ ugeneric_t gen_random_dict(int depth, bool verbose)
     }
 
     int size = ugeneric_random_from_range(0, 50);
-    if (verbose)
-    {
-        printf("[%02d] Generate dict of size %d\n", depth, size);
-    }
     for (int i = 0; i < size; i++)
     {
         ugeneric_t k = gen_random_generic(depth - 1, verbose, true); // keys must be hashable
         ugeneric_t v = gen_random_generic(depth - 1, verbose, false);
         udict_put(d, k, v);
+    }
+
+    if (verbose)
+    {
+        printf("[%02d] Generated dict of size %d\n", depth, size);
     }
 
     return G_DICT(d);
@@ -180,26 +167,29 @@ ugeneric_t gen_random_memchunk(int depth, bool verbose)
 {
     int size = ugeneric_random_from_range(1, 50);
     void *ptr = umalloc(size);
-    if (verbose)
-    {
-        printf("[%02d] Generate memchunk of size %d\n", depth, size);
-    }
     for (int i = 0; i < size; i++)
     {
         ((uint8_t *)ptr)[i] = ugeneric_random_from_range(0, 255);
     }
+    if (verbose)
+    {
+        printf("[%02d] Generated memchunk of size %d\n", depth, size);
+    }
+
     return G_MEMCHUNK(ptr, size);
 }
 
 ugeneric_t gen_random_void_data(int depth, bool verbose)
 {
-    (void)depth;
-    (void)verbose;
-
     void_t *p = umalloc(sizeof(*p));
     p->i1 = ugeneric_random_from_range(0, 500);
     p->i2 = ugeneric_random_from_range(0, 500);
     p->i3 = ugeneric_random_from_range(0, 500);
+
+    if (verbose)
+    {
+        printf("[%02d] Generated void data\n", depth);
+    }
 
     return G_PTR(p);
 }

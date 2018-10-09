@@ -8,7 +8,7 @@
 #include "vector.h"
 #include <errno.h>
 
-ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_non_hashable);
+ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_containers);
 ugeneric_t gen_random_vector(int depth, bool verbose);
 ugeneric_t gen_random_dict(int depth, bool verbose);
 ugeneric_t gen_random_string(int depth, bool verbose);

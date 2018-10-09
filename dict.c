@@ -11,6 +11,7 @@ static const udict_vtable_t _uhtbl_vtable = {
     .put                 = (f_udict_put)uhtbl_put,
     .get                 = (f_udict_get)uhtbl_get,
     .pop                 = (f_udict_pop)uhtbl_pop,
+    .remove              = (f_udict_remove)uhtbl_remove,
     .has_key             = (f_udict_has_key)uhtbl_has_key,
     .get_size            = (f_udict_get_size)uhtbl_get_size,
     .is_empty            = (f_udict_is_empty)uhtbl_is_empty,
@@ -26,6 +27,7 @@ static const udict_vtable_t _ubst_vtable = {
     .put                 = (f_udict_put)ubst_put,
     .get                 = (f_udict_get)ubst_get,
     .pop                 = (f_udict_pop)ubst_pop,
+    .remove              = (f_udict_remove)ubst_remove,
     .has_key             = (f_udict_has_key)ubst_has_key,
     .get_size            = (f_udict_get_size)ubst_get_size,
     .is_empty            = (f_udict_is_empty)ubst_is_empty,
@@ -100,6 +102,20 @@ udict_t *udict_create_with_backend(udict_backend_t backend)
     return d;
 }
 
+void udict_update(udict_t *d, udict_t *update)
+{
+    udict_iterator_t *di = udict_iterator_create(update);
+    while (udict_iterator_has_next(di))
+    {
+        ugeneric_kv_t kv = udict_iterator_get_next(di);
+        udict_remove(d, kv.k);
+        ugeneric_t k = ugeneric_copy(kv.k); // TODO: handle void* data?
+        ugeneric_t v = ugeneric_copy(kv.v); // TODO: handle void* data?
+        udict_put(d, k, v);
+    }
+    udict_iterator_destroy(di);
+}
+
 void udict_destroy(udict_t *d)
 {
     UASSERT_INPUT(d);
@@ -165,6 +181,33 @@ void udict_iterator_destroy(udict_iterator_t *di)
         ufree(di);
     }
 }
+// min([key for key in d1 if key not in d2 or d1[key] != d2[key]])
+bool _get_smallest_diff_key(const udict_t *d1, const udict_t *d2,
+                            void_cmp_t cmp, ugeneric_t *min_key)
+{
+    bool min_key_is_found = false;
+
+    udict_iterator_t *di1 = udict_iterator_create(d1);
+    while (udict_iterator_has_next(di1))
+    {
+        ugeneric_kv_t kv = udict_iterator_get_next(di1);
+        if (!udict_has_key(d2, kv.k) ||
+            ugeneric_compare_v(udict_get(d1, kv.k, G_ERROR("")),
+                               udict_get(d2, kv.k, G_ERROR("")), cmp) != 0)
+        {
+            if ((!min_key_is_found) ||
+                (ugeneric_compare_v(kv.k, *min_key, cmp) < 0))
+            {
+                min_key_is_found = true;
+                *min_key = kv.k;
+            }
+        }
+    }
+
+    udict_iterator_destroy(di1);
+
+    return min_key_is_found;
+}
 
 int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
 {
@@ -177,37 +220,31 @@ int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
         return 0;
     }
 
-    if (UDICT_ON_HTBL(d1) && (UDICT_ON_HTBL(d2)))
+    diff = udict_get_size(d1) - udict_get_size(d2);
+    if (diff)
     {
-        diff = uhtbl_compare(d1->vobj, d2->vobj, cmp);
+        return diff;
     }
-    else if (UDICT_ON_BST(d1) && UDICT_ON_BST(d2))
+
+    ugeneric_t min_diff_key_a;
+    ugeneric_t min_diff_key_b;
+
+    if (!_get_smallest_diff_key(d1, d2, cmp, &min_diff_key_a))
     {
-        diff = ubst_compare(d1->vobj, d2->vobj, cmp);
+        return 0;
     }
-    else
+
+    _get_smallest_diff_key(d2, d1, cmp, &min_diff_key_b);
+
+    diff = ugeneric_compare_v(min_diff_key_a, min_diff_key_b, cmp);
+    if (diff)
     {
-        uvector_t *items1 = udict_get_items(d1, UDICT_KV, false);
-        uvector_t *items2 = udict_get_items(d2, UDICT_KV, false);
-        if (UDICT_ON_HTBL(d1))
-        {
-            uvector_sort(items1);
-        }
-        if (UDICT_ON_HTBL(d2))
-        {
-            uvector_sort(items2);
-        }
-        diff = uvector_compare(items1, items2, cmp);
-        if (diff != 0)
-        {
-            uvector_fprint(items1, stdout);
-            uvector_fprint(items2, stdout);
-            abort();
-        }
-        uvector_destroy(items1);
-        uvector_destroy(items2);
+        return diff;
     }
-    return diff;
+
+    return ugeneric_compare_v(udict_get(d1, min_diff_key_a, G_ERROR("")),
+                              udict_get(d2, min_diff_key_b, G_ERROR("")), cmp);
+
 }
 
 udict_t *_dcpy(const udict_t *d, bool deep)

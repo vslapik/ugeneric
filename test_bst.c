@@ -380,25 +380,6 @@ void test_rb_put(void)
     ubst_destroy(b);
 }
 
-void test_bst_cmp(void)
-{
-    ubst_t *b1 = _create_test_tree();
-    ubst_t *b2 = _create_test_tree();
-    UASSERT(ubst_compare(b1, b2, NULL) == 0);
-
-    ubst_put(b1, G_INT(3), G_INT(33));
-    UASSERT(ubst_compare(b1, b2, NULL) > 0);
-
-    ubst_put(b2, G_INT(3), G_INT(333));
-    UASSERT(ubst_compare(b1, b2, NULL) < 0);
-
-    ubst_put(b1, G_INT(3), G_INT(333));
-    UASSERT(ubst_compare(b1, b2, NULL) == 0);
-
-    ubst_destroy(b1);
-    ubst_destroy(b2);
-}
-
 /*
  * test_bst [rb|splay|nb]
  *
@@ -434,8 +415,6 @@ int main(int argc, char **argv)
     test_api();
     test_pop();
     test_large_bst();
-
-    test_bst_cmp();
 
     return 0;
 
