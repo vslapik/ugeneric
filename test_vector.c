@@ -238,7 +238,7 @@ void test_uvector_api()
     UASSERT_INT_EQ(G_AS_INT(uvector_get_at(v, 0)), 123);
     UASSERT_INT_EQ(G_AS_INT(uvector_get_back(v)), 123);
     uvector_t *vcopy = uvector_copy(v);
-    UASSERT(uvector_compare(v, vcopy, NULL) == 0);
+    UASSERT(uvector_compare(v, vcopy) == 0);
     uvector_destroy(v);
     uvector_destroy(vcopy);
 
@@ -298,7 +298,7 @@ int cmp(const char *s1, const char *s2)
     UASSERT_NO_ERROR(gv2);
     uvector_t *v1 = G_AS_PTR(gv1);
     uvector_t *v2 = G_AS_PTR(gv2);
-    int diff = uvector_compare(v1, v2, NULL);
+    int diff = uvector_compare(v1, v2);
     uvector_destroy(v1);
     uvector_destroy(v2);
     return diff;
@@ -310,11 +310,11 @@ void test_uvector_compare(void)
     uvector_t *v2 = uvector_create();
     uvector_append(v1, G_STR(ustring_dup("s1")));
     uvector_append(v2, G_STR(ustring_dup("s1")));
-    UASSERT(uvector_compare(v1, v2, NULL) == 0);
+    UASSERT(uvector_compare(v1, v2) == 0);
     uvector_set_at(v1, 0, G_STR(ustring_dup("s3")));
-    UASSERT(uvector_compare(v1, v2, NULL) != 0);
+    UASSERT(uvector_compare(v1, v2) != 0);
     uvector_set_at(v2, 0, G_STR(ustring_dup("s4")));
-    UASSERT(uvector_compare(v1, v2, NULL) < 0);
+    UASSERT(uvector_compare(v1, v2) < 0);
     uvector_destroy(v1);
     uvector_destroy(v2);
 

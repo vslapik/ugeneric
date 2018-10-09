@@ -88,11 +88,11 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 break;
 
             case G_VECTOR_T:
-                ret = uvector_compare(G_AS_PTR(g1), G_AS_PTR(g2), cmp);
+                ret = uvector_compare(G_AS_PTR(g1), G_AS_PTR(g2));
                 break;
 
             case G_DICT_T:
-                ret = udict_compare(G_AS_PTR(g1), G_AS_PTR(g2), cmp);
+                ret = udict_compare(G_AS_PTR(g1), G_AS_PTR(g2));
                 break;
 
             default: // G_MEMCHUNK_T

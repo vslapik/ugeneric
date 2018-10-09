@@ -100,7 +100,7 @@ static inline int udict_fprint(const udict_t *d, FILE *out) {return d->vtable->f
 static inline int udict_print(const udict_t *d) {return udict_fprint(d, stdout); }
 static inline uvector_t *udict_get_items(const udict_t *d, udict_items_kind_t kind, bool deep) {return d->vtable->get_items(d->vobj, kind, deep);}
 void udict_destroy(udict_t *d);
-int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp);
+int udict_compare(const udict_t *d1, const udict_t *d2);
 void udict_set_void_hasher(udict_t *d, void_hasher_t hasher);
 void udict_set_void_key_comparator(udict_t *d, void_cmp_t cmp);
 

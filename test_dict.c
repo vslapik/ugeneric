@@ -289,7 +289,7 @@ void _test_udict_cmp(udict_backend_t b1, udict_backend_t b2)
         ugeneric_destroy(g1);
         ugeneric_destroy(g2);
 
-        r = udict_compare(d1, d2, NULL);
+        r = udict_compare(d1, d2);
         switch (tc->result)
         {
             case UCMP_LESS:

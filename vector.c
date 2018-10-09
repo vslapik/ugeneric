@@ -58,7 +58,7 @@ static uvector_t *_vcpy(const uvector_t *v, bool deep)
     return copy;
 }
 
-int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp)
+int uvector_compare(const uvector_t *v1, const uvector_t *v2)
 {
     int diff = 0;
     UASSERT_INPUT(v1);
@@ -72,7 +72,7 @@ int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp)
     size_t len = MIN(v1->size, v2->size);
     for (size_t i = 0; i < len; i++)
     {
-        diff = ugeneric_compare_v(v1->cells[i], v2->cells[i], cmp);
+        diff = ugeneric_compare_v(v1->cells[i], v2->cells[i], v1->void_handlers.cmp);
         if (diff)
         {
             break;

@@ -105,12 +105,13 @@ udict_t *udict_create_with_backend(udict_backend_t backend)
 void udict_update(udict_t *d, udict_t *update)
 {
     udict_iterator_t *di = udict_iterator_create(update);
+    void_cpy_t cpy = udict_get_void_copier((udict_t *)d);
     while (udict_iterator_has_next(di))
     {
         ugeneric_kv_t kv = udict_iterator_get_next(di);
         udict_remove(d, kv.k);
-        ugeneric_t k = ugeneric_copy(kv.k); // TODO: handle void* data?
-        ugeneric_t v = ugeneric_copy(kv.v); // TODO: handle void* data?
+        ugeneric_t k = ugeneric_copy_v(kv.k, cpy);
+        ugeneric_t v = ugeneric_copy_v(kv.v, cpy);
         udict_put(d, k, v);
     }
     udict_iterator_destroy(di);
@@ -209,7 +210,7 @@ bool _get_smallest_diff_key(const udict_t *d1, const udict_t *d2,
     return min_key_is_found;
 }
 
-int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
+int udict_compare(const udict_t *d1, const udict_t *d2)
 {
     int diff;
     UASSERT_INPUT(d1);
@@ -226,6 +227,7 @@ int udict_compare(const udict_t *d1, const udict_t *d2, void_cmp_t cmp)
         return diff;
     }
 
+    void_cmp_t cmp = udict_get_void_comparator((udict_t *)d1);
     ugeneric_t min_diff_key_a;
     ugeneric_t min_diff_key_b;
 

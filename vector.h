@@ -17,7 +17,7 @@ void uvector_clear(uvector_t *v);
 
 uvector_t *uvector_copy(const uvector_t *v);
 uvector_t *uvector_deep_copy(const uvector_t *v);
-int uvector_compare(const uvector_t *v1, const uvector_t *v2, void_cmp_t cmp);
+int uvector_compare(const uvector_t *v1, const uvector_t *v2);
 
 void uvector_append(uvector_t *v, ugeneric_t e);
 void uvector_insert_at(uvector_t *v, size_t i, ugeneric_t e);
