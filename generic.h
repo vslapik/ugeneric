@@ -116,7 +116,7 @@ static inline bool G_IS_NULL(ugeneric_t g)    {return g.t.type == G_NULL_T;}
 static inline bool G_IS_PTR(ugeneric_t g)     {return g.t.type == G_PTR_T;}
 static inline bool G_IS_STR(ugeneric_t g)     {return g.t.type == G_STR_T;}
 static inline bool G_IS_CSTR(ugeneric_t g)    {return g.t.type == G_CSTR_T;}
-static inline bool G_IS_STRING(ugeneric_t g)  {return G_IS_CSTR(g) || G_IS_STR(g);}
+static inline bool G_IS_STRING(ugeneric_t g)  {return g.t.type == G_STR_T || g.t.type == G_CSTR_T;}
 static inline bool G_IS_INT(ugeneric_t g)     {return g.t.type == G_INT_T;}
 static inline bool G_IS_REAL(ugeneric_t g)    {return g.t.type == G_REAL_T;}
 static inline bool G_IS_SIZE(ugeneric_t g)    {return g.t.type == G_SIZE_T;}

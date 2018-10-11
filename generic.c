@@ -23,22 +23,26 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
     double f1, f2;
     size_t s1, s2;
-    int ret = 0;
 
-    if (G_IS_ERROR(g1) || G_IS_ERROR(g2))
+    ugeneric_type_e t1 = ugeneric_get_type(g1);
+    ugeneric_type_e t2 = ugeneric_get_type(g2);
+
+    if (t1 == G_ERROR_T || t2 == G_ERROR_T)
     {
         UABORT("attempt to compare G_ERROR object");
     }
 
+    int ret = t1 - t2;
+
     // Generics of different types are always not equal except G_STR and G_CSTR.
-    if (!(G_IS_STRING(g1) && G_IS_STRING(g2)))
+    if (ret != 0 && G_IS_STRING(g1) && G_IS_STRING(g2))
     {
-        ret = (ugeneric_get_type(g1) - ugeneric_get_type(g2));
+        ret = 0;
     }
 
     if (ret == 0)
     {
-        switch (g1.t.type)
+        switch (t1)
         {
             case G_NULL_T:
                 ret = 0;
