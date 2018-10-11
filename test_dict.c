@@ -239,6 +239,17 @@ void test_udict_iterator(udict_backend_t backend)
     char *str = ugeneric_as_str(G_VECTOR(v));
     UASSERT_STR_EQ("[-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6]", str);
 
+    // Reset iterator and iterate again.
+    udict_iterator_reset(di);
+    while (udict_iterator_has_next(di))
+    {
+        uvector_append(v, (udict_iterator_get_next(di).k));
+    }
+    uvector_sort(v);
+    ufree(str);
+    str = ugeneric_as_str(G_VECTOR(v));
+    UASSERT_STR_EQ("[-6, -6, -5, -5, -4, -4, -3, -3, -2, -2, -1, -1, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]", str);
+
     udict_iterator_destroy(di);
     udict_destroy(d);
     uvector_destroy(v);

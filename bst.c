@@ -812,8 +812,9 @@ bool ubst_iterator_has_next(const ubst_iterator_t *bi)
 
 void ubst_iterator_reset(ubst_iterator_t *bi)
 {
+    UASSERT_INPUT(bi);
     bi->node = bi->bst->root;
-    UASSERT(ustack_is_empty(bi->stack));
+    ustack_clear(bi->stack);
 }
 
 void ubst_iterator_destroy(ubst_iterator_t *bi)

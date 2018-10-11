@@ -70,6 +70,12 @@ size_t ustack_get_capacity(const ustack_t *s)
     return uvector_get_capacity(s->data);
 }
 
+void ustack_clear(ustack_t *s)
+{
+    UASSERT_INPUT(s);
+    uvector_clear(s->data);
+}
+
 ugeneric_base_t *ustack_get_base(ustack_t *s)
 {
     UASSERT_INPUT(s);

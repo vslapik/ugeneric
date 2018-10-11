@@ -724,7 +724,7 @@ void uhtbl_iterator_reset(uhtbl_iterator_t *hi)
 {
     UASSERT_INPUT(hi);
     hi->bucket = 0;
-    hi->current_dr = hi->htbl->c_buckets[0];
+    hi->current_dr = NULL;
     hi->records_to_iterate = hi->htbl->number_of_records;
 }
 
