@@ -2,8 +2,8 @@ lib = libugeneric.a
 #CC = g++ -fpermissive
 #PFLAGS = -fprofile-arcs -ftest-coverage
 CFLAGS_COMMON=-I. -g -std=c11 -Wall -Wextra -Winline -pedantic -Wno-missing-field-initializers -Wno-missing-braces $(PFLAGS)
-CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
-#CFLAGS = $(CFLAGS_COMMON) -Ofast
+#CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
+CFLAGS = $(CFLAGS_COMMON) -O3
 VFLAGS = -q --child-silent-after-fork=yes --leak-check=full --error-exitcode=3
 
 src = generic.c stack.c vector.c queue.c heap.c list.c graph.c bitmap.c sort.c string_utils.c file_utils.c bst.c mem.c dsu.c dict.c htbl.c struct.c set.c
@@ -15,6 +15,8 @@ hdr = ${src:.c=.h}
 obj = ${src:.c=.o}
 
 all: $(lib) tags test test_fuzz
+
+$(obj): Makefile
 
 lib: $(lib)
 
