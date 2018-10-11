@@ -21,6 +21,7 @@ static inline void _skip_whitespaces(const char **str)
 
 int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
+    long i1, i2;
     double f1, f2;
     size_t s1, s2;
 
@@ -59,7 +60,9 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 break;
 
             case G_INT_T:
-                ret = G_AS_INT(g1) - G_AS_INT(g2);
+                i1 = G_AS_INT(g1);
+                i2 = G_AS_INT(g2);
+                ret = (i1 > i2) ?  1 : ((i1 < i2) ? -1 : 0);
                 break;
 
             case G_REAL_T:
@@ -69,22 +72,13 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 {
                     UABORT("NAN in comparison");
                 }
-                if (f1 > f2)
-                {
-                    ret = 1;
-                }
-                else if (f1 < f2)
-                {
-                    ret = -1;
-                }
-                else
-                {
-                    ret = 0;
-                }
+                ret = (f1 > f2) ?  1 : ((f1 < f2) ? -1 : 0);
                 break;
 
             case G_SIZE_T:
-                ret = G_AS_SIZE(g1) - G_AS_SIZE(g2);
+                s1 = G_AS_SIZE(g1);
+                s2 = G_AS_SIZE(g2);
+                ret = (s1 > s2) ?  1 : ((s1 < s2) ? -1 : 0);
                 break;
 
             case G_BOOL_T:
@@ -121,7 +115,7 @@ void ugeneric_destroy_v(ugeneric_t g, void_dtr_t dtr)
 {
     double d;
 
-    switch (g.t.type)
+    switch (ugeneric_get_type(g))
     {
         case G_PTR_T:
             UASSERT_MSG(dtr, "don't know how to destroy void data");
@@ -194,7 +188,7 @@ ugeneric_t ugeneric_copy_v(ugeneric_t g, void_cpy_t cpy)
     void *data;
     double d;
 
-    switch (g.t.type)
+    switch (ugeneric_get_type(g))
     {
         case G_PTR_T:
             UASSERT_MSG(cpy, "don't know how to copy void data");
@@ -274,7 +268,7 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
     char *s;
     umemchunk_t m;
 
-    switch (g.t.type)
+    switch (ugeneric_get_type(g))
     {
         case G_NULL_T:
             ubuffer_append_string(buf, "null");
@@ -817,7 +811,7 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
     void *data;
     size_t size;
 
-    switch (g.t.type)
+    switch (ugeneric_get_type(g))
     {
         case G_NULL_T:
             return 0;

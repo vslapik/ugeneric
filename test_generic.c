@@ -105,6 +105,24 @@ void test_types(void)
     ugeneric_destroy(g_memchunk_copy);
 }
 
+void test_generic_cmp(void)
+{
+    UASSERT(ugeneric_compare(G_INT(-1), G_INT(1)) < 0);
+    UASSERT(ugeneric_compare(G_INT(1), G_INT(-1)) > 0);
+    UASSERT(ugeneric_compare(G_INT(0), G_INT(0)) == 0);
+    UASSERT(ugeneric_compare(G_INT(LONG_MAX), G_INT(LONG_MIN)) > 0);
+    UASSERT(ugeneric_compare(G_INT(LONG_MIN), G_INT(LONG_MAX)) < 0);
+    UASSERT(ugeneric_compare(G_INT(LONG_MAX), G_INT(LONG_MAX)) == 0);
+    UASSERT(ugeneric_compare(G_INT(LONG_MIN), G_INT(LONG_MIN)) == 0);
+
+    UASSERT(ugeneric_compare(G_INT(1), G_INT(2)) < 0);
+    UASSERT(ugeneric_compare(G_INT(2), G_INT(1)) > 0);
+    UASSERT(ugeneric_compare(G_INT(0), G_INT(0)) == 0);
+    UASSERT(ugeneric_compare(G_SIZE(ULONG_MAX), G_SIZE(0)) > 0);
+    UASSERT(ugeneric_compare(G_SIZE(0), G_SIZE(ULONG_MAX)) < 0);
+    UASSERT(ugeneric_compare(G_INT(ULONG_MAX), G_INT(ULONG_MAX)) == 0);
+}
+
 void test_generic(void)
 {
     //printf("%zu\n", sizeof(ugeneric_t));
@@ -323,7 +341,6 @@ void test_parse_size(void)
     ufree(size);
     ufree(over_size1);
     ufree(over_size2);
-
 }
 
 int main(int argc, char **argv)
@@ -357,4 +374,5 @@ int main(int argc, char **argv)
     test_large_parse();
     test_serialize();
     test_parse_size();
+    test_generic_cmp();
 }
