@@ -64,14 +64,18 @@ void test_udict_const_str(udict_backend_t backend)
 void test_udict_put(udict_backend_t backend)
 {
     udict_t *d = udict_create_with_backend(backend);
-    ugeneric_t k = G_STR(ustring_dup("k"));
-    ugeneric_t v = G_STR(ustring_dup("v"));
+    for (size_t i = 0; i < 10; i++)
+    {
+        udict_put(d, G_INT(i), G_INT(0));
+    }
+    UASSERT_INT_EQ(udict_get_size(d), 10);
 
-    udict_put(d, ugeneric_copy(k), ugeneric_copy(v));
-    udict_put(d, ugeneric_copy(k), ugeneric_copy(v));
+    for (size_t i = 0; i < 10; i++)
+    {
+        udict_put(d, G_INT(i), G_INT(1));
+    }
+    UASSERT_INT_EQ(udict_get_size(d), 10);
 
-    ugeneric_destroy(k);
-    ugeneric_destroy(v);
     udict_destroy(d);
 }
 
@@ -349,6 +353,58 @@ void test_udict_cmp(udict_backend_t backend)
     }
 }
 
+void test_2sum(void)
+{
+    const char *path = "utdata/2sum.txt";
+ //   const char *path = "utdata/2sum.txt.orig";
+    ugeneric_t tmp = ufile_read_lines(path);
+    UASSERT_NO_ERROR(tmp);
+    uvector_t *v = G_AS_PTR(tmp);
+    size_t vlen = uvector_get_size(v);
+
+    ugeneric_t *cells = uvector_get_cells(v);
+    for (size_t i = 0; i < vlen; i++)
+    {
+        ugeneric_t k = ugeneric_parse(G_AS_STR(cells[i]));
+        uvector_set_at(v, i, k);
+    }
+
+    for (int backend = 1; backend < UDICT_BACKEND_MAX; backend++)
+    {
+        //if (backend != UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING)
+        //    continue;
+
+        udict_t *d = udict_create_with_backend(backend);
+        for (size_t i = 0; i < vlen; i++)
+        {
+            udict_put(d, cells[i], G_NULL());
+        }
+
+        int s = 0;
+        for (long t = -10000; t < 10000 + 1; t++)
+        {
+            for (size_t i = 0; i < vlen; i++)
+            {
+                long k = G_AS_INT(cells[i]);
+                if (udict_has_key(d, G_INT(t - k)))
+                {
+                    if (k != (t - k))
+                    {
+                        s++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        udict_destroy(d);
+        UASSERT_INT_EQ(s, 4);
+        //UASSERT_INT_EQ(s, 427);
+        //printf("s: %d\n", s);
+    }
+    uvector_destroy(v);
+}
+
 int main(int argc, char **argv)
 {
     (void)argc;
@@ -368,4 +424,6 @@ int main(int argc, char **argv)
         test_udict_put(i);
         test_udict_cmp(i);
     }
+
+    test_2sum();
 }

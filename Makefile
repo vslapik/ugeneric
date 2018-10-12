@@ -22,7 +22,7 @@ lib: $(lib)
 
 test: $(texe)
 test_%: test_%.c $(lib)
-	$(CC) $(CFLAGS) test_$*.c $(lib) -o $@ -lgcov
+	$(CC) $(CFLAGS) test_$*.c $(lib) -o $@
 
 $(lib): $(obj) tags $(hdr) Makefile backtrace.c
 	$(CC) $(CFLAGS) -c backtrace.c -o backtrace.o

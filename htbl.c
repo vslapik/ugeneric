@@ -210,11 +210,10 @@ static ugeneric_kv_t *_oa_find_slot(const uhtbl_t *h, ugeneric_t k)
     size_t i = 0;
     ugeneric_kv_t *ret = NULL;
     size_t bucket = ugeneric_hash(k, h->hasher) % h->number_of_buckets;
-    ugeneric_kv_t *kv = &h->oa_buckets[bucket];
 
     while (i < h->number_of_buckets)
     {
-        kv = &h->oa_buckets[bucket];
+        ugeneric_kv_t *kv = &h->oa_buckets[bucket];
         if (_IS_EMPTY(kv))
         {
             // This is the place where to put the data (update case)
