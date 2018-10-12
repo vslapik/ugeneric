@@ -19,6 +19,38 @@ static inline void _skip_whitespaces(const char **str)
     }
 }
 
+const char *ugeneric_get_type_str(ugeneric_t g)
+{
+    const char *r = "unknown type";
+    switch (ugeneric_get_type(g))
+    {
+        case G_PTR_T:      return "G_STR";
+        case G_NULL_T:     return "G_NULL";
+        case G_INT_T:      return "G_INT";
+        case G_SIZE_T:     return "G_SIZE";
+        case G_BOOL_T:     return "G_BOOL";
+        case G_CSTR_T:     return "G_CSTR";
+        case G_STR_T:      return "G_STR";
+        case G_REAL_T:     return "G_REAL";
+        case G_VECTOR_T:   return "G_VECTOR";
+        case G_DICT_T:     return "G_DICT";
+        case G_ERROR_T:    return "G_ERROR";
+        case G_MEMCHUNK_T: return "G_MEMCHUNK";
+
+        default:
+            UASSERT_INTERNAL(r);
+    }
+
+    return r;
+}
+
+int ugeneric_fprint_type(ugeneric_t g, FILE *out)
+{
+    UASSERT_INPUT(out);
+    return fprintf(out, "%s\n", ugeneric_get_type_str(g));
+}
+
+
 int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
     long i1, i2;
@@ -93,9 +125,7 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 ret = udict_compare(G_AS_PTR(g1), G_AS_PTR(g2));
                 break;
 
-            default: // G_MEMCHUNK_T
-                UASSERT_INPUT(ugeneric_get_type(g1) == G_MEMCHUNK_T);
-                UASSERT_INPUT(ugeneric_get_type(g2) == G_MEMCHUNK_T);
+            case G_MEMCHUNK_T:
                 s1 = G_AS_MEMCHUNK_SIZE(g1);
                 s2 = G_AS_MEMCHUNK_SIZE(g2);
                 ret = memcmp(G_AS_MEMCHUNK_DATA(g1), G_AS_MEMCHUNK_DATA(g2),
@@ -105,6 +135,9 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                     ret = s1 - s2;
                 }
                 break;
+
+            default:
+                UASSERT_INTERNAL("unknown type");
         }
     }
 
@@ -154,10 +187,12 @@ void ugeneric_destroy_v(ugeneric_t g, void_dtr_t dtr)
             UABORT("attempt to destroy G_ERROR object");
             break;
 
-        default: // G_MEMCHUNK_T
-            UASSERT_INPUT(ugeneric_get_type(g) == G_MEMCHUNK_T);
+        case G_MEMCHUNK_T:
             ufree(G_AS_MEMCHUNK_DATA(g));
             break;
+
+        default:
+            UASSERT_INTERNAL("unknown type");
     }
 }
 
@@ -228,12 +263,14 @@ ugeneric_t ugeneric_copy_v(ugeneric_t g, void_cpy_t cpy)
             UABORT("attempt to copy G_ERROR object");
             break;
 
-        default: // G_MEMCHUNK_T
-            UASSERT_INPUT(ugeneric_get_type(g) == G_MEMCHUNK_T);
+        case G_MEMCHUNK_T:
             size = G_AS_MEMCHUNK_SIZE(g);
             data = G_AS_MEMCHUNK_DATA(g);
             ret = G_MEMCHUNK(umemdup(data, size), size);
             break;
+
+        default:
+            UASSERT_INTERNAL("unknown type");
     }
 
     return ret;
@@ -264,8 +301,8 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
 {
     UASSERT_INPUT(buf);
 
-    char tmp[32];
     char *s;
+    char tmp[32];
     umemchunk_t m;
 
     switch (ugeneric_get_type(g))
@@ -338,10 +375,12 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             UABORT("attempt to serialize G_ERROR object");
             break;
 
-        default: // G_MEMCHUNK_T
-            UASSERT_INPUT(ugeneric_get_type(g) == G_MEMCHUNK_T);
+        case G_MEMCHUNK_T:
             umemchunk_serialize(G_AS_MEMCHUNK(g), buf);
             break;
+
+        default:
+            UASSERT_INTERNAL("unknown type");
     }
 }
 
@@ -463,7 +502,7 @@ static ugeneric_t _parse_number(const char **str)
         g = G_INT(l);
         if (errno == ERANGE && **str != '-')
         {
-            // Token looks like a huge positive integer number
+            // The token looks like a huge positive integer number
             // which doesn't fit to long int, let's try to parse
             // it as size_t.
             errno = 0;
@@ -808,8 +847,8 @@ static uint32_t _hash(const void *key, int len, uint32_t seed)
 
 size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
 {
-    void *data;
-    size_t size;
+    void *data = NULL;
+    size_t size = 0;
 
     switch (ugeneric_get_type(g))
     {
@@ -843,12 +882,15 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
         case G_VECTOR_T:
         case G_DICT_T:
             UABORT("object is not hashable");
+            break;
 
-        default: // G_MEMCHUNK_T
-            UASSERT_INPUT(ugeneric_get_type(g) == G_MEMCHUNK_T);
+        case G_MEMCHUNK_T:
             data = G_AS_MEMCHUNK_DATA(g);
             size = G_AS_MEMCHUNK_SIZE(g);
             break;
+
+        default:
+            UASSERT_INTERNAL("unknown type");
     }
 
     UASSERT(size < INT_MAX);

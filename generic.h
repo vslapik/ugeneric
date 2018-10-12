@@ -175,9 +175,11 @@ int ugeneric_fprint_v(ugeneric_t g, FILE *out, void_s8r_t void_serializer);
 
 #define ugeneric_serialize(g, buf)           ugeneric_serialize_v(g, buf, NULL)
 #define ugeneric_as_str(g)                   ugeneric_as_str_v(g, NULL)
+#define ugeneric_print_type(g)               ugeneric_fprint_type(g, stdout)
 #define ugeneric_print_v(g, void_serializer) ugeneric_fprint_v(g, stdout, void_serializer)
 #define ugeneric_print(g)                    ugeneric_print_v(g, NULL)
-#define ugenric_fprint(g, out)               ugeneric_fprint_v(g, out, NULL)
+#define ugeneric_fprint(g, out)              ugeneric_fprint_v(g, out, NULL)
+
 
 typedef enum {
     UDICT_KEYS,
