@@ -22,6 +22,9 @@ syn keyword MyTypes
 \ uhtbl_t
 \ uhtbl_record_t
 \ uhtbl_iterator_t
+\ void_cmp_t
+\ void_hasher_t
+\ void_s8r_t
 
 syn keyword MyAsserts
 \ UASSERT_INPUT
@@ -35,6 +38,18 @@ syn keyword MyConstants
 \ UDICT_BACKEND_BST_PLAIN
 \ UDICT_BACKEND_HTBL
 \ UDICT_BACKEND_BST_RB
+\ G_ERROR_T
+\ G_NULL_T
+\ G_PTR_T
+\ G_STR_T
+\ G_CSTR_T
+\ G_INT_T
+\ G_REAL_T
+\ G_SIZE_T
+\ G_BOOL_T
+\ G_VECTOR_T
+\ G_DICT_T
+\ G_MEMCHUNK_T
 
 hi link MyTypes Type
 hi link MyCode Statement

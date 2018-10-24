@@ -65,9 +65,9 @@ void test_bitmap()
     uint8_t *b33 = ubitmap_allocate(33);
     CHECK_BITMAP(b33, 33, "000000000000000000000000000000000");
     ubitmap_flip_bit(b33, 30);
-    UASSERT_INT_EQ(ubitmap_get_bit(b33, 29), 0);
-    UASSERT_INT_EQ(ubitmap_get_bit(b33, 30), 1);
-    UASSERT_INT_EQ(ubitmap_get_bit(b33, 31), 0);
+    UASSERT(!ubitmap_bit_is_set(b33, 29));
+    UASSERT(ubitmap_bit_is_set(b33, 30));
+    UASSERT(!ubitmap_bit_is_set(b33, 31));
     CHECK_BITMAP(b33, 33, "000000000000000000000000000000100");
 
     ufree(b33);

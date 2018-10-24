@@ -1,8 +1,11 @@
 #include "graph.h"
 
+#include "bitmap.h"
 #include "dsu.h"
 #include "list.h"
 #include "mem.h"
+#include "queue.h"
+#include "stack.h"
 #include "vector.h"
 
 struct ugraph_opaq {
@@ -43,13 +46,8 @@ bool ugraph_has_edge(const ugraph_t *g, size_t f, size_t t)
     UASSERT_INPUT(f < g->n);
     UASSERT_INPUT(t < g->n);
 
-    if ((g->type == UGRAPH_UNDIRECTED) && (f > t))
-    {
-        swap(&f, &t);
-    }
-    ulist_t *l = G_AS_PTR(uvector_get_at(g->nodes, f));
-
-    return ulist_contains(l, G_SIZE(t));
+    return ulist_contains(G_AS_PTR(uvector_get_at(g->nodes, f)),
+                          G_SIZE(t));
 }
 
 void ugraph_add_edge(ugraph_t *g, size_t f, size_t t)
@@ -58,13 +56,16 @@ void ugraph_add_edge(ugraph_t *g, size_t f, size_t t)
     UASSERT_INPUT(f < g->n);
     UASSERT_INPUT(t < g->n);
 
-    if ((g->type == UGRAPH_UNDIRECTED) && (f > t))
-    {
-        swap(&f, &t);
-    }
     if (!ugraph_has_edge(g, f, t))
     {
         ulist_append(G_AS_PTR(uvector_get_at(g->nodes, f)), G_SIZE(t));
+        if ((g->type == UGRAPH_UNDIRECTED))
+        {
+            // For undirected graph store two edges (backward and forward)
+            // in order to make BFS and DFS work.
+            ulist_append(G_AS_PTR(uvector_get_at(g->nodes, t)), G_SIZE(f));
+        }
+
         g->m += 1;
     }
 }
@@ -103,14 +104,26 @@ uvector_t *ugraph_get_edges(const ugraph_t *g)
         ulist_iterator_t *li = ulist_iterator_create(l);
         while (ulist_iterator_has_next(li))
         {
-            ugraph_edge_t *edge = umalloc(sizeof(*edge));
             ugeneric_t e = ulist_iterator_get_next(li);
+            size_t t = G_AS_SIZE(e);
+            if (g->type == UGRAPH_UNDIRECTED)
+            {
+                // As internally there are two edges (forward and backward)
+                // in undirected graph we return only the first one (f -> t)
+                if (t < i)
+                {
+                    continue;
+                }
+            }
+            ugraph_edge_t *edge = umalloc(sizeof(*edge));
             edge->f = i;
-            edge->t = G_AS_SIZE(e);
+            edge->t = t;
             uvector_set_at(v, j++, G_PTR(edge));
         }
         ulist_iterator_destroy(li);
     }
+
+    UASSERT_INTERNAL(uvector_get_size(v) == g->m);
 
     return v;
 }
@@ -121,7 +134,6 @@ static uvector_t *_min_cut(const ugraph_t *g)
     uvector_t *edgestmp = uvector_copy(edges); // shallow copy
     size_t edges_count = ugraph_get_edge_count(g);
     size_t vertex_count = ugraph_get_vertex_count(g);
-    UASSERT(uvector_get_size(edges) == edges_count);
 
     udsu_t *d = udsu_create(vertex_count);
     while (vertex_count > 2)
@@ -180,6 +192,98 @@ uvector_t *ugraph_get_min_cut(const ugraph_t *g, size_t iterations)
     }
 
     return min_cut;
+}
+
+
+void ugraph_bfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(root < g->n);
+
+    ulist_iterator_t *li = NULL;
+    uqueue_t *q = uqueue_create();
+    uint8_t *seen_nodes = ubitmap_allocate(g->n);
+
+    uqueue_enq(q, G_INT(root));
+    ubitmap_set_bit(seen_nodes, root);
+
+    while (!uqueue_is_empty(q))
+    {
+        // Extract next node.
+        size_t node = G_AS_INT(uqueue_deq(q));
+
+        // Run callback on it.
+        if (cb && (cb(g, node, data)))
+        {
+            goto exit;
+        }
+
+        // Put all current node non-visited neighbours to the queue.
+        li = ulist_iterator_create(G_AS_PTR(uvector_get_at(g->nodes, node)));
+        while (ulist_iterator_has_next(li))
+        {
+            ugeneric_t n = ulist_iterator_get_next(li);
+            if (!ubitmap_bit_is_set(seen_nodes, G_AS_INT(n)))
+            {
+                uqueue_enq(q, n);
+                ubitmap_set_bit(seen_nodes, G_AS_INT(n));
+            }
+        }
+        ulist_iterator_destroy(li);
+    }
+
+exit:
+    ufree(seen_nodes);
+    uqueue_destroy(q);
+}
+
+void ugraph_dfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(root < g->n);
+
+    ulist_iterator_t *li = NULL;
+    ustack_t *s = ustack_create();
+    uint8_t *visited_nodes = ubitmap_allocate(g->n);
+
+    ustack_push(s, G_INT(root));
+    while (!ustack_is_empty(s))
+    {
+        size_t node = G_AS_INT(ustack_peek(s));
+
+        // Run callback on it.
+        if (!ubitmap_bit_is_set(visited_nodes, node))
+        {
+            ubitmap_set_bit(visited_nodes, node);
+            if (cb && (cb(g, node, data)))
+            {
+                goto exit;
+            }
+        }
+
+        bool backtrack = true;
+        li = ulist_iterator_create(G_AS_PTR(uvector_get_at(g->nodes, node)));
+        while (ulist_iterator_has_next(li))
+        {
+            ugeneric_t n = ulist_iterator_get_next(li);
+            if (!ubitmap_bit_is_set(visited_nodes, G_AS_INT(n)))
+            {
+                ustack_push(s, n);
+                backtrack = false;
+                break;
+            }
+        }
+        ulist_iterator_destroy(li);
+
+        if (backtrack)
+        {
+            ustack_pop(s);
+        }
+    }
+
+exit:
+    ufree(visited_nodes);
+    ustack_destroy(s);
 }
 
 void ugraph_dump_to_dot(const ugraph_t *g, const char *name, FILE *out)
