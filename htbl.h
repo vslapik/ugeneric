@@ -40,7 +40,7 @@ void uhtbl_serialize(const uhtbl_t *h, ubuffer_t *buf);
 int uhtbl_fprint(const uhtbl_t *h, FILE *out);
 static inline int uhtbl_print(const uhtbl_t *h) {return uhtbl_fprint(h, stdout);}
 
-void uhtbl_dump_to_dot(const uhtbl_t *h, FILE *out);
+void uhtbl_dump_to_dot(const uhtbl_t *h, const char *name, FILE *out);
 
 uhtbl_iterator_t *uhtbl_iterator_create(const uhtbl_t *h);
 ugeneric_kv_t uhtbl_iterator_get_next(uhtbl_iterator_t *hi);

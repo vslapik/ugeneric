@@ -58,7 +58,7 @@ void test_mincut(bool verbose)
 
     // large graph ------------------------------------------------------------
     const char *path = "utdata/kargerMinCut.txt";
-    ugeneric_t t = ufile_read_lines(path);
+    ugeneric_t t = ufile_read_lines(path, "\n");
     UASSERT_NO_ERROR(t);
     uvector_t *v = G_AS_PTR(t);
     size_t vlen = uvector_get_size(v);

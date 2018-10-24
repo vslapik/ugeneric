@@ -262,7 +262,7 @@ void test_large_bst(void)
 {
     ubst_t *b = ubst_create_ext(UBST_RB_BALANCING);
     const char *path = "utdata/dict_data.txt";
-    ugeneric_t g = ufile_read_lines(path);
+    ugeneric_t g = ufile_read_lines(path, "\n");
     UASSERT_NO_ERROR(g);
     uvector_t *v = G_AS_PTR(g);
 

@@ -175,7 +175,7 @@ ugeneric_t ufile_read_to_string(const char *path)
     return G_STR(G_AS_MEMCHUNK_DATA(g));
 }
 
-ugeneric_t ufile_read_lines(const char *path)
+ugeneric_t ufile_read_lines(const char *path, const char *sep)
 {
     UASSERT_INPUT(path);
 
@@ -186,7 +186,7 @@ ugeneric_t ufile_read_lines(const char *path)
     }
 
     char *str = G_AS_STR(g);
-    uvector_t *v = ustring_split(str, "\n");
+    uvector_t *v = ustring_split(str, sep);
     ufree(str);
 
     if (strlen(G_AS_STR(uvector_get_back(v))) == 0)

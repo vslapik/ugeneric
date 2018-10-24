@@ -596,12 +596,12 @@ int uhtbl_fprint(const uhtbl_t *h, FILE *out)
     return ret;
 }
 
-void uhtbl_dump_to_dot(const uhtbl_t *h, FILE *out)
+void uhtbl_dump_to_dot(const uhtbl_t *h, const char *name, FILE *out)
 {
     UASSERT_INPUT(h);
     UASSERT_INPUT(out);
 
-    fprintf(out, "%s %s {\n", "digraph", "uhtbl_name");
+    fprintf(out, "%s %s {\n", "digraph", name);
     fprintf(out, "\trankdir=LR;\n");
     fprintf(out, "\tnode [shape=record];\n");
 

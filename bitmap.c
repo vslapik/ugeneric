@@ -48,7 +48,7 @@ char *ubitmap_range_as_str(const void *a, size_t l, size_t r)
 
     while ((l < r) && (l % 8))
     {
-        ubuffer_append_byte(&buf, ubitmap_get_bit(a, l) + '0');
+        ubuffer_append_byte(&buf, ubitmap_bit_is_set(a, l) + '0');
         l++;
     }
 
@@ -70,7 +70,7 @@ char *ubitmap_range_as_str(const void *a, size_t l, size_t r)
 
     while (l < r)
     {
-        ubuffer_append_byte(&buf, ubitmap_get_bit(a, l) + '0');
+        ubuffer_append_byte(&buf, ubitmap_bit_is_set(a, l) + '0');
         l++;
     }
 

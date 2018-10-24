@@ -21,11 +21,12 @@ ugeneric_t ufile_close(FILE *f);
 ugeneric_t ufile_get_size(const char *path);
 ugeneric_t ufile_read_to_string(const char *path);
 ugeneric_t ufile_read_to_memchunk(const char *path);
-ugeneric_t ufile_read_lines(const char *path);
+ugeneric_t ufile_read_lines(const char *path, const char *sep);
 ugeneric_t ufile_create_from_memchunk(const char *path, umemchunk_t mchunk);
 
 ugeneric_t ufile_reader_create(const char *path, size_t buffer_size);
 ugeneric_t ufile_reader_read(ufile_reader_t *fr, size_t size, void *buffer);
+ugeneric_t ufile_reader_read_line(ufile_reader_t *fr);
 ugeneric_t ufile_reader_get_file_size(ufile_reader_t *fr);
 ugeneric_t ufile_reader_get_position(const ufile_reader_t *fr);
 ugeneric_t ufile_reader_set_position(ufile_reader_t *fr, size_t position);

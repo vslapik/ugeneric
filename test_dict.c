@@ -117,7 +117,7 @@ void test_large_dict(udict_backend_t backend)
 {
     udict_t *d = udict_create_with_backend(backend);
     const char *path = "utdata/dict_data.txt";
-    ugeneric_t g = ufile_read_lines(path);
+    ugeneric_t g = ufile_read_lines(path, "\n");
     UASSERT_NO_ERROR(g);
     uvector_t *v = G_AS_PTR(g);
 
@@ -357,7 +357,7 @@ void test_2sum(void)
 {
     const char *path = "utdata/2sum.txt";
  //   const char *path = "utdata/2sum.txt.orig";
-    ugeneric_t tmp = ufile_read_lines(path);
+    ugeneric_t tmp = ufile_read_lines(path, "\n");
     UASSERT_NO_ERROR(tmp);
     uvector_t *v = G_AS_PTR(tmp);
     size_t vlen = uvector_get_size(v);
