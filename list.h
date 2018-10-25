@@ -20,6 +20,7 @@ void ulist_set_at(ulist_t *l, size_t i, ugeneric_t e);
 void ulist_insert_at(ulist_t *l, size_t i, ugeneric_t e);
 void ulist_remove_at(ulist_t *l, size_t i);
 bool ulist_contains(const ulist_t *l, ugeneric_t e);
+ugeneric_t *ulist_find(ulist_t *l, ugeneric_t e);
 void ulist_reverse(ulist_t *l);
 ulist_t *ulist_copy(const ulist_t *l);
 ulist_t *ulist_deep_copy(const ulist_t *l);

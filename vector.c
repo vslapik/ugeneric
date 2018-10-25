@@ -476,5 +476,4 @@ void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs, FILE *o
         fprintf(out, "%zu,%s\n", i, str);
         ufree(str);
     }
-
 }

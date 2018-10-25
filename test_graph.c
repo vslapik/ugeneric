@@ -9,12 +9,12 @@
 void test_graph(bool verbose)
 {
     ugraph_t *g = ugraph_create(100, UGRAPH_UNDIRECTED);
-    ugraph_add_edge(g, 0, 98);
-    ugraph_add_edge(g, 1, 98);
-    ugraph_add_edge(g, 6, 34);
-    ugraph_add_edge(g, 6, 35);
-    ugraph_add_edge(g, 6, 36);
-    ugraph_add_edge(g, 6, 39);
+    ugraph_add_edge(g, 0, 98, 1);
+    ugraph_add_edge(g, 1, 98, 1);
+    ugraph_add_edge(g, 6, 34, 1);
+    ugraph_add_edge(g, 6, 35, 1);
+    ugraph_add_edge(g, 6, 36, 1);
+    ugraph_add_edge(g, 6, 39, 1);
     if (verbose)
         ugraph_dump_to_dot(g, "test", stdout);
     ugraph_destroy(g);
@@ -24,22 +24,22 @@ void test_mincut(bool verbose)
 {
     // small graph -----------------------------------------------------------
     ugraph_t *g = ugraph_create(7, UGRAPH_UNDIRECTED);
-    ugraph_add_edge(g, 0, 1);
-    ugraph_add_edge(g, 0, 3);
-    ugraph_add_edge(g, 2, 3);
-    ugraph_add_edge(g, 2, 1);
-    ugraph_add_edge(g, 4, 1);
-    ugraph_add_edge(g, 4, 2);
-    ugraph_add_edge(g, 4, 3);
-    ugraph_add_edge(g, 5, 1);
-    ugraph_add_edge(g, 5, 2);
-    ugraph_add_edge(g, 5, 3);
-    ugraph_add_edge(g, 5, 4);
-    ugraph_add_edge(g, 6, 1);
-    ugraph_add_edge(g, 6, 2);
-    ugraph_add_edge(g, 6, 3);
-    ugraph_add_edge(g, 6, 4);
-    ugraph_add_edge(g, 6, 5);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 0, 3, 1);
+    ugraph_add_edge(g, 2, 3, 1);
+    ugraph_add_edge(g, 2, 1, 1);
+    ugraph_add_edge(g, 4, 1, 1);
+    ugraph_add_edge(g, 4, 2, 1);
+    ugraph_add_edge(g, 4, 3, 1);
+    ugraph_add_edge(g, 5, 1, 1);
+    ugraph_add_edge(g, 5, 2, 1);
+    ugraph_add_edge(g, 5, 3, 1);
+    ugraph_add_edge(g, 5, 4, 1);
+    ugraph_add_edge(g, 6, 1, 1);
+    ugraph_add_edge(g, 6, 2, 1);
+    ugraph_add_edge(g, 6, 3, 1);
+    ugraph_add_edge(g, 6, 4, 1);
+    ugraph_add_edge(g, 6, 5, 1);
 
     uvector_t *mincut = ugraph_get_min_cut(g, 100);
     size_t cutsize = uvector_get_size(mincut);
@@ -72,7 +72,7 @@ void test_mincut(bool verbose)
         for (size_t j = 1; j < valen; j++)
         {
             char *nn = G_AS_PTR(uvector_get_at(va, j));
-            ugraph_add_edge(g, i, atoi(nn) - 1);
+            ugraph_add_edge(g, i, atoi(nn) - 1, 1);
         }
         uvector_destroy(va);
     }
@@ -132,15 +132,15 @@ void test_search(bool verbose)
     g = ugraph_create(2, UGRAPH_DIRECTED);
     _check_search(g, 0, "[0]");
     _check_search(g, 1, "[1]");
-    ugraph_add_edge(g, 0, 1);
+    ugraph_add_edge(g, 0, 1, 1);
     _check_search(g, 0, "[0, 1]");
     _check_search(g, 1, "[1]");
     ugraph_destroy(g);
 
     g = ugraph_create(4, UGRAPH_DIRECTED);
-    ugraph_add_edge(g, 0, 1);
-    ugraph_add_edge(g, 0, 2);
-    ugraph_add_edge(g, 0, 3);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 0, 2, 1);
+    ugraph_add_edge(g, 0, 3, 1);
     _check_search(g, 0, "[0, 1, 2, 3]");
     _check_search(g, 1, "[1]");
     _check_search(g, 2, "[2]");
@@ -148,9 +148,9 @@ void test_search(bool verbose)
     ugraph_destroy(g);
 
     g = ugraph_create(4, UGRAPH_DIRECTED);
-    ugraph_add_edge(g, 0, 1);
-    ugraph_add_edge(g, 1, 2);
-    ugraph_add_edge(g, 2, 3);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 1, 2, 1);
+    ugraph_add_edge(g, 2, 3, 1);
     _check_search(g, 0, "[0, 1, 2, 3]");
     _check_search(g, 1, "[1, 2, 3]");
     _check_search(g, 2, "[2, 3]");
@@ -158,16 +158,16 @@ void test_search(bool verbose)
     ugraph_destroy(g);
 
     g = ugraph_create(7, UGRAPH_UNDIRECTED);
-    ugraph_add_edge(g, 0, 1);
-    ugraph_add_edge(g, 0, 3);
-    ugraph_add_edge(g, 2, 3);
-    ugraph_add_edge(g, 2, 1);
-    ugraph_add_edge(g, 4, 1);
-    ugraph_add_edge(g, 4, 2);
-    ugraph_add_edge(g, 4, 3);
-    ugraph_add_edge(g, 5, 4);
-    ugraph_add_edge(g, 6, 3);
-    ugraph_add_edge(g, 6, 5);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 0, 3, 1);
+    ugraph_add_edge(g, 2, 3, 1);
+    ugraph_add_edge(g, 2, 1, 1);
+    ugraph_add_edge(g, 4, 1, 1);
+    ugraph_add_edge(g, 4, 2, 1);
+    ugraph_add_edge(g, 4, 3, 1);
+    ugraph_add_edge(g, 5, 4, 1);
+    ugraph_add_edge(g, 6, 3, 1);
+    ugraph_add_edge(g, 6, 5, 1);
     _check_search(g, 0, "[0, 1, 2, 3, 4, 5, 6]");
     _check_search(g, 1, "[0, 1, 2, 3, 4, 5, 6]");
     _check_search(g, 2, "[0, 1, 2, 3, 4, 5, 6]");
@@ -178,16 +178,16 @@ void test_search(bool verbose)
     ugraph_destroy(g);
 
     g = ugraph_create(7, UGRAPH_DIRECTED);
-    ugraph_add_edge(g, 0, 1);
-    ugraph_add_edge(g, 0, 3);
-    ugraph_add_edge(g, 2, 3);
-    ugraph_add_edge(g, 2, 1);
-    ugraph_add_edge(g, 4, 1);
-    ugraph_add_edge(g, 4, 2);
-    ugraph_add_edge(g, 4, 3);
-    ugraph_add_edge(g, 5, 4);
-    ugraph_add_edge(g, 6, 3);
-    ugraph_add_edge(g, 6, 5);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 0, 3, 1);
+    ugraph_add_edge(g, 2, 3, 1);
+    ugraph_add_edge(g, 2, 1, 1);
+    ugraph_add_edge(g, 4, 1, 1);
+    ugraph_add_edge(g, 4, 2, 1);
+    ugraph_add_edge(g, 4, 3, 1);
+    ugraph_add_edge(g, 5, 4, 1);
+    ugraph_add_edge(g, 6, 3, 1);
+    ugraph_add_edge(g, 6, 5, 1);
     _check_search(g, 0, "[0, 1, 3]");
     _check_search(g, 1, "[1]");
     _check_search(g, 2, "[1, 2, 3]");

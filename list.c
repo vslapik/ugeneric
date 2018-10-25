@@ -225,13 +225,12 @@ void ulist_remove_at(ulist_t *l, size_t i)
     l->size--;
 }
 
-bool ulist_contains(const ulist_t *l, ugeneric_t e)
+ugeneric_t *ulist_find(ulist_t *l, ugeneric_t e)
 {
-    UASSERT_INPUT(l);
-
     ulist_item_t *li = l->head;
     ulist_item_t *t;
-    bool ret = false;
+
+    ugeneric_t *g = NULL;
 
     while (li)
     {
@@ -239,12 +238,18 @@ bool ulist_contains(const ulist_t *l, ugeneric_t e)
         li = li->next;
         if (ugeneric_compare_v(t->data, e, l->void_handlers.cmp) == 0)
         {
-            ret = true;
+            g = &t->data;
             break;
         }
     }
 
-    return ret;
+    return g;
+}
+
+bool ulist_contains(const ulist_t *l, ugeneric_t e)
+{
+    UASSERT_INPUT(l);
+    return (ulist_find((ulist_t *)l, e) != NULL);
 }
 
 void ulist_reverse(ulist_t *l)

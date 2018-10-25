@@ -1,3 +1,4 @@
+- vector find()
 - implement dict lazy resize
 - in case of collision in hash table append a new element to beginning of the chain
 - improve Makefile
