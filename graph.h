@@ -35,6 +35,8 @@ uvector_t *ugraph_get_min_cut(const ugraph_t *g, size_t iterations);
 typedef void (*ugraph_search)(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data);
 void ugraph_bfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data);
 void ugraph_dfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data);
+uvector_t *ugraph_dijkstra(const ugraph_t *g, size_t from, size_t to);
+int ugraph_compute_path_length(const ugraph_t *g, const uvector_t *path);
 
 void ugraph_dump_to_dot(const ugraph_t *g, const char *name, FILE *out);
 ugraph_t ugraph_load_from_dot(FILE *in);

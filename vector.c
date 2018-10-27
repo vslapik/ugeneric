@@ -32,6 +32,8 @@ static uvector_t *_allocate_vector(void)
 
 static uvector_t *_vcpy(const uvector_t *v, bool deep)
 {
+    UASSERT_INPUT(v);
+
     uvector_t *copy = _allocate_vector();
     memcpy(copy, v, sizeof(*v));
     if (v->size)
@@ -112,6 +114,8 @@ uvector_t *uvector_create_from_array(void *array, size_t array_len,
                                      size_t array_element_size,
                                      ugeneric_type_e uvector_element_type)
 {
+    UASSERT_INPUT(array);
+
     size_t i = 0;
     uvector_t *v = _allocate_vector();
     uvector_reserve_capacity(v, array_len);
@@ -327,7 +331,12 @@ ugeneric_t uvector_pop_back(uvector_t *v)
     return v->cells[--v->size];
 }
 
-void uvector_reverse(uvector_t *v, size_t l, size_t r)
+void uvector_reverse(uvector_t *v)
+{
+    ugeneric_array_reverse(v->cells, v->size, 0, v->size ? v->size -1 : 0);
+}
+
+void uvector_reverse_range(uvector_t *v, size_t l, size_t r)
 {
     ugeneric_array_reverse(v->cells, v->size, l, r);
 }
@@ -340,19 +349,16 @@ void uvector_sort(uvector_t *v)
 
 bool uvector_is_sorted(const uvector_t *v)
 {
-    UASSERT_INPUT(v);
     return ugeneric_array_is_sorted(v->cells, v->size, v->void_handlers.cmp);
 }
 
 uvector_t *uvector_copy(const uvector_t *v)
 {
-    UASSERT_INPUT(v);
     return _vcpy(v, false);
 }
 
 uvector_t *uvector_deep_copy(const uvector_t *v)
 {
-    UASSERT_INPUT(v);
     return _vcpy(v, true);
 }
 

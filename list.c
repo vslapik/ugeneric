@@ -33,6 +33,8 @@ static inline ulist_item_t **_rewind_to(ulist_t *l, size_t i)
 
 static ulist_t *_lcpy(const ulist_t *l, bool deep)
 {
+    UASSERT_INPUT(l);
+
     ulist_t *copy = ulist_create();
     memcpy(copy, l, sizeof(*l));
     ulist_item_t *from = l->head;
@@ -227,6 +229,8 @@ void ulist_remove_at(ulist_t *l, size_t i)
 
 ugeneric_t *ulist_find(ulist_t *l, ugeneric_t e)
 {
+    UASSERT_INPUT(l);
+
     ulist_item_t *li = l->head;
     ulist_item_t *t;
 
@@ -248,7 +252,6 @@ ugeneric_t *ulist_find(ulist_t *l, ugeneric_t e)
 
 bool ulist_contains(const ulist_t *l, ugeneric_t e)
 {
-    UASSERT_INPUT(l);
     return (ulist_find((ulist_t *)l, e) != NULL);
 }
 
@@ -289,13 +292,11 @@ int ulist_compare(const ulist_t *l1, const ulist_t *l2, void_cmp_t cmp)
 
 ulist_t *ulist_copy(const ulist_t *l)
 {
-    UASSERT_INPUT(l);
     return _lcpy(l, false);
 }
 
 ulist_t *ulist_deep_copy(const ulist_t *l)
 {
-    UASSERT_INPUT(l);
     return _lcpy(l, true);
 }
 

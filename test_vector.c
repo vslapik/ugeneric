@@ -430,6 +430,28 @@ void test_uvector_data_ownership(void)
     uvector_destroy(copy2);
 }
 
+void _check_reverse(const char *in, const char *rev)
+{
+    ugeneric_t g = ugeneric_parse(in);
+    UASSERT_NO_ERROR(g);
+    uvector_t *v = G_AS_PTR(g);
+    uvector_reverse(v);
+    char *t = uvector_as_str(v);
+    UASSERT_STR_EQ(t, rev);
+    ufree(t);
+    uvector_destroy(v);
+}
+
+void test_uvector_reverse(void)
+{
+    _check_reverse("[]", "[]");
+    _check_reverse("[1]", "[1]");
+    _check_reverse("[1, 2]", "[2, 1]");
+    _check_reverse("[1, 2, 3]", "[3, 2, 1]");
+    _check_reverse("[1, 2, 3, 4]", "[4, 3, 2, 1]");
+    _check_reverse("[1, 2, 3, 4, 5]", "[5, 4, 3, 2, 1]");
+}
+
 int main(int argc, char **argv)
 {
 //    test_gnuplot();
@@ -443,6 +465,7 @@ int main(int argc, char **argv)
     test_uvector_compare();
     test_uvector_slice();
     test_uvector_data_ownership();
+    test_uvector_reverse();
 
     return EXIT_SUCCESS;
 }

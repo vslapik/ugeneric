@@ -33,6 +33,11 @@ static void uheap_take_data_ownership(uheap_t *h);
 static void uheap_drop_data_ownership(uheap_t *h);
 static bool uheap_is_data_owner(uheap_t *h);
 
+char *uheap_as_str(const uheap_t *h);
+void uheap_serialize(const uheap_t *h, ubuffer_t *buf);
+int uheap_fprint(const uheap_t *h, FILE *out);
+static inline int uheap_print(const uheap_t *h) {return uheap_fprint(h, stdout);}
+
 void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out);
 
 ugeneric_base_t *uheap_get_base(uheap_t *h);

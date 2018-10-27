@@ -89,7 +89,7 @@ ugeneric_t uheap_pop(uheap_t *h)
         size_t t = 0;
         size_t l = LCHILD_IDX(i);
         size_t r = RCHILD_IDX(i);
-        a[0] = e1; // copy the last element to the root
+        a[0] = e1; // move the last element to the root
 
         void_cmp_t cmp = uvector_get_void_comparator(h->data);
         while (l < n || r < n) // percolate the root down to the right position
@@ -199,4 +199,19 @@ ugeneric_base_t *uheap_get_base(uheap_t *h)
 {
     UASSERT_INPUT(h);
     return uvector_get_base(h->data);
+}
+
+char *uheap_as_str(const uheap_t *h)
+{
+    return uvector_as_str(h->data);
+}
+
+void uheap_serialize(const uheap_t *h, ubuffer_t *buf)
+{
+    uvector_serialize(h->data, buf);
+}
+
+int uheap_fprint(const uheap_t *h, FILE *out)
+{
+    return uvector_fprint(h->data, out);
 }

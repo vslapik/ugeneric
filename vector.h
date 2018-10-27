@@ -42,7 +42,8 @@ uvector_t *uvector_get_slice(const uvector_t *v, size_t begin, size_t end,
                              size_t stride);
 
 void uvector_swap(uvector_t *v, size_t l, size_t r);
-void uvector_reverse(uvector_t *v, size_t l, size_t r);
+void uvector_reverse(uvector_t *v);
+void uvector_reverse_range(uvector_t *v, size_t l, size_t r);
 void uvector_sort(uvector_t *v);
 bool uvector_is_sorted(const uvector_t *v);
 size_t uvector_bsearch(const uvector_t *v, ugeneric_t e);

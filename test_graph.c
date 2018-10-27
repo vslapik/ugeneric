@@ -195,7 +195,145 @@ void test_search(bool verbose)
     _check_search(g, 4, "[1, 2, 3, 4]");
     _check_search(g, 5, "[1, 2, 3, 4, 5]");
     _check_search(g, 6, "[1, 2, 3, 4, 5, 6]");
+    ugraph_destroy(g);
+}
+
+bool _print_node(const ugraph_t *g, size_t n, void *data)
+{
+    (void)g;
+    (void)data;
+    printf("%zd\n", n);
+
+    return false;
+}
+
+static void _check_dijkstra(const ugraph_t *g, size_t from, size_t to,
+                            const char *exp_path, size_t exp_len)
+{
+    uvector_t *p = ugraph_dijkstra(g, from, to);
+    char *path = uvector_as_str(p);
+    int len = ugraph_compute_path_length(g, p);
+    UASSERT_INT_EQ(len, exp_len);
+    UASSERT_STR_EQ(path, exp_path);
+    //printf("----- node %zd, len: %d\n", to, len);
+    //uvector_print(p);
+
+    uvector_destroy(p);
+    ufree(path);
+}
+
+void test_dijkstra(bool verbose)
+{
+    (void)verbose;
+    ugraph_t *g;
+
+    g = ugraph_create(1, UGRAPH_UNDIRECTED);
+    _check_dijkstra(g, 0, 0, "[0]", 0);
+    ugraph_destroy(g);
+
+    g = ugraph_create(1, UGRAPH_DIRECTED);
+    _check_dijkstra(g, 0, 0, "[0]", 0);
+    ugraph_destroy(g);
+
+    g = ugraph_create(2, UGRAPH_UNDIRECTED);
+    ugraph_add_edge(g, 0, 1, 100);
+    _check_dijkstra(g, 0, 1, "[0, 1]", 100);
+    ugraph_destroy(g);
+
+    g = ugraph_create(2, UGRAPH_DIRECTED);
+    ugraph_add_edge(g, 0, 1, 100);
+    _check_dijkstra(g, 0, 1, "[0, 1]", 100);
+    _check_dijkstra(g, 1, 0, "[]", 0);
+    ugraph_destroy(g);
+
+    g = ugraph_create(7, UGRAPH_DIRECTED);
+    ugraph_add_edge(g, 0, 5, 1);
+    ugraph_add_edge(g, 0, 4, 1);
+    ugraph_add_edge(g, 0, 3, 1);
+    ugraph_add_edge(g, 0, 2, 1);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 5, 6, 5);
+    ugraph_add_edge(g, 4, 6, 4);
+    ugraph_add_edge(g, 3, 6, 3);
+    ugraph_add_edge(g, 2, 6, 2);
+    ugraph_add_edge(g, 1, 6, 1);
+    _check_dijkstra(g, 0, 6, "[0, 1, 6]", 2);
+    ugraph_destroy(g);
+
+    g = ugraph_create(7, UGRAPH_UNDIRECTED);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 0, 3, 1);
+    ugraph_add_edge(g, 2, 3, 1);
+    ugraph_add_edge(g, 2, 1, 1);
+    ugraph_add_edge(g, 4, 2, 1);
+    ugraph_add_edge(g, 4, 3, 1);
+    ugraph_add_edge(g, 5, 4, 1);
+    ugraph_add_edge(g, 6, 3, 1);
+    ugraph_add_edge(g, 6, 5, 1);
+    ugraph_add_edge(g, 2, 6, 1);
+    _check_dijkstra(g, 0, 6, "[0, 3, 6]", 2);
+    _check_dijkstra(g, 0, 1, "[0, 1]", 1);
+    ugraph_destroy(g);
+
+}
+
+void test_dijkstra_large(bool verbose)
+{
+    (void)verbose;
+    ugraph_t *g;
+    const char *path = "utdata/dijkstraData.txt";
+    ugeneric_t t = ufile_read_lines(path, "\n");
+    UASSERT_NO_ERROR(t);
+    uvector_t *v = G_AS_PTR(t);
+    size_t vlen = uvector_get_size(v);
+    g = ugraph_create(vlen, UGRAPH_UNDIRECTED);
+
+    for (size_t i = 0; i < vlen; i++)
+    {
+        char *row = G_AS_PTR(uvector_get_at(v, i));
+        uvector_t *va = ustring_split(row, "\t");
+        ugeneric_destroy_v(uvector_pop_back(va), NULL); // to ignore empty string parsed after last \t
+        size_t valen = uvector_get_size(va);
+        for (size_t j = 0; j < valen; j++)
+        {
+            if (j == 0)
+            {
+                // First number is a vertex number.
+                UASSERT_G_EQ(G_INT(i + 1), ugeneric_parse(G_AS_STR(uvector_get_at(va, j))));
+            }
+            else
+            {
+                char *nn = G_AS_PTR(uvector_get_at(va, j));
+                uvector_t *tw = ustring_split(nn, ",");
+                UASSERT(uvector_get_size(tw) == 2);
+
+                ugeneric_t gt = ugeneric_parse(G_AS_PTR(uvector_get_at(tw, 0)));
+                ugeneric_t gw = ugeneric_parse(G_AS_PTR(uvector_get_at(tw, 1)));
+                UASSERT_NO_ERROR(gt);
+                UASSERT_NO_ERROR(gw);
+
+                ugraph_add_edge(g, i, G_AS_INT(gt) - 1, G_AS_INT(gw));
+
+                uvector_destroy(tw);
+            }
+        }
+        uvector_destroy(va);
+    }
+    uvector_destroy(v);
+
     //ugraph_dump_to_dot(g, "test", stdout);
+
+    _check_dijkstra(g, 0, 6, "[0, 113, 128, 84, 52, 6]", 2599);
+    _check_dijkstra(g, 0, 36, "[0, 144, 107, 125, 154, 36]", 2610);
+    _check_dijkstra(g, 0, 58, "[0, 91, 193, 161, 58]", 2947);
+    _check_dijkstra(g, 0, 81, "[0, 91, 133, 134, 81]", 2052);
+    _check_dijkstra(g, 0, 98, "[0, 98]", 2367);
+    _check_dijkstra(g, 0, 114, "[0, 79, 114]", 2399);
+    _check_dijkstra(g, 0, 132, "[0, 113, 128, 84, 132]", 2029);
+    _check_dijkstra(g, 0, 164, "[0, 79, 18, 186, 164]", 2442);
+    _check_dijkstra(g, 0, 187, "[0, 91, 69, 8, 71, 156, 25, 94, 195, 187]", 2505);
+    _check_dijkstra(g, 0, 196, "[0, 113, 102, 109, 196]", 3068);
+
     ugraph_destroy(g);
 }
 
@@ -204,8 +342,9 @@ int main(int argc, char **argv)
     (void)argv;
     test_graph(argc > 1);
     test_mincut(argc > 1);
-
     test_search(argc > 1);
+    test_dijkstra(argc > 1);
+    test_dijkstra_large(argc > 1);
 
     return 0;
 }

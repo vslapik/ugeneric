@@ -2,10 +2,12 @@
 
 #include "bitmap.h"
 #include "dsu.h"
+#include "heap.h"
 #include "list.h"
 #include "mem.h"
 #include "queue.h"
 #include "stack.h"
+#include "string_utils.h"
 #include "vector.h"
 
 struct ugraph_opaq {
@@ -21,7 +23,7 @@ struct ugraph_edge_iterator_opaq {
 };
 
 // This function is used for searching the edge from source vertex to sink vertex,
-// thus it compares only these two field of edge structure, weight is unrelevant.
+// thus it compares only these two field of edge structure, weight is irrelevant.
 int _edge_cmp(const void *ptr1, const void *ptr2)
 {
     const ugraph_edge_t *e1 = ptr1;
@@ -263,7 +265,7 @@ void ugraph_bfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void 
         size_t node = G_AS_INT(uqueue_deq(q));
 
         // Run callback on it.
-        if (cb && (cb(g, node, data)))
+        if (cb && cb(g, node, data))
         {
             goto exit;
         }
@@ -305,7 +307,7 @@ void ugraph_dfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void 
         if (!ubitmap_bit_is_set(visited_nodes, node))
         {
             ubitmap_set_bit(visited_nodes, node);
-            if (cb && (cb(g, node, data)))
+            if (cb && cb(g, node, data))
             {
                 goto exit;
             }
@@ -336,6 +338,152 @@ exit:
     ustack_destroy(s);
 }
 
+#define _DIJ_INF SIZE_MAX        // infinite distance
+#define _DIJ_EMPTY_PREV SIZE_MAX // non-existing previous node
+
+// Aux structure for being stored in min heap.
+typedef struct {
+    size_t n; // node number in the graph
+    size_t d; // least known distance from root node to node n
+} _dist_t;
+
+static _dist_t *_alloc_dist(size_t n, size_t dist)
+{
+    _dist_t *d = umalloc(sizeof(*d));
+    d->n = n;
+    d->d = dist;
+    return d;
+}
+
+// distance/node pairs are ordered by distance in the heap
+int _dist_cmp(const void *ptr1, const void *ptr2)
+{
+    const _dist_t *d1 = ptr1;
+    const _dist_t *d2 = ptr2;
+
+    if (d1->d < d2->d) return -1;
+    if (d1->d > d2->d) return  1;
+    return  0;
+}
+
+char *_dist_s8r(const void *ptr, size_t *output_size)
+{
+    const _dist_t *d = ptr;
+    return ustring_fmt_sized("(node: %d, dist: %d)", output_size, d->n, d->d);
+}
+
+uvector_t *ugraph_dijkstra(const ugraph_t *g, size_t from, size_t to)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(from < g->n);
+    UASSERT_INPUT(to < g->n);
+
+    size_t n, d;
+    uvector_t *path;
+    const ugraph_edge_t *e = NULL;
+    ugraph_edge_iterator_t *ei = NULL;
+
+    // Allocate and initialize array of distances from root to each other node.
+    size_t *dist = umalloc(sizeof(*dist) * g->n);
+    size_t *prev = umalloc(sizeof(*prev) * g->n);
+    for (size_t i = 0; i < g->n; i++)
+    {
+        dist[i] = _DIJ_INF;
+        prev[i] = _DIJ_EMPTY_PREV;
+    }
+    dist[from] = 0;
+
+    // Create and initialize priority queue for storing dist_t structures.
+    uheap_t *h = uheap_create();
+    uheap_set_void_comparator(h, _dist_cmp);
+    uheap_set_void_destroyer(h, ufree);
+    //uheap_set_void_serializer(h, _dist_s8r);
+    uheap_push(h, G_PTR(_alloc_dist(from, 0)));
+
+    // Loop and calculates shortest paths to all nodes from the root node.
+    while (!uheap_is_empty(h))
+    {
+        _dist_t *dst = G_AS_PTR(uheap_pop(h));
+        n = dst->n;
+        d = dst->d;
+        ufree(dst);
+
+        if (d != dist[n])
+        {
+            // Filter out odd pairs, see comment below.
+            continue;
+        }
+
+        if (n == to)
+        {
+            // Last vertex is reached.
+            goto exit;
+        }
+
+        ei = ugraph_edge_iterator_create(g, n);
+        while (ugraph_edge_iterator_has_next(ei))
+        {
+            e = ugraph_edge_iterator_get_next(ei);
+            size_t new_dist = dist[n] + e->w;
+            if (new_dist < dist[e->t])
+            {
+                // This code handles distance relaxation for node e->t. As
+                // distance relaxation may happen more than once for the same
+                // node during algorithm execution there can be many
+                // (node, distance) pairs on the heap for the same node but
+                // with different distances. Alternative approach would be to
+                // perform decreasing of the distance for the node within
+                // the heap but this operation (decrease_priority) is not
+                // normally provided by heap implementation. Instead this code
+                // filters out odd (node, distance) pairs by comparing the distance
+                // stored in the heap and the distance stored in the dist array.
+                dist[e->t] = new_dist;
+                prev[e->t] = e->f;
+                uheap_push(h, G_PTR(_alloc_dist(e->t, new_dist)));
+            }
+        }
+        ugraph_edge_iterator_destroy(ei);
+    }
+
+exit:
+
+    // Construct path from source to sink using array of prev elements
+    path = uvector_create();
+
+    if (dist[to] != _DIJ_EMPTY_PREV) // if path was found
+    {
+        n = to;
+        while (n != _DIJ_EMPTY_PREV)
+        {
+            uvector_append(path, G_SIZE(n));
+            n = prev[n];
+        }
+        uvector_reverse(path);
+    }
+
+    uheap_destroy(h);
+    ufree(dist);
+    ufree(prev);
+
+    return path;
+}
+
+int ugraph_compute_path_length(const ugraph_t *g, const uvector_t *path)
+{
+    int len = 0;
+    const ugraph_edge_t *e;
+    size_t n = uvector_get_size(path);
+    for (size_t i = 0; i + 1 < n; i++)
+    {
+        e = ugraph_get_edge(g, G_AS_SIZE(uvector_get_at(path, i)),
+                               G_AS_SIZE(uvector_get_at(path, i + 1)));
+        UASSERT(e);
+        len += e->w;
+    }
+
+    return len;
+}
+
 void ugraph_dump_to_dot(const ugraph_t *g, const char *name, FILE *out)
 {
     UASSERT_INPUT(g);
@@ -346,16 +494,29 @@ void ugraph_dump_to_dot(const ugraph_t *g, const char *name, FILE *out)
            (g->type == UGRAPH_UNDIRECTED) ? "graph" : "digraph", name);
     for (size_t i = 0; i < g->n; i++)
     {
+        bool indented = false;
         ugraph_edge_iterator_t *ei = ugraph_edge_iterator_create(g, i);
         if (ugraph_edge_iterator_has_next(ei))
         {
-            fputs("   ", out);
             while (ugraph_edge_iterator_has_next(ei))
             {
                 const ugraph_edge_t *e = ugraph_edge_iterator_get_next(ei);
-                fprintf(out, " %zu %s %zu;", i, arrow, e->t);
+                if (g->type == UGRAPH_UNDIRECTED)
+                {
+                    // As internally there are two edges (forward and backward)
+                    // in undirected graph we return only the first one (f -> t).
+                    if (e->t < i)
+                    {
+                        continue;
+                    }
+                }
+                fprintf(out, "%s %zu %s %zu;", indented ? "" : "   ", i, arrow, e->t);
+                indented = true;
             }
-            fputs("\n", out);
+            if (indented)
+            {
+                fputs("\n", out);
+            }
         }
         ugraph_edge_iterator_destroy(ei);
     }
