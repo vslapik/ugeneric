@@ -6,7 +6,7 @@ install:
   - sudo apt-get -qq update
   - sudo apt-get install -y valgrind
 script:
-  - make check
+  - make check_all
  
 dist: trusty
 sudo: required
