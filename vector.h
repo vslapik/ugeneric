@@ -30,6 +30,7 @@ ugeneric_t uvector_get_at_random(const uvector_t *v);
 void uvector_set_at(uvector_t *v, size_t i, ugeneric_t e);
 ugeneric_t *uvector_get_cells(const uvector_t *v);
 bool uvector_contains(const uvector_t *v, ugeneric_t e);
+ugeneric_t *uvector_find(uvector_t *v, ugeneric_t e);
 
 bool uvector_is_empty(const uvector_t *v);
 size_t uvector_get_size(const uvector_t *v);

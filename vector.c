@@ -447,17 +447,26 @@ uvector_t *uvector_get_slice(const uvector_t *v, size_t begin, size_t end,
     return slice;
 }
 
-bool uvector_contains(const uvector_t *v, ugeneric_t e)
+ugeneric_t *uvector_find(uvector_t *v, ugeneric_t e)
 {
+    UASSERT_INPUT(v);
+
+    ugeneric_t *ret = NULL;
     for (size_t i = 0; i < v->size; i++)
     {
         if (ugeneric_compare_v(v->cells[i], e, v->void_handlers.cmp) == 0)
         {
-            return true;
+            ret = &v->cells[i];
+            break;
         }
     }
 
-    return false;
+    return ret;
+}
+
+bool uvector_contains(const uvector_t *v, ugeneric_t e)
+{
+    return uvector_find((uvector_t *)v, e) != NULL;
 }
 
 void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs, FILE *out)
