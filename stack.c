@@ -81,3 +81,18 @@ ugeneric_base_t *ustack_get_base(ustack_t *s)
     UASSERT_INPUT(s);
     return uvector_get_base(s->data);
 }
+
+char *ustack_as_str(const ustack_t *s)
+{
+    return uvector_as_str(s->data);
+}
+
+void ustack_serialize(const ustack_t *s, ubuffer_t *buf)
+{
+    uvector_serialize(s->data, buf);
+}
+
+int ustack_fprint(const ustack_t *s, FILE *out)
+{
+    return uvector_fprint(s->data, out);
+}

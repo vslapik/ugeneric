@@ -16,6 +16,7 @@ static inline bool  ubitmap_bit_is_set(const void *a, size_t num) {return ((uint
 static inline void  ubitmap_flip_bit(void *a, size_t num)         {       ((uint8_t *)a)[(num) / 8] ^=  (0x80 >> ((num) % 8));}
 
 void ubitmap_set_range(void *a, size_t l, size_t r);
+void ubitmap_clear_range(void *a, size_t l, size_t r);
 void ubitmap_flip_all(void *b, size_t len);
 void ubitmap_flip_range(void *b, size_t l, size_t r);
 

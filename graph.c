@@ -83,6 +83,7 @@ void ugraph_add_edge(ugraph_t *g, size_t from, size_t to, int weight)
     UASSERT_INPUT(g);
     UASSERT_INPUT(from < g->n);
     UASSERT_INPUT(to < g->n);
+    UASSERT_INPUT(to != from); // not allowed in this implementation
 
     const ugraph_edge_t *edge = ugraph_get_edge(g, from, to);
     if (!edge)
@@ -118,6 +119,14 @@ void ugraph_add_edge(ugraph_t *g, size_t from, size_t to, int weight)
             ((ugraph_edge_t *)edge)->w = weight;
         }
     }
+}
+
+void ugraph_remove_edge(ugraph_t *g, size_t from, size_t to)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(from < g->n);
+    UASSERT_INPUT(to < g->n);
+    UABORT("not implemented");
 }
 
 size_t ugraph_get_edge_count(const ugraph_t *g)
@@ -288,15 +297,20 @@ exit:
     uqueue_destroy(q);
 }
 
-void ugraph_dfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data)
+static bool _dfs(const ugraph_t *g, size_t root, bool break_on_loop,
+                 uint8_t *visited_nodes, uint8_t *gray_nodes,
+                 ugraph_node_callback_t pre_cb, void *pre_data,
+                 ugraph_node_callback_t post_cb, void *post_data)
 {
     UASSERT_INPUT(g);
     UASSERT_INPUT(root < g->n);
+    UASSERT_INPUT(visited_nodes);
+    UASSERT_INPUT(gray_nodes);
 
+    bool loop_detected = false;
     const ugraph_edge_t *e = NULL;
     ugraph_edge_iterator_t *ei = NULL;
     ustack_t *s = ustack_create();
-    uint8_t *visited_nodes = ubitmap_allocate(g->n);
 
     ustack_push(s, G_INT(root));
     while (!ustack_is_empty(s))
@@ -307,7 +321,8 @@ void ugraph_dfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void 
         if (!ubitmap_bit_is_set(visited_nodes, node))
         {
             ubitmap_set_bit(visited_nodes, node);
-            if (cb && cb(g, node, data))
+            ubitmap_set_bit(gray_nodes, node);
+            if (pre_cb && pre_cb(g, node, pre_data))
             {
                 goto exit;
             }
@@ -318,6 +333,13 @@ void ugraph_dfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void 
         while (ugraph_edge_iterator_has_next(ei))
         {
             e = ugraph_edge_iterator_get_next(ei);
+
+            if (break_on_loop && ubitmap_bit_is_set(gray_nodes, e->t))
+            {
+                loop_detected = true;
+                break;
+            }
+
             if (!ubitmap_bit_is_set(visited_nodes, e->t))
             {
                 ustack_push(s, G_INT(e->t));
@@ -327,15 +349,47 @@ void ugraph_dfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void 
         }
         ugraph_edge_iterator_destroy(ei);
 
+        if (break_on_loop && loop_detected)
+        {
+            goto exit;
+        }
+
         if (backtrack)
         {
-            ustack_pop(s);
+            node = G_AS_INT(ustack_pop(s));
+            if (post_cb && post_cb(g, node, post_data))
+            {
+                goto exit;
+            }
         }
     }
 
 exit:
-    ufree(visited_nodes);
     ustack_destroy(s);
+
+    return loop_detected;
+}
+
+void ugraph_dfs_preorder(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data)
+{
+    uint8_t *visited_nodes = ubitmap_allocate(g->n);
+    uint8_t *gray_nodes = ubitmap_allocate(g->n);
+
+    _dfs(g, root, false, visited_nodes, gray_nodes, cb, data, NULL, NULL);
+
+    ufree(visited_nodes);
+    ufree(gray_nodes);
+}
+
+void ugraph_dfs_postorder(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data)
+{
+    uint8_t *visited_nodes = ubitmap_allocate(g->n);
+    uint8_t *gray_nodes = ubitmap_allocate(g->n);
+
+    _dfs(g, root, false, visited_nodes, gray_nodes, NULL, NULL, cb, data);
+
+    ufree(visited_nodes);
+    ufree(gray_nodes);
 }
 
 #define _DIJ_INF SIZE_MAX        // infinite distance
@@ -372,6 +426,63 @@ char *_dist_s8r(const void *ptr, size_t *output_size)
     return ustring_fmt_sized("(node: %d, dist: %d)", output_size, d->n, d->d);
 }
 
+static bool _topo_cb(const ugraph_t *g, size_t n, void *data)
+{
+    UASSERT_INTERNAL(g);
+    UASSERT_INTERNAL(data);
+
+    ulist_t *list = data;
+    ulist_prepend(list, G_SIZE(n));
+    return false;
+}
+
+uvector_t *ugraph_get_topological_order(const ugraph_t *g)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(g->n);
+    UASSERT_INPUT(g->type == UGRAPH_DIRECTED);
+
+    bool loop_detected = false;
+    uint8_t *visited_nodes = ubitmap_allocate(g->n);
+    uint8_t *gray_nodes = ubitmap_allocate(g->n);
+
+    ulist_t *list = ulist_create();
+
+    for (size_t i = 0; i < g->n; i++)
+    {
+        memset(gray_nodes, 0, g->n / 8 + (bool)(g->n % 8));
+        if (!ubitmap_bit_is_set(visited_nodes, i))
+        {
+            // Emit nodes in order they come from DFS, then reverse their
+            // order in the callback by prepending nodes to the list.
+            if (_dfs(g, i, false, visited_nodes, gray_nodes,
+                     NULL, NULL, _topo_cb, list))
+            {
+                loop_detected = true;
+                break;
+            }
+        }
+    }
+
+    uvector_t *o = uvector_create();
+    if (!loop_detected)
+    {
+        uvector_reserve_capacity(o, ulist_get_size(list));
+        ulist_iterator_t *li = ulist_iterator_create(list);
+        while (ulist_iterator_has_next(li))
+        {
+            uvector_append(o, ulist_iterator_get_next(li));
+        }
+        ulist_iterator_destroy(li);
+    }
+
+    ulist_destroy(list);
+    ufree(visited_nodes);
+    ufree(gray_nodes);
+
+    return o;
+}
+
 uvector_t *ugraph_dijkstra(const ugraph_t *g, size_t from, size_t to)
 {
     UASSERT_INPUT(g);
@@ -400,7 +511,7 @@ uvector_t *ugraph_dijkstra(const ugraph_t *g, size_t from, size_t to)
     //uheap_set_void_serializer(h, _dist_s8r);
     uheap_push(h, G_PTR(_alloc_dist(from, 0)));
 
-    // Loop and calculates shortest paths to all nodes from the root node.
+    // Loop and calculate shortest paths to all nodes from the root node.
     while (!uheap_is_empty(h))
     {
         _dist_t *dst = G_AS_PTR(uheap_pop(h));
@@ -428,8 +539,8 @@ uvector_t *ugraph_dijkstra(const ugraph_t *g, size_t from, size_t to)
             if (new_dist < dist[e->t])
             {
                 // This code handles distance relaxation for node e->t. As
-                // distance relaxation may happen more than once for the same
-                // node during algorithm execution there can be many
+                // distance relaxation may happen more than once for the
+                // same node during algorithm execution there can be many
                 // (node, distance) pairs on the heap for the same node but
                 // with different distances. Alternative approach would be to
                 // perform decreasing of the distance for the node within
@@ -447,7 +558,7 @@ uvector_t *ugraph_dijkstra(const ugraph_t *g, size_t from, size_t to)
 
 exit:
 
-    // Construct path from source to sink using array of prev elements
+    // Construct path from source to sink using array of prev elements.
     path = uvector_create();
 
     if (dist[to] != _DIJ_EMPTY_PREV) // if path was found

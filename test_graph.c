@@ -92,31 +92,36 @@ void test_mincut(bool verbose)
     uvector_destroy(mincut);
 }
 
-bool _process_node(const ugraph_t *g, size_t n, void *data)
+static bool __remember_node(const ugraph_t *g, size_t n, void *data)
 {
     (void)g;
     uvector_t *nodes = data;
     uvector_append(nodes, G_INT(n));
-    //printf("%zd\n", n);
-
     return false;
 }
 
-static void __check_search(ugraph_t *g, size_t root, const char *exp, ugraph_search f)
+static uvector_t *__get_path(const ugraph_t *g, size_t root, ugraph_search f)
 {
     uvector_t *nodes = uvector_create();
-    f(g, root, _process_node, nodes);
-    uvector_sort(nodes);
-    char *str = uvector_as_str(nodes);
+    f(g, root, __remember_node, nodes);
+    return nodes;
+}
+
+static void __check_search(const ugraph_t *g, size_t root, const char *exp, ugraph_search f)
+{
+    uvector_t *path = __get_path(g, root, f);
+    uvector_sort(path);
+    char *str = uvector_as_str(path);
     UASSERT_STR_EQ(str, exp);
     ufree(str);
-    uvector_destroy(nodes);
+    uvector_destroy(path);
 }
 
 static void _check_search(ugraph_t *g, size_t root, const char *exp)
 {
     __check_search(g, root, exp, ugraph_bfs);
-    __check_search(g, root, exp, ugraph_dfs);
+    __check_search(g, root, exp, ugraph_dfs_preorder);
+    __check_search(g, root, exp, ugraph_dfs_postorder);
 }
 
 void test_search(bool verbose)
@@ -337,14 +342,113 @@ void test_dijkstra_large(bool verbose)
     ugraph_destroy(g);
 }
 
+// Ensures topological ordering in path for graph g.
+static void _check_order(const ugraph_t *g, uvector_t *path, bool has_loop)
+{
+    uvector_print(path);
+
+    if (!has_loop)
+    {
+        const ugraph_edge_t *e = NULL;
+        size_t len = uvector_get_size(path);
+        for (size_t i = 0; i + 1 < len; i++)
+        {
+            for (size_t j = i + 1; j < len; j++)
+            {
+                size_t from = G_AS_SIZE(uvector_get_at(path, i));
+                size_t to = G_AS_SIZE(uvector_get_at(path, j));
+                //printf("from: %zu, to:%zu\n", from, to);
+                e = ugraph_get_edge(g, from, to);
+                if (e)
+                {
+                    UASSERT_SIZE_EQ(from, e->f);
+                    UASSERT_SIZE_EQ(to, e->t);
+                }
+                // There shouldn't be an edge which breaks
+                // the  topological order.
+                e = ugraph_get_edge(g, to, from);
+                UASSERT(!e);
+            }
+        }
+    }
+    else
+    {
+        // TODO: fix cycle detection
+
+        // Empty vector is expected for grap which has a loop.
+        //UASSERT_SIZE_EQ(uvector_get_size(path), 0);
+    }
+}
+
+void test_topological_ordering(bool verbose)
+{
+    (void)verbose;
+
+    uvector_t *o;
+    ugraph_t *g;
+
+    g = ugraph_create(1, UGRAPH_DIRECTED);
+    o = ugraph_get_topological_order(g);
+    _check_order(g, o, false);
+    uvector_destroy(o);
+    ugraph_destroy(g);
+
+    //
+    g = ugraph_create(3, UGRAPH_DIRECTED);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 1, 2, 1);
+    o = ugraph_get_topological_order(g);
+    _check_order(g, o, false);
+    uvector_destroy(o);
+    ugraph_destroy(g);
+
+    //
+    g = ugraph_create(3, UGRAPH_DIRECTED);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 0, 2, 1);
+    ugraph_add_edge(g, 1, 2, 1);
+    o = ugraph_get_topological_order(g);
+    _check_order(g, o, false);
+    uvector_destroy(o);
+    ugraph_destroy(g);
+
+    //
+    g = ugraph_create(8, UGRAPH_DIRECTED);
+    ugraph_add_edge(g, 0, 3, 1);
+    ugraph_add_edge(g, 3, 5, 1);
+    ugraph_add_edge(g, 1, 4, 1);
+    ugraph_add_edge(g, 4, 6, 1);
+    ugraph_add_edge(g, 2, 7, 1);
+    ugraph_add_edge(g, 2, 4, 1);
+    ugraph_add_edge(g, 3, 6, 1);
+    ugraph_add_edge(g, 3, 7, 1);
+    o = ugraph_get_topological_order(g);
+    _check_order(g, o, false);
+    uvector_destroy(o);
+    ugraph_destroy(g);
+
+    // loop
+    g = ugraph_create(3, UGRAPH_DIRECTED);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 1, 2, 1);
+    ugraph_add_edge(g, 2, 0, 1);
+    o = ugraph_get_topological_order(g);
+    _check_order(g, o, true);
+    uvector_destroy(o);
+    ugraph_destroy(g);
+}
+
 int main(int argc, char **argv)
 {
     (void)argv;
+
     test_graph(argc > 1);
     test_mincut(argc > 1);
     test_search(argc > 1);
     test_dijkstra(argc > 1);
     test_dijkstra_large(argc > 1);
+
+    test_topological_ordering(argc > 1);
 
     return 0;
 }

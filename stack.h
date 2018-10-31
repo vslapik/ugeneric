@@ -20,6 +20,11 @@ static void ustack_take_data_ownership(ustack_t *s);
 static void ustack_drop_data_ownership(ustack_t *s);
 static bool ustack_is_data_owner(ustack_t *s);
 
+char *ustack_as_str(const ustack_t *s);
+void ustack_serialize(const ustack_t *s, ubuffer_t *buf);
+int ustack_fprint(const ustack_t *s, FILE *out);
+static inline int ustack_print(const ustack_t *s) {return ustack_fprint(s, stdout);}
+
 ugeneric_base_t *ustack_get_base(ustack_t *s);
 DEFINE_BASE_FUNCS(ustack)
 
