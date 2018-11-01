@@ -73,7 +73,20 @@ void test_bitmap()
     ufree(b33);
 }
 
+void test_len(void)
+{
+    UASSERT_SIZE_EQ(ubitmap_get_octets_len(1), 1);
+    UASSERT_SIZE_EQ(ubitmap_get_octets_len(2), 1);
+    UASSERT_SIZE_EQ(ubitmap_get_octets_len(4), 1);
+    UASSERT_SIZE_EQ(ubitmap_get_octets_len(8), 1);
+    UASSERT_SIZE_EQ(ubitmap_get_octets_len(9), 2);
+    UASSERT_SIZE_EQ(ubitmap_get_octets_len(11), 2);
+    UASSERT_SIZE_EQ(ubitmap_get_octets_len(32), 4);
+    UASSERT_SIZE_EQ(ubitmap_get_octets_len(33), 5);
+}
+
 int main(void)
 {
     test_bitmap();
+    test_len();
 }

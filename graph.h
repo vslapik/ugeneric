@@ -32,6 +32,7 @@ uvector_t *ugraph_get_vertices(const ugraph_t *g);
 uvector_t *ugraph_get_edges(const ugraph_t *g); // vector of *ugraph_edge_t
 uvector_t *ugraph_get_min_cut(const ugraph_t *g, size_t iterations);
 uvector_t *ugraph_get_topological_order(const ugraph_t *g);
+uvector_t *ugraph_get_strongly_connected_components(const ugraph_t *g);
 
 typedef void (*ugraph_search)(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data);
 void ugraph_bfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data);

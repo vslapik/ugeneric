@@ -343,11 +343,11 @@ void test_dijkstra_large(bool verbose)
 }
 
 // Ensures topological ordering in path for graph g.
-static void _check_order(const ugraph_t *g, uvector_t *path, bool has_loop)
+static void _check_order(const ugraph_t *g, uvector_t *path, bool has_cycle)
 {
-    uvector_print(path);
+//    uvector_print(path);
 
-    if (!has_loop)
+    if (!has_cycle)
     {
         const ugraph_edge_t *e = NULL;
         size_t len = uvector_get_size(path);
@@ -375,7 +375,7 @@ static void _check_order(const ugraph_t *g, uvector_t *path, bool has_loop)
     {
         // TODO: fix cycle detection
 
-        // Empty vector is expected for grap which has a loop.
+        // Empty vector is expected for grap which contains a loop.
         //UASSERT_SIZE_EQ(uvector_get_size(path), 0);
     }
 }
@@ -438,17 +438,136 @@ void test_topological_ordering(bool verbose)
     ugraph_destroy(g);
 }
 
+int _scc_cmp(const void *ptr1, const void *ptr2)
+{
+    const uvector_t *v1 = ptr1;
+    const uvector_t *v2 = ptr2;
+
+    size_t vlen1 = uvector_get_size(v1);
+    size_t vlen2 = uvector_get_size(v2);
+
+    return vlen1 - vlen2;
+}
+void test_scc_large(void)
+{
+    ugraph_t *g;
+    const char *path = "utdata/SCC.txt";
+    ugeneric_t t = ufile_read_lines(path, "\n");
+    UASSERT_NO_ERROR(t);
+    uvector_t *v = G_AS_PTR(t);
+    size_t vlen = uvector_get_size(v);
+    g = ugraph_create(875714, UGRAPH_DIRECTED);
+
+    for (size_t i = 0; i < vlen; i++)
+    {
+        char *row = G_AS_PTR(uvector_get_at(v, i));
+        uvector_t *va = ustring_split(row, " ");
+        ugeneric_destroy_v(uvector_pop_back(va), NULL); // to ignore empty string parsed after last space 
+        UASSERT_SIZE_EQ(uvector_get_size(va), 2);
+        ugeneric_t gf = ugeneric_parse(G_AS_STR(uvector_get_at(va, 0)));
+        ugeneric_t gt = ugeneric_parse(G_AS_STR(uvector_get_at(va, 1)));
+        UASSERT_NO_ERROR(gf);
+        UASSERT_NO_ERROR(gt);
+
+        size_t f = G_AS_SIZE(gf) - 1;
+        size_t t = G_AS_SIZE(gt) - 1;
+
+        ugraph_add_edge(g, f, t, 1);
+        uvector_destroy(va);
+    }
+    uvector_destroy(v);
+
+    uvector_t *scc = ugraph_get_strongly_connected_components(g);
+    vlen = uvector_get_size(scc);
+
+    // scc is vector of vectors, convert it to
+    // vector of pointers and sort them by size
+    ugeneric_t *cells = uvector_get_cells(scc);
+    for (size_t i = 0; i < vlen; i++)
+    {
+        cells[i] = G_PTR(G_AS_PTR(cells[i]));
+    }
+
+    uvector_set_void_comparator(scc, _scc_cmp);
+    uvector_set_void_destroyer(scc, (void_dtr_t)uvector_destroy);
+    uvector_sort(scc);
+
+    uvector_t *scc1 = G_AS_PTR(uvector_get_at(scc, vlen - 1));
+    uvector_t *scc2 = G_AS_PTR(uvector_get_at(scc, vlen - 2));
+    uvector_t *scc3 = G_AS_PTR(uvector_get_at(scc, vlen - 3));
+    uvector_t *scc4 = G_AS_PTR(uvector_get_at(scc, vlen - 4));
+    uvector_t *scc5 = G_AS_PTR(uvector_get_at(scc, vlen - 5));
+
+    printf("scc1: %zu\n", uvector_get_size(scc1));
+    printf("scc2: %zu\n", uvector_get_size(scc2));
+    printf("scc3: %zu\n", uvector_get_size(scc3));
+    printf("scc4: %zu\n", uvector_get_size(scc4));
+    printf("scc5: %zu\n", uvector_get_size(scc5));
+
+    uvector_destroy(scc);
+    ugraph_destroy(g);
+}
+
+void test_scc(void)
+{
+    ugraph_t *g = ugraph_create(8, UGRAPH_DIRECTED);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 1, 4, 1);
+    ugraph_add_edge(g, 1, 5, 1);
+    ugraph_add_edge(g, 1, 2, 1);
+    ugraph_add_edge(g, 2, 6, 1);
+    ugraph_add_edge(g, 2, 3, 1);
+    ugraph_add_edge(g, 3, 2, 1);
+    ugraph_add_edge(g, 3, 7, 1);
+    ugraph_add_edge(g, 4, 0, 1);
+    ugraph_add_edge(g, 4, 5, 1);
+    ugraph_add_edge(g, 5, 6, 1);
+    ugraph_add_edge(g, 6, 5, 1);
+    ugraph_add_edge(g, 7, 6, 1);
+    ugraph_add_edge(g, 7, 3, 1);
+
+    //ugraph_dump_to_dot(g, "test", stdout);
+
+    uvector_t *scc = ugraph_get_strongly_connected_components(g);
+    uvector_sort(scc);
+    //uvector_print(scc);
+
+    UASSERT_SIZE_EQ(3, uvector_get_size(scc));
+    uvector_t *v0 = G_AS_PTR(uvector_get_at(scc, 0));
+    uvector_t *v1 = G_AS_PTR(uvector_get_at(scc, 1));
+    uvector_t *v2 = G_AS_PTR(uvector_get_at(scc, 2));
+    uvector_sort(v0);
+    uvector_sort(v1);
+    uvector_sort(v2);
+
+    char *s1 = uvector_as_str(v0);
+    char *s2 = uvector_as_str(v1);
+    char *s3 = uvector_as_str(v2);
+
+    UASSERT_STR_EQ(s1, "[0, 1, 4]");
+    UASSERT_STR_EQ(s2, "[2, 3, 7]");
+    UASSERT_STR_EQ(s3, "[5, 6]");
+
+    ufree(s1);
+    ufree(s2);
+    ufree(s3);
+    uvector_destroy(scc);
+    ugraph_destroy(g);
+}
+
 int main(int argc, char **argv)
 {
     (void)argv;
+    (void)argc;
 
     test_graph(argc > 1);
     test_mincut(argc > 1);
     test_search(argc > 1);
     test_dijkstra(argc > 1);
     test_dijkstra_large(argc > 1);
-
     test_topological_ordering(argc > 1);
+    test_scc();
+    if (0) test_scc_large();
 
     return 0;
 }

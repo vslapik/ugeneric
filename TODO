@@ -1,8 +1,6 @@
 - implement dict lazy resize
 - in case of collision in hash table append a new element to beginning of the chain
-- improve Makefile
 - improve print_trace() to show output similar to GDB (addr2line functionality)
-- improve UT coverage and framework
 - rename xxx_get_size to xxx_get_len, so len applies to any container
 - stack on top of vector and list
 - queue on top of list or circular buffer (current implementation)
@@ -24,6 +22,6 @@
 - _Generic c11 macros for putting scalars to containers
 - comments: inside a function - imperative form (do something); outside - indicative form (does something)
 - graph: add void handlers/data ownership functionality
-- topological sort for directed graphs
 - Bellman-Ford
 - bloom filter
+- file_reader read_line()

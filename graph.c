@@ -34,25 +34,32 @@ int _edge_cmp(const void *ptr1, const void *ptr2)
     if (e1->t < e2->t) return -1;
     if (e1->t > e2->t) return  1;
 
-    return  0;
+    return 0;
+}
+
+static uvector_t *_allocate_adj_lists(size_t n)
+{
+    uvector_t *adj = uvector_create_with_size(n, G_PTR(NULL));
+    uvector_set_void_destroyer(adj, (void_dtr_t)ulist_destroy);
+
+    for (size_t i = 0; i < n; i++)
+    {
+        ulist_t *l = ulist_create();
+        uvector_set_at(adj, i, G_PTR(l));
+        ulist_set_void_comparator(l, _edge_cmp);
+        ulist_set_void_destroyer(l, ufree);
+    }
+
+    return adj;
 }
 
 ugraph_t *ugraph_create(size_t n, ugraph_type_t type)
 {
     ugraph_t *g = umalloc(sizeof(*g));
-    g->adj = uvector_create_with_size(n, G_PTR(NULL));
-    uvector_set_void_destroyer(g->adj, (void_dtr_t)ulist_destroy);
+    g->type = type;
     g->n = n;
     g->m = 0;
-    g->type = type;
-
-    for (size_t i = 0; i < g->n; i++)
-    {
-        ulist_t *l = ulist_create();
-        uvector_set_at(g->adj, i, G_PTR(l));
-        ulist_set_void_comparator(l, _edge_cmp);
-        ulist_set_void_destroyer(l, ufree);
-    }
+    g->adj = _allocate_adj_lists(n);
 
     return g;
 }
@@ -297,7 +304,7 @@ exit:
     uqueue_destroy(q);
 }
 
-static bool _dfs(const ugraph_t *g, size_t root, bool break_on_loop,
+static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
                  uint8_t *visited_nodes, uint8_t *gray_nodes,
                  ugraph_node_callback_t pre_cb, void *pre_data,
                  ugraph_node_callback_t post_cb, void *post_data)
@@ -305,9 +312,9 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_loop,
     UASSERT_INPUT(g);
     UASSERT_INPUT(root < g->n);
     UASSERT_INPUT(visited_nodes);
-    UASSERT_INPUT(gray_nodes);
 
-    bool loop_detected = false;
+    bool backtrack = false;
+    bool cycle_is_detected = false;
     const ugraph_edge_t *e = NULL;
     ugraph_edge_iterator_t *ei = NULL;
     ustack_t *s = ustack_create();
@@ -317,29 +324,39 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_loop,
     {
         size_t node = G_AS_INT(ustack_peek(s));
 
-        // Run callback on it.
+        if (gray_nodes && !backtrack)
+        {
+            if (ubitmap_bit_is_set(gray_nodes, node))
+            {
+                // Going deep we hit the gray node which means
+                // we already saw earlier, this is a cycle.
+                cycle_is_detected = true;
+            }
+        }
+        if (break_on_cycle && cycle_is_detected)
+        {
+            break;
+        }
+
         if (!ubitmap_bit_is_set(visited_nodes, node))
         {
             ubitmap_set_bit(visited_nodes, node);
-            ubitmap_set_bit(gray_nodes, node);
+            if (gray_nodes)
+            {
+                ubitmap_set_bit(gray_nodes, node);
+            }
+
             if (pre_cb && pre_cb(g, node, pre_data))
             {
                 goto exit;
             }
         }
 
-        bool backtrack = true;
+        backtrack = true;
         ei = ugraph_edge_iterator_create(g, node);
         while (ugraph_edge_iterator_has_next(ei))
         {
             e = ugraph_edge_iterator_get_next(ei);
-
-            if (break_on_loop && ubitmap_bit_is_set(gray_nodes, e->t))
-            {
-                loop_detected = true;
-                break;
-            }
-
             if (!ubitmap_bit_is_set(visited_nodes, e->t))
             {
                 ustack_push(s, G_INT(e->t));
@@ -349,14 +366,10 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_loop,
         }
         ugraph_edge_iterator_destroy(ei);
 
-        if (break_on_loop && loop_detected)
-        {
-            goto exit;
-        }
-
         if (backtrack)
         {
             node = G_AS_INT(ustack_pop(s));
+
             if (post_cb && post_cb(g, node, post_data))
             {
                 goto exit;
@@ -367,29 +380,21 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_loop,
 exit:
     ustack_destroy(s);
 
-    return loop_detected;
+    return cycle_is_detected;
 }
 
 void ugraph_dfs_preorder(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data)
 {
     uint8_t *visited_nodes = ubitmap_allocate(g->n);
-    uint8_t *gray_nodes = ubitmap_allocate(g->n);
-
-    _dfs(g, root, false, visited_nodes, gray_nodes, cb, data, NULL, NULL);
-
+    _dfs(g, root, false, visited_nodes, NULL, cb, data, NULL, NULL);
     ufree(visited_nodes);
-    ufree(gray_nodes);
 }
 
 void ugraph_dfs_postorder(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void *data)
 {
     uint8_t *visited_nodes = ubitmap_allocate(g->n);
-    uint8_t *gray_nodes = ubitmap_allocate(g->n);
-
-    _dfs(g, root, false, visited_nodes, gray_nodes, NULL, NULL, cb, data);
-
+    _dfs(g, root, false, visited_nodes, NULL, NULL, NULL, cb, data);
     ufree(visited_nodes);
-    ufree(gray_nodes);
 }
 
 #define _DIJ_INF SIZE_MAX        // infinite distance
@@ -426,14 +431,68 @@ char *_dist_s8r(const void *ptr, size_t *output_size)
     return ustring_fmt_sized("(node: %d, dist: %d)", output_size, d->n, d->d);
 }
 
-static bool _topo_cb(const ugraph_t *g, size_t n, void *data)
+static bool _append_to_vector_cb(const ugraph_t *g, size_t n, void *data)
 {
     UASSERT_INTERNAL(g);
     UASSERT_INTERNAL(data);
 
-    ulist_t *list = data;
-    ulist_prepend(list, G_SIZE(n));
+    uvector_t *v = data;
+    uvector_append(v, G_SIZE(n));
     return false;
+}
+
+static uvector_t *_get_topological_order(const ugraph_t *g, bool ignore_cycles)
+{
+    bool cycle_is_detected = false;
+    uint8_t *visited_nodes = ubitmap_allocate(g->n);
+    uint8_t *gray_nodes = NULL;
+
+    if (!ignore_cycles)
+    {
+        gray_nodes = ubitmap_allocate(g->n);
+    }
+
+    uvector_t *order = uvector_create();
+    for (size_t i = 0; i < g->n; i++)
+    {
+        if (gray_nodes)
+        {
+            ubitmap_clear_all(gray_nodes, g->n);
+        }
+        if (!ubitmap_bit_is_set(visited_nodes, i))
+        {
+            // Emit nodes in order they come from DFS, then reverse their
+            // order in the callback by prepending nodes to the list.
+            if (_dfs(g, i, true, visited_nodes, gray_nodes,
+                     NULL, NULL, _append_to_vector_cb, order))
+            {
+                cycle_is_detected = true;
+                break;
+            }
+        }
+    }
+    UASSERT_INTERNAL(uvector_get_size(order) == g->n);
+
+    if (!ignore_cycles && cycle_is_detected)
+    {
+        // If a cycle is detected than strictly speaking there
+        // is no topological order for this graph so clear
+        // the vector and return it empty.
+        uvector_clear(order);
+    }
+    else
+    {
+        // This is mandatory step as for topological sort it is
+        // required to get exactly reversed post-order list of
+        // nodes but callback is appending them to the vector so
+        // the vector needs to be reversed before returning it.
+        uvector_reverse(order);
+    }
+
+    ufree(visited_nodes);
+    ufree(gray_nodes);
+
+    return order;
 }
 
 uvector_t *ugraph_get_topological_order(const ugraph_t *g)
@@ -442,45 +501,7 @@ uvector_t *ugraph_get_topological_order(const ugraph_t *g)
     UASSERT_INPUT(g->n);
     UASSERT_INPUT(g->type == UGRAPH_DIRECTED);
 
-    bool loop_detected = false;
-    uint8_t *visited_nodes = ubitmap_allocate(g->n);
-    uint8_t *gray_nodes = ubitmap_allocate(g->n);
-
-    ulist_t *list = ulist_create();
-
-    for (size_t i = 0; i < g->n; i++)
-    {
-        memset(gray_nodes, 0, g->n / 8 + (bool)(g->n % 8));
-        if (!ubitmap_bit_is_set(visited_nodes, i))
-        {
-            // Emit nodes in order they come from DFS, then reverse their
-            // order in the callback by prepending nodes to the list.
-            if (_dfs(g, i, false, visited_nodes, gray_nodes,
-                     NULL, NULL, _topo_cb, list))
-            {
-                loop_detected = true;
-                break;
-            }
-        }
-    }
-
-    uvector_t *o = uvector_create();
-    if (!loop_detected)
-    {
-        uvector_reserve_capacity(o, ulist_get_size(list));
-        ulist_iterator_t *li = ulist_iterator_create(list);
-        while (ulist_iterator_has_next(li))
-        {
-            uvector_append(o, ulist_iterator_get_next(li));
-        }
-        ulist_iterator_destroy(li);
-    }
-
-    ulist_destroy(list);
-    ufree(visited_nodes);
-    ufree(gray_nodes);
-
-    return o;
+    return _get_topological_order(g, false);
 }
 
 uvector_t *ugraph_dijkstra(const ugraph_t *g, size_t from, size_t to)
@@ -577,6 +598,70 @@ exit:
     ufree(prev);
 
     return path;
+}
+
+uvector_t *_get_reversed_adj(const ugraph_t *g)
+{
+    const ugraph_edge_t *e = NULL;
+    uvector_t *rev_adj = _allocate_adj_lists(g->n);
+
+    for (size_t i = 0; i < g->n; i++)
+    {
+        ugraph_edge_iterator_t *ei = ugraph_edge_iterator_create(g, i);
+        while (ugraph_edge_iterator_has_next(ei))
+        {
+            e = ugraph_edge_iterator_get_next(ei);
+            ugraph_edge_t *re = umalloc(sizeof(*re)); // create reversed edge
+            re->t = e->f;
+            re->f = e->t;
+
+            ulist_append(G_AS_PTR(uvector_get_at(rev_adj, e->t)), G_PTR(re));
+        }
+        ugraph_edge_iterator_destroy(ei);
+    }
+
+    return rev_adj;
+}
+
+uvector_t *ugraph_get_strongly_connected_components(const ugraph_t *g)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(g->n);
+    UASSERT_INPUT(g->type == UGRAPH_DIRECTED);
+
+    uint8_t *visited_nodes = ubitmap_allocate(g->n);
+
+    // Run first DFS loop ignoring cycles.
+    uvector_t *dfs1 = _get_topological_order(g, true);
+
+    // Reverse edges.
+    uvector_t *rev_adj = _get_reversed_adj(g);
+    uvector_t *saved_adj = g->adj;
+    ((ugraph_t *)g)->adj = rev_adj;
+
+    // Run second DFS loop on reversed adj lists and store SCCs.
+    ubitmap_clear_all(visited_nodes, g->n);
+    uvector_t *dfs2 = uvector_create();
+    for (size_t i = 0; i < g->n; i++)
+    {
+        size_t root = G_AS_SIZE(uvector_get_at(dfs1, i));
+        if (!ubitmap_bit_is_set(visited_nodes, root))
+        {
+            uvector_t *scc = uvector_create();
+            _dfs(g, root, false, visited_nodes, NULL,
+                 _append_to_vector_cb, scc, NULL, NULL);
+            uvector_append(dfs2, G_VECTOR(scc));
+        }
+    }
+
+    // Restore edges direction.
+    ((ugraph_t *)g)->adj = saved_adj;
+
+    uvector_destroy(rev_adj);
+    uvector_destroy(dfs1);
+    ufree(visited_nodes);
+
+    return dfs2;
 }
 
 int ugraph_compute_path_length(const ugraph_t *g, const uvector_t *path)
