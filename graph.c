@@ -272,13 +272,13 @@ void ugraph_bfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void 
     uqueue_t *q = uqueue_create();
     uint8_t *seen_nodes = ubitmap_allocate(g->n);
 
-    uqueue_enq(q, G_INT(root));
+    uqueue_enq(q, G_SIZE(root));
     ubitmap_set_bit(seen_nodes, root);
 
     while (!uqueue_is_empty(q))
     {
         // Extract next node.
-        size_t node = G_AS_INT(uqueue_deq(q));
+        size_t node = G_AS_SIZE(uqueue_deq(q));
 
         // Run callback on it.
         if (cb && cb(g, node, data))
@@ -292,7 +292,7 @@ void ugraph_bfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void 
             e = ugraph_edge_iterator_get_next(ei);
             if (!ubitmap_bit_is_set(seen_nodes, e->t))
             {
-                uqueue_enq(q, G_INT(e->t));
+                uqueue_enq(q, G_SIZE(e->t));
                 ubitmap_set_bit(seen_nodes, e->t);
             }
         }
@@ -302,6 +302,19 @@ void ugraph_bfs(const ugraph_t *g, size_t root, ugraph_node_callback_t cb, void 
 exit:
     ufree(seen_nodes);
     uqueue_destroy(q);
+}
+
+static bool _process_node(const ugraph_t *g, size_t node,
+                          uint8_t *visited_nodes, uint8_t *gray_nodes,
+                          ugraph_node_callback_t cb, void *data)
+{
+    ubitmap_set_bit(visited_nodes, node);
+    if (gray_nodes)
+    {
+        ubitmap_set_bit(gray_nodes, node);
+    }
+
+    return (cb && cb(g, node, data));
 }
 
 static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
@@ -315,14 +328,19 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
 
     bool backtrack = false;
     bool cycle_is_detected = false;
-    const ugraph_edge_t *e = NULL;
+    size_t node;
     ugraph_edge_iterator_t *ei = NULL;
     ustack_t *s = ustack_create();
 
-    ustack_push(s, G_INT(root));
+    ustack_push(s, G_SIZE(root));
+    if (_process_node(g, root, visited_nodes, gray_nodes, pre_cb, pre_data))
+    {
+        goto exit;
+    }
+
     while (!ustack_is_empty(s))
     {
-        size_t node = G_AS_INT(ustack_peek(s));
+        node = G_AS_SIZE(ustack_peek(s));
 
         if (gray_nodes && !backtrack)
         {
@@ -338,29 +356,24 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
             break;
         }
 
-        if (!ubitmap_bit_is_set(visited_nodes, node))
-        {
-            ubitmap_set_bit(visited_nodes, node);
-            if (gray_nodes)
-            {
-                ubitmap_set_bit(gray_nodes, node);
-            }
-
-            if (pre_cb && pre_cb(g, node, pre_data))
-            {
-                goto exit;
-            }
-        }
-
         backtrack = true;
         ei = ugraph_edge_iterator_create(g, node);
         while (ugraph_edge_iterator_has_next(ei))
         {
-            e = ugraph_edge_iterator_get_next(ei);
-            if (!ubitmap_bit_is_set(visited_nodes, e->t))
+            node = ugraph_edge_iterator_get_next(ei)->t;
+            if (!ubitmap_bit_is_set(visited_nodes, node))
             {
-                ustack_push(s, G_INT(e->t));
                 backtrack = false;
+                ustack_push(s, G_SIZE(node));
+                if (_process_node(g, node, visited_nodes, gray_nodes,
+                                  pre_cb, pre_data))
+                {
+                    goto exit;
+                }
+                // TODO: this code sucks as it doesn't guarantee to
+                // pick up the next neighbour in constant time, different
+                // approach for implementing non-recursive DFS should
+                // be considered (like stack of iterators) instead.
                 break;
             }
         }
@@ -368,9 +381,9 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
 
         if (backtrack)
         {
-            node = G_AS_INT(ustack_pop(s));
-
-            if (post_cb && post_cb(g, node, post_data))
+            node = G_AS_SIZE(ustack_pop(s));
+            if (_process_node(g, node, visited_nodes, gray_nodes,
+                              post_cb, post_data))
             {
                 goto exit;
             }
@@ -471,7 +484,10 @@ static uvector_t *_get_topological_order(const ugraph_t *g, bool ignore_cycles)
             }
         }
     }
-    UASSERT_INTERNAL(uvector_get_size(order) == g->n);
+    if (!cycle_is_detected)
+    {
+        UASSERT_INTERNAL(uvector_get_size(order) == g->n);
+    }
 
     if (!ignore_cycles && cycle_is_detected)
     {

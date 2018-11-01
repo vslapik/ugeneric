@@ -373,10 +373,8 @@ static void _check_order(const ugraph_t *g, uvector_t *path, bool has_cycle)
     }
     else
     {
-        // TODO: fix cycle detection
-
         // Empty vector is expected for grap which contains a loop.
-        //UASSERT_SIZE_EQ(uvector_get_size(path), 0);
+        UASSERT_SIZE_EQ(uvector_get_size(path), 0);
     }
 }
 
