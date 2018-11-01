@@ -6,9 +6,6 @@
 #include "vector.h"
 #include <errno.h>
 
-#define IO_ERROR_MSG "I/O error at %s:%u:%s(): %s."
-#define G_ERROR_IO G_ERROR(ustring_fmt(IO_ERROR_MSG, __FILE__, __LINE__, __func__, strerror(errno)))
-
 typedef struct ufile_reader_opaq ufile_reader_t;
 typedef struct ufile_writer_opaq ufile_writer_t;
 
