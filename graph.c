@@ -330,24 +330,42 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
     bool cycle_is_detected = false;
     size_t node;
     ugraph_edge_iterator_t *ei = NULL;
+
+    // Stack for graph nodes, during traversal pre and/or post order
+    // callbacks can be executed on elements of this stack
+    // orrespondingly when they pushed or popped to/from it.
     ustack_t *s = ustack_create();
+
+    // Stack for storing edge iterators for each node. Implementing
+    // non-recursive DFS using explicit stack turned out to be tricky as
+    // traversal order should be exactly the same as in recursive
+    // implementation plus selecting next neighbour from node's neighbours
+    // must take constant time. In addition we need to be able to execute pre
+    // and post order callbacks. In theory nodes and edge iterators may share
+    // the same stack but for easier implementation two separate stacks are
+    // maintained here with pushing/popping to/from both of them synchronously.
+    ustack_t *it = ustack_create();
+    ustack_set_void_destroyer(it, (void_dtr_t)ugraph_edge_iterator_destroy);
 
     ustack_push(s, G_SIZE(root));
     if (_process_node(g, root, visited_nodes, gray_nodes, pre_cb, pre_data))
     {
         goto exit;
     }
+    ei = ugraph_edge_iterator_create(g, root);
+    ustack_push(it, G_PTR(ei));
 
     while (!ustack_is_empty(s))
     {
+        ei = G_AS_PTR(ustack_peek(it));
         node = G_AS_SIZE(ustack_peek(s));
 
         if (gray_nodes && !backtrack)
         {
             if (ubitmap_bit_is_set(gray_nodes, node))
             {
-                // Going deep we hit the gray node which means
-                // we already saw earlier, this is a cycle.
+                // Going deeper we hit a gray node which means
+                // we already saw this node earlier, this is a cycle.
                 cycle_is_detected = true;
             }
         }
@@ -357,7 +375,6 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
         }
 
         backtrack = true;
-        ei = ugraph_edge_iterator_create(g, node);
         while (ugraph_edge_iterator_has_next(ei))
         {
             node = ugraph_edge_iterator_get_next(ei)->t;
@@ -365,19 +382,18 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
             {
                 backtrack = false;
                 ustack_push(s, G_SIZE(node));
+
+                ei = ugraph_edge_iterator_create(g, node);
+                ustack_push(it, G_PTR(ei));
+
                 if (_process_node(g, node, visited_nodes, gray_nodes,
                                   pre_cb, pre_data))
                 {
                     goto exit;
                 }
-                // TODO: this code sucks as it doesn't guarantee to
-                // pick up the next neighbour in constant time, different
-                // approach for implementing non-recursive DFS should
-                // be considered (like stack of iterators) instead.
                 break;
             }
         }
-        ugraph_edge_iterator_destroy(ei);
 
         if (backtrack)
         {
@@ -387,11 +403,13 @@ static bool _dfs(const ugraph_t *g, size_t root, bool break_on_cycle,
             {
                 goto exit;
             }
+            ugraph_edge_iterator_destroy(G_AS_PTR(ustack_pop(it)));
         }
     }
 
 exit:
     ustack_destroy(s);
+    ustack_destroy(it);
 
     return cycle_is_detected;
 }
