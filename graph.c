@@ -100,7 +100,7 @@ void ugraph_add_edge(ugraph_t *g, size_t from, size_t to, int weight)
         e->t = to;
         e->w = weight;
 
-        ulist_append(G_AS_PTR(uvector_get_at(g->adj, from)), G_PTR(e));
+        ulist_prepend(G_AS_PTR(uvector_get_at(g->adj, from)), G_PTR(e));
 
         if ((g->type == UGRAPH_UNDIRECTED))
         {
@@ -110,7 +110,7 @@ void ugraph_add_edge(ugraph_t *g, size_t from, size_t to, int weight)
             e->w = weight;
             // For undirected graph store two edges (backward and forward)
             // in order to make BFS and DFS work.
-            ulist_append(G_AS_PTR(uvector_get_at(g->adj, to)), G_PTR(e));
+            ulist_prepend(G_AS_PTR(uvector_get_at(g->adj, to)), G_PTR(e));
         }
 
         g->m += 1;
@@ -649,7 +649,7 @@ uvector_t *_get_reversed_adj(const ugraph_t *g)
             re->t = e->f;
             re->f = e->t;
 
-            ulist_append(G_AS_PTR(uvector_get_at(rev_adj, e->t)), G_PTR(re));
+            ulist_prepend(G_AS_PTR(uvector_get_at(rev_adj, e->t)), G_PTR(re));
         }
         ugraph_edge_iterator_destroy(ei);
     }
