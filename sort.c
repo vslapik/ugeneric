@@ -154,7 +154,6 @@ static void _hsort(ugeneric_t *base, size_t l, size_t r, void_cmp_t cmp)
 
 size_t count_inversions(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
 {
-
     size_t inv = 0;
     if (nmemb > 1)
     {

@@ -17,6 +17,9 @@ typedef enum {
 
 uheap_t *uheap_create(void);
 uheap_t *uheap_create_ext(size_t capacity, uheap_type_t);
+uheap_t *uheap_build_from_array(const ugeneric_t *base, size_t nmemb,
+                                uheap_type_t type,
+                                uvoid_handlers_t *void_handlers);
 void uheap_destroy(uheap_t *h);
 void uheap_clear(uheap_t *h);
 void uheap_push(uheap_t *h, ugeneric_t e);
@@ -24,6 +27,10 @@ ugeneric_t uheap_pop(uheap_t *h);
 size_t uheap_get_size(const uheap_t *h);
 bool uheap_is_empty(const uheap_t *h);
 ugeneric_t uheap_peek(const uheap_t *h);
+uheap_type_t uheap_get_type(const uheap_t *h);
+
+uheap_t *uheap_copy(const uheap_t *h);
+uheap_t *uheap_deep_copy(const uheap_t *h);
 
 size_t uheap_get_capacity(const uheap_t *h);
 void uheap_reserve_capacity(uheap_t *h, size_t new_capacity);

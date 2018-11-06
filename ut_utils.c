@@ -1,5 +1,6 @@
 #include "ut_utils.h"
 #include "string_utils.h"
+#include "heap.h"
 
 typedef struct {
     int i1;
@@ -7,7 +8,7 @@ typedef struct {
     int i3;
 } void_t;
 
-ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_containers)
+ugeneric_t gen_random_generic(int depth, size_t ctn_max_len, bool verbose, bool exclude_containers)
 {
     UASSERT(depth >= 0);
 
@@ -33,8 +34,8 @@ ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_containers)
         case G_REAL_T:     g = G_REAL(ugeneric_random_from_range(100, 200)/1000.0); break;
 //            case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(200, 300));      break;
         case G_BOOL_T:     g = G_BOOL(ugeneric_random_from_range(0, 1));            break;
-        case G_VECTOR_T:   g = gen_random_vector(depth, verbose);                   break;
-        case G_DICT_T:     g = gen_random_dict(depth, verbose);                     break;
+        case G_VECTOR_T:   g = gen_random_vector(depth, ctn_max_len, verbose);      break;
+        case G_DICT_T:     g = gen_random_dict(depth, ctn_max_len, verbose);        break;
         case G_MEMCHUNK_T: g = gen_random_memchunk(depth, verbose);                 break;
         default:                                                                           ;
             UABORT("internal error");
@@ -88,7 +89,7 @@ char *_void_s8r(const void *ptr, size_t *output_size)
     return ustring_fmt_sized("\"%d-%d-%d\"", output_size, p->i1, p->i2, p->i3);
 }
 
-ugeneric_t gen_random_vector(int depth, bool verbose)
+ugeneric_t gen_random_vector(int depth, size_t ctn_max_len, bool verbose)
 {
     UASSERT(depth);
 
@@ -97,11 +98,11 @@ ugeneric_t gen_random_vector(int depth, bool verbose)
     uvector_set_void_comparator(v, _void_cmp);
     uvector_set_void_copier(v, _void_cpy);
     uvector_set_void_serializer(v, _void_s8r);
-    int size = ugeneric_random_from_range(0, 50);
+    int size = ugeneric_random_from_range(0, ctn_max_len);
 
     for (int i = 0; i < size; i++)
     {
-        uvector_append(v, gen_random_generic(depth - 1, verbose, false));
+        uvector_append(v, gen_random_generic(depth - 1, ctn_max_len, verbose, false));
     }
     uvector_shrink_to_size(v);
 
@@ -131,7 +132,7 @@ ugeneric_t gen_random_string(int depth, bool verbose)
     return G_STR(str);
 }
 
-ugeneric_t gen_random_dict(int depth, bool verbose)
+ugeneric_t gen_random_dict(int depth, size_t ctn_max_len, bool verbose)
 {
     UASSERT(depth);
 
@@ -150,8 +151,8 @@ ugeneric_t gen_random_dict(int depth, bool verbose)
     int size = ugeneric_random_from_range(0, 50);
     for (int i = 0; i < size; i++)
     {
-        ugeneric_t k = gen_random_generic(depth - 1, verbose, true); // keys must be hashable
-        ugeneric_t v = gen_random_generic(depth - 1, verbose, false);
+        ugeneric_t k = gen_random_generic(depth - 1, ctn_max_len, verbose, true); // keys must be hashable
+        ugeneric_t v = gen_random_generic(depth - 1, ctn_max_len, verbose, false);
         udict_put(d, k, v);
     }
 

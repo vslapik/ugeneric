@@ -8,9 +8,9 @@
 #include "vector.h"
 #include <errno.h>
 
-ugeneric_t gen_random_generic(int depth, bool verbose, bool exclude_containers);
-ugeneric_t gen_random_vector(int depth, bool verbose);
-ugeneric_t gen_random_dict(int depth, bool verbose);
+ugeneric_t gen_random_generic(int depth, size_t ctn_max_len, bool verbose, bool exclude_containers);
+ugeneric_t gen_random_vector(int depth, size_t ctn_max_len, bool verbose);
+ugeneric_t gen_random_dict(int depth, size_t ctn_max_len, bool verbose);
 ugeneric_t gen_random_string(int depth, bool verbose);
 ugeneric_t gen_random_memchunk(int depth, bool verbose);
 ugeneric_t gen_random_void_data(int depth, bool verbose);

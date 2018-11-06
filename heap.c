@@ -18,6 +18,86 @@ struct uheap_opaq {
     uheap_type_t type;
 };
 
+static uheap_t *_hcpy(const uheap_t *h, bool deep)
+{
+    uheap_t *copy = umalloc(sizeof(*copy));
+    *copy = *h;
+    copy->data = deep ? uvector_deep_copy(h->data) : uvector_copy(h->data);
+    return copy;
+}
+
+static void _heapify(ugeneric_t *base, size_t nmemb, size_t i,
+                     uheap_type_t type, void_cmp_t cmp)
+{
+    size_t t = 0;
+    size_t l = LCHILD_IDX(i);
+    size_t r = RCHILD_IDX(i);
+
+    while (l < nmemb || r < nmemb) // percolate i-th element down to the correct position
+    {
+        if (r < nmemb)
+        {
+            t = LCHILD_IDX(i);
+            if (type * ugeneric_compare_v(base[l], base[r], cmp) > 0)
+            {
+                t = RCHILD_IDX(i);
+            }
+        }
+        else if (l < nmemb)
+        {
+            t = LCHILD_IDX(i);
+        }
+        if (type * ugeneric_compare_v(base[i], base[t], cmp) > 0)
+        {
+            ugeneric_swap(&base[i], &base[t]);
+            i = t;
+            l = LCHILD_IDX(i);
+            r = RCHILD_IDX(i);
+        }
+        else
+        {
+            break;
+        }
+    }
+}
+
+uheap_t *uheap_build_from_array(const ugeneric_t *base, size_t nmemb,
+                                uheap_type_t type,
+                                uvoid_handlers_t *void_handlers)
+{
+    uheap_t *h = uheap_create_ext(nmemb, type);
+
+    if (void_handlers)
+    {
+        uheap_get_base(h)->void_handlers = *void_handlers;
+    }
+
+    uvector_resize(h->data, nmemb, G_NULL());
+    ugeneric_t *a = uvector_get_cells(h->data);
+
+    // Deep copy input array to the heap.
+    for (size_t i = 0; i < nmemb; i++)
+    {
+        a[i] = ugeneric_copy_v(base[i], uheap_get_void_copier(h));
+    }
+
+    size_t i = nmemb / 2;
+    while (true)
+    {
+        _heapify(a, nmemb, i, type, uheap_get_void_comparator(h));
+        if (i == 0)
+        {
+            break;
+        }
+        else
+        {
+            i--;
+        }
+    }
+
+    return h;
+}
+
 uheap_t *uheap_create(void)
 {
     return uheap_create_ext(HEAP_INITIAL_CAPACITY, UHEAP_TYPE_MIN);
@@ -27,7 +107,6 @@ uheap_t *uheap_create_ext(size_t capacity, uheap_type_t type)
 {
     UASSERT_INPUT((type == UHEAP_TYPE_MIN) || (type == UHEAP_TYPE_MAX));
     uheap_t *h = umalloc(sizeof(*h));
-    h->data = NULL;
     h->data = uvector_create();
     uvector_reserve_capacity(h->data, capacity);
     h->type = type;
@@ -58,7 +137,7 @@ void uheap_push(uheap_t *h, ugeneric_t e)
     ugeneric_t *a = uvector_get_cells(h->data);
     size_t i = uvector_get_size(h->data) - 1;
 
-    void_cmp_t cmp = uvector_get_void_comparator(h->data);
+    void_cmp_t cmp = uheap_get_void_comparator(h);
     while (i != ROOT_IDX)
     {
         if (h->type * ugeneric_compare_v(a[i], a[PARENT_IDX(i)], cmp) < 0)
@@ -85,39 +164,10 @@ ugeneric_t uheap_pop(uheap_t *h)
 
     if (n)
     {
-        size_t i = 0;
-        size_t t = 0;
-        size_t l = LCHILD_IDX(i);
-        size_t r = RCHILD_IDX(i);
-        a[0] = e1; // move the last element to the root
-
-        void_cmp_t cmp = uvector_get_void_comparator(h->data);
-        while (l < n || r < n) // percolate the root down to the right position
-        {
-            if (r < n)
-            {
-                t = LCHILD_IDX(i);
-                if (h->type * ugeneric_compare_v(a[l], a[r], cmp) > 0)
-                {
-                    t = RCHILD_IDX(i);
-                }
-            }
-            else if (l < n)
-            {
-                t = LCHILD_IDX(i);
-            }
-            if (h->type * ugeneric_compare_v(a[i], a[t], cmp) > 0)
-            {
-                ugeneric_swap(&a[i], &a[t]);
-                i = t;
-                l = LCHILD_IDX(i);
-                r = RCHILD_IDX(i);
-            }
-            else
-            {
-                break;
-            }
-        }
+        // move the last element to the root
+        a[0] = e1;
+        // percolate the root down to the right position
+        _heapify(a, n, 0, h->type, uheap_get_void_comparator(h));
     }
 
     return e;
@@ -142,6 +192,12 @@ bool uheap_is_empty(const uheap_t *h)
     return (uvector_get_size(h->data) == 0);
 }
 
+uheap_type_t uheap_get_type(const uheap_t *h)
+{
+    UASSERT_INPUT(h);
+    return h->type;
+}
+
 size_t uheap_get_capacity(const uheap_t *h)
 {
     UASSERT_INPUT(h);
@@ -160,6 +216,18 @@ ugeneric_t *uheap_get_cells(const uheap_t *h)
     return uvector_get_cells(h->data);
 }
 
+uheap_t *uheap_copy(const uheap_t *h)
+{
+    UASSERT_INPUT(h);
+    return _hcpy(h, false);
+}
+
+uheap_t *uheap_deep_copy(const uheap_t *h)
+{
+    UASSERT_INPUT(h);
+    return _hcpy(h, true);
+}
+
 void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out)
 {
     UASSERT_INPUT(h);
@@ -172,16 +240,13 @@ void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out)
     size_t size = uvector_get_size(h->data);
     for (size_t i = 0; i < size; i++)
     {
-        char *str =  ustring_fmt("\"%08" PRIxPTR "\"", &a[i]);
+        char *str  = ustring_fmt("\"%08" PRIxPTR "\"", &a[i]);
         char *lstr = LCHILD_IDX(i) < size ? ustring_fmt("\"%08" PRIxPTR "\"", &a[LCHILD_IDX(i)]) : NULL;
         char *rstr = RCHILD_IDX(i) < size ? ustring_fmt("\"%08" PRIxPTR "\"", &a[RCHILD_IDX(i)]) : NULL;
         char *vstr = ugeneric_as_str(a[i]);
 
         fprintf(out, "    %s [style = filled, fillcolor = %s, fontcolor = %s, label = %s];\n",
-                str,
-                "black",
-                "white",
-                vstr);
+                str, "black", "white", vstr);
         if (lstr)
         {
             fprintf(out, "    %s -> %s;\n", str, lstr);

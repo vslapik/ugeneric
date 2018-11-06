@@ -199,9 +199,79 @@ void test_running_median(void)
     uheap_destroy(rheap);
 }
 
+void _check_heap(const uheap_t *h)
+{
+    if (uheap_is_empty(h))
+    {
+        return;
+    }
+
+    uheap_t *copy = uheap_deep_copy(h);
+    ugeneric_t prev = uheap_pop(copy);
+    uheap_type_t t = uheap_get_type(copy);
+    void_cmp_t cmp = uheap_get_void_comparator(copy);
+    while (!uheap_is_empty(copy))
+    {
+        ugeneric_t e = uheap_pop(copy);
+        if (t == UHEAP_TYPE_MAX)
+        {
+            UASSERT(ugeneric_compare_v(prev, e, cmp) >= 0);
+        }
+        else if (t == UHEAP_TYPE_MIN)
+        {
+            UASSERT(ugeneric_compare_v(prev, e, cmp) <= 0);
+        }
+        else
+        {
+            UASSERT("impossible happened");
+        }
+        ugeneric_destroy(prev);
+        prev = e;
+    }
+    ugeneric_destroy(prev);
+
+    uheap_destroy(copy);
+}
+
+void check_heap(const ugeneric_t *a, size_t nmemb)
+{
+    uheap_t *h;
+
+    h = uheap_build_from_array(a, nmemb, UHEAP_TYPE_MAX, NULL);
+    _check_heap(h);
+    uheap_destroy(h);
+
+    h = uheap_build_from_array(a, nmemb, UHEAP_TYPE_MIN, NULL);
+    _check_heap(h);
+    uheap_destroy(h);
+}
+
+#define JOIN_(x,y) x##y
+#define JOIN(x,y) JOIN_(x,y)
+#define TMP JOIN(line,__LINE__)
+
+void test_heapify(void)
+{
+    ugeneric_t TMP[] = {G_INT(777)};                   check_heap(TMP, ARR_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(1), G_INT(2), G_INT(3)}; check_heap(TMP, ARR_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(1), G_INT(3), G_INT(2)}; check_heap(TMP, ARR_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(2), G_INT(1), G_INT(3)}; check_heap(TMP, ARR_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(2), G_INT(3), G_INT(1)}; check_heap(TMP, ARR_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(3), G_INT(1), G_INT(2)}; check_heap(TMP, ARR_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(3), G_INT(2), G_INT(1)}; check_heap(TMP, ARR_LEN(TMP));
+
+
+    ugeneric_t z[] = {G_INT(103), G_INT(55), G_INT(777), G_INT(-1), G_INT(7),
+                      G_INT(1),  G_INT(3),   G_INT(4),  G_INT(10), G_INT(15),
+                      G_INT(16), G_INT(100), G_INT(32), G_INT(11), G_INT(2),
+                      G_INT(63), G_INT(3),   G_INT(4), G_INT(9999), G_INT(0)};
+    check_heap(z, ARR_LEN(z));
+}
+
 int main(void)
 {
     test_uheap_api();
+    test_heapify();
     test_running_median();
 
     return 0;
