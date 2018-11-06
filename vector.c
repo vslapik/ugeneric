@@ -35,7 +35,8 @@ static uvector_t *_vcpy(const uvector_t *v, bool deep)
     UASSERT_INPUT(v);
 
     uvector_t *copy = _allocate_vector();
-    memcpy(copy, v, sizeof(*v));
+    *copy = *v;
+
     if (v->size)
     {
         copy->cells = umalloc(v->size * sizeof(copy->cells[0]));

@@ -2,6 +2,7 @@
 #include "list.h"
 #include "vector.h"
 #include "ut_utils.h"
+#include "string_utils.h"
 
 void test_ulist_api(void)
 {
@@ -212,6 +213,28 @@ void test_ulist_serialize(void)
     ulist_destroy(l);
 }
 
+void *_cpy(const void *src)
+{
+    return ustring_dup(src);
+}
+
+void test_list_void_data(void)
+{
+    ulist_t *l = ulist_create();
+    ulist_set_void_destroyer(l, ufree);
+    ulist_set_void_copier(l, _cpy);
+    ulist_append(l, G_PTR(ustring_dup("1")));
+    ulist_append(l, G_PTR(ustring_dup("2")));
+    ulist_set_at(l, 0, G_PTR(ustring_dup("11")));
+
+    ulist_t *l2 = ulist_copy(l);
+    ulist_t *l3 = ulist_deep_copy(l);
+
+    ulist_destroy(l);
+    ulist_destroy(l2);
+    ulist_destroy(l3);
+}
+
 int main(int argc, char **argv)
 {
     (void)argv;
@@ -220,6 +243,7 @@ int main(int argc, char **argv)
     test_ulist_serialize();
     test_ulist_api();
 //    test_ulist_iterator(void);
+    test_list_void_data();
 
     return 0;
 }

@@ -36,32 +36,19 @@ static ulist_t *_lcpy(const ulist_t *l, bool deep)
     UASSERT_INPUT(l);
 
     ulist_t *copy = ulist_create();
-    memcpy(copy, l, sizeof(*l));
+    *copy = *l;
+
     ulist_item_t *from = l->head;
     ulist_item_t **to = &copy->head;
 
     copy->is_data_owner = deep;
-    if (deep)
+    while (from)
     {
-        while (from)
-        {
-            *to = umalloc(sizeof(**to));
-            (*to)->data = ugeneric_copy_v(from->data, l->void_handlers.cpy);
-            (*to)->next = NULL;
-            to = &(*to)->next;
-            from = from->next;
-        }
-    }
-    else
-    {
-        while (from)
-        {
-            *to = umalloc(sizeof(**to));
-            (*to)->data = from->data;
-            (*to)->next = NULL;
-            to = &(*to)->next;
-            from = from->next;
-        }
+        *to = umalloc(sizeof(**to));
+        (*to)->data = deep ? ugeneric_copy_v(from->data, l->void_handlers.cpy) : from->data;
+        (*to)->next = NULL;
+        to = &(*to)->next;
+        from = from->next;
     }
 
     return copy;
@@ -195,6 +182,10 @@ void ulist_set_at(ulist_t *l, size_t i, ugeneric_t e)
     UASSERT_INPUT(i < l->size);
 
     ulist_item_t **t = _rewind_to(l, i);
+    if (l->is_data_owner)
+    {
+        ugeneric_destroy_v((*t)->data, l->void_handlers.dtr);
+    }
     (*t)->data = e;
 }
 
