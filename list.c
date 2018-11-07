@@ -357,6 +357,18 @@ ugeneric_t ulist_iterator_get_next(ulist_iterator_t *li)
     return g;
 }
 
+ugeneric_t *ulist_iterator_get_next_ref(ulist_iterator_t *li)
+{
+    UASSERT_INPUT(li);
+    UASSERT_MSG(li->list->size, "container is empty");
+    UASSERT_MSG(li->next, "iteration is done");
+
+    ugeneric_t *g = &li->next->data;
+    li->next = li->next->next;
+
+    return g;
+}
+
 bool ulist_iterator_has_next(const ulist_iterator_t *li)
 {
     return li->next;

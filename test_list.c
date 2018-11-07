@@ -135,14 +135,11 @@ void test_ulist_api(void)
     ulist_destroy(l1);
     ulist_destroy(l2);
 }
-/*
- * commented out, requires mutating iterator
-void test_ulist_iterator(bool verbose)
-{
-    (void)verbose;
 
+void test_ulist_iterator(void)
+{
     char *str;
-    uvector_t *v = uvector_create_empty();
+    uvector_t *v = uvector_create();
     ulist_t *l = ulist_create();
 
     ulist_append(l, G_INT(1));
@@ -153,11 +150,9 @@ void test_ulist_iterator(bool verbose)
     ulist_iterator_t *li = ulist_iterator_create(l);
     while (ulist_iterator_has_next(li))
     {
-        uvector_append(v, *ulist_iterator_get_next(li));
+        uvector_append(v, *ulist_iterator_get_next_ref(li));
     }
     str = uvector_as_str(v);
-    if (verbose)
-        puts(str);
     UASSERT(strcmp("[1, 2, 3, 4]", str) == 0);
     ufree(str);
 
@@ -165,26 +160,22 @@ void test_ulist_iterator(bool verbose)
     ulist_iterator_reset(li);
     while (ulist_iterator_has_next(li))
     {
-        *ulist_iterator_get_next(li) = G_INT(j++);
+        *ulist_iterator_get_next_ref(li) = G_INT(j++);
     }
 
     ulist_iterator_reset(li);
     uvector_clear(v);
     while (ulist_iterator_has_next(li))
     {
-        uvector_append(v, *ulist_iterator_get_next(li));
+        uvector_append(v, *ulist_iterator_get_next_ref(li));
     }
     str = uvector_as_str(v);
-    if (verbose)
-        puts(str);
     ufree(str);
 
     ulist_iterator_destroy(li);
     ulist_destroy(l);
     uvector_destroy(v);
 }
-*/
-
 
 void test_ulist_serialize(void)
 {
@@ -242,7 +233,7 @@ int main(int argc, char **argv)
 
     test_ulist_serialize();
     test_ulist_api();
-//    test_ulist_iterator(void);
+    test_ulist_iterator();
     test_list_void_data();
 
     return 0;

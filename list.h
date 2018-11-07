@@ -37,6 +37,7 @@ static bool ulist_is_data_owner(ulist_t *l);
 
 ulist_iterator_t *ulist_iterator_create(const ulist_t *l);
 ugeneric_t ulist_iterator_get_next(ulist_iterator_t *li);
+ugeneric_t *ulist_iterator_get_next_ref(ulist_iterator_t *li);
 bool ulist_iterator_has_next(const ulist_iterator_t *li);
 void ulist_iterator_reset(ulist_iterator_t *li);
 void ulist_iterator_destroy(ulist_iterator_t *li);
