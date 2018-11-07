@@ -252,20 +252,20 @@ void check_heap(const ugeneric_t *a, size_t nmemb)
 
 void test_heapify(void)
 {
-    ugeneric_t TMP[] = {G_INT(777)};                   check_heap(TMP, ARR_LEN(TMP));
-    ugeneric_t TMP[] = {G_INT(1), G_INT(2), G_INT(3)}; check_heap(TMP, ARR_LEN(TMP));
-    ugeneric_t TMP[] = {G_INT(1), G_INT(3), G_INT(2)}; check_heap(TMP, ARR_LEN(TMP));
-    ugeneric_t TMP[] = {G_INT(2), G_INT(1), G_INT(3)}; check_heap(TMP, ARR_LEN(TMP));
-    ugeneric_t TMP[] = {G_INT(2), G_INT(3), G_INT(1)}; check_heap(TMP, ARR_LEN(TMP));
-    ugeneric_t TMP[] = {G_INT(3), G_INT(1), G_INT(2)}; check_heap(TMP, ARR_LEN(TMP));
-    ugeneric_t TMP[] = {G_INT(3), G_INT(2), G_INT(1)}; check_heap(TMP, ARR_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(777)};                   check_heap(TMP, ARRAY_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(1), G_INT(2), G_INT(3)}; check_heap(TMP, ARRAY_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(1), G_INT(3), G_INT(2)}; check_heap(TMP, ARRAY_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(2), G_INT(1), G_INT(3)}; check_heap(TMP, ARRAY_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(2), G_INT(3), G_INT(1)}; check_heap(TMP, ARRAY_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(3), G_INT(1), G_INT(2)}; check_heap(TMP, ARRAY_LEN(TMP));
+    ugeneric_t TMP[] = {G_INT(3), G_INT(2), G_INT(1)}; check_heap(TMP, ARRAY_LEN(TMP));
 
 
     ugeneric_t z[] = {G_INT(103), G_INT(55), G_INT(777), G_INT(-1), G_INT(7),
                       G_INT(1),  G_INT(3),   G_INT(4),  G_INT(10), G_INT(15),
                       G_INT(16), G_INT(100), G_INT(32), G_INT(11), G_INT(2),
                       G_INT(63), G_INT(3),   G_INT(4), G_INT(9999), G_INT(0)};
-    check_heap(z, ARR_LEN(z));
+    check_heap(z, ARRAY_LEN(z));
 }
 
 int main(void)

@@ -33,7 +33,7 @@ static inline int uset_print(const uset_t *s) {return uset_fprint(s, stdout);}
 uvector_t *uset_get_elements(const uset_t *s, bool deep);
 
 void uset_put(uset_t *s, ugeneric_t e);
-size_t uset_has_element(const uset_t *s, ugeneric_t k);
+size_t uset_has_element(const uset_t *s, ugeneric_t e);
 
 bool uset_is_subset(const uset_t *s, const uset_t *t);
 bool uset_is_superset(const uset_t *s, const uset_t *t);

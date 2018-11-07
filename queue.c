@@ -54,7 +54,7 @@ void uqueue_enq(uqueue_t *q, ugeneric_t element)
     {
         size_t new_capacity = MAX(SCALE_FACTOR * q->size,
                                   QUEUE_INITIAL_CAPACITY);
-        uqueue_reserve_capacity(q, new_capacity ? new_capacity : 1);
+        uqueue_reserve_capacity(q, new_capacity);
     }
     if (q->size)
     {

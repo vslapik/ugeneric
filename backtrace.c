@@ -19,7 +19,7 @@ void utrace_print(void)
     if (size >= DEPTH)
     {
         fprintf(stderr,
-               "Can not obtain more than %zu stack frames.\n", size);
+                "Can not obtain more than %zu stack frames.\n", size);
     }
 
     for (size_t i = 1; i < size; i++)

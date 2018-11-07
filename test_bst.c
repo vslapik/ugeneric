@@ -182,7 +182,7 @@ void test_traverse(void)
     ubst_put(b, G_INT(0), G_INT(0));
     ubst_put(b, G_INT(1000), G_INT(-1000));
     ubst_put(b, G_INT(2000), G_INT(-2000));
-    ubst_put(b, G_INT(3000), G_REAL(-22.0/7));
+    ubst_put(b, G_INT(3000), G_REAL(-22.0 / 7));
     ubst_put(b, G_INT(4000), G_INT(-4004));
     ubst_put(b, G_INT(-311), G_INT(-3113));
     ubst_put(b, G_INT(145), G_INT(-145));
@@ -269,10 +269,10 @@ void test_large_bst(void)
     size_t vsize = uvector_get_size(v);
     for (size_t i = 0; i < vsize; i++)
     {
-       uvector_t *v2 = ustring_split(G_AS_STR(uvector_get_at(v, i)), " ");
-       uvector_drop_data_ownership(v2);
-       ubst_put(b, uvector_get_at(v2, 0), uvector_get_at(v2, 1));
-       uvector_destroy(v2);
+        uvector_t *v2 = ustring_split(G_AS_STR(uvector_get_at(v, i)), " ");
+        uvector_drop_data_ownership(v2);
+        ubst_put(b, uvector_get_at(v2, 0), uvector_get_at(v2, 1));
+        uvector_destroy(v2);
     }
     uvector_destroy(v);
     UASSERT_INT_EQ(500, ubst_get_size(b));
@@ -292,7 +292,7 @@ void test_large_bst(void)
     b = ubst_create_ext(UBST_RB_BALANCING);
     for (size_t i = 0; i < N; i++)
     {
-       ubst_put(b, G_INT(i), G_INT(i));
+        ubst_put(b, G_INT(i), G_INT(i));
     }
     //ubst_dump_to_dot(b, "large_bst", false, stdout);
 
@@ -301,8 +301,8 @@ void test_large_bst(void)
     b = ubst_create_ext(UBST_RB_BALANCING);
     for (size_t i = 0; i < N; i++)
     {
-       ubst_put(b, G_INT(N - i), G_INT(N - i));
-       ubst_put(b, G_INT(i), G_INT(i));
+        ubst_put(b, G_INT(N - i), G_INT(N - i));
+        ubst_put(b, G_INT(i), G_INT(i));
     }
     //ubst_dump_to_dot(b, "large_bst", false, stdout);
 

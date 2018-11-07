@@ -484,7 +484,7 @@ void uhtbl_put(uhtbl_t *h, ugeneric_t k, ugeneric_t v)
 
     if (_get_load_factor(h) >= h->vtable->load_threshold)
     {
-       _resize(h);
+        _resize(h);
     }
 }
 
@@ -709,6 +709,7 @@ ugeneric_kv_t uhtbl_iterator_get_next(uhtbl_iterator_t *hi)
             UABORT("internal error");
     }
 
+    UASSERT_INTERNAL(kv);
     return *kv;
 }
 

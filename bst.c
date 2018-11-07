@@ -649,10 +649,10 @@ void ubst_clear(ubst_t *b)
 }
 
 void ubst_traverse(const ubst_t *b, ubst_traverse_mode_t mode,
-                   ugeneric_kv_iter_t cb, void *data)
+                   ugeneric_kv_iter_t iter, void *data)
 {
     UASSERT_INPUT(b);
-    (void)_iterate_kv(b->root, mode, cb, data);
+    (void)_iterate_kv(b->root, mode, iter, data);
 }
 
 ugeneric_t ubst_get_inorder_predecessor(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
@@ -906,7 +906,7 @@ bool _dump2dot(ubst_node_t *node, void *data)
             _is_black(node) ? "red" : "black",
             kstr,
             d->dump_values ? "->" : "",
-            d->dump_values ? vstr: "");
+            d->dump_values ? vstr : "");
     if (lstr)
     {
         fprintf(d->out, "    %s -> %s;\n", str, lstr);

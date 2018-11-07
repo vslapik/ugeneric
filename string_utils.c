@@ -114,9 +114,8 @@ char *ustring_insert_char(const char *str, size_t pos, char insert)
 char *ustring_dup(const char *str)
 {
     UASSERT_INPUT(str);
-    char *p = umalloc(strlen(str) + 1);
-    strcpy(p, str);
-    return p;
+    size_t len = strlen(str);
+    return memcpy(umalloc(len + 1), str, len + 1);
 }
 
 /*

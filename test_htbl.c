@@ -1,6 +1,6 @@
 #include "generic.h"
-#include "mem.h"
 #include "htbl.h"
+#include "mem.h"
 #include "string_utils.h"
 #include "ut_utils.h"
 

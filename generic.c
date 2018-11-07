@@ -812,7 +812,7 @@ static uint32_t _hash(const void *key, int len, uint32_t seed)
 {
     #define ROTL32(x, r) ((x) << (r)) | ((x) >> (32 - (r)));
 
-    const uint8_t *data = (const uint8_t*)key;
+    const uint8_t *data = (const uint8_t *)key;
     const int nblocks = len / 4;
     uint32_t h1 = seed;
     const uint32_t c1 = 0xcc9e2d51;

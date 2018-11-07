@@ -113,8 +113,8 @@ void test_sort(sort_func sort)
 
     #define _check(arr, sort, type) {                                  \
         /*puts("sorting "#arr); */                                     \
-        uvector_t *v = uvector_create_from_array(arr, ARR_LEN(arr), sizeof(arr[0]), type); \
-        sort(uvector_get_cells(v), ARR_LEN(arr), NULL);                \
+        uvector_t *v = uvector_create_from_array(arr, ARRAY_LEN(arr), sizeof((arr)[0]), type); \
+        sort(uvector_get_cells(v), ARRAY_LEN(arr), NULL);                \
         char *str = uvector_as_str(v);                                 \
         UASSERT_STR_EQ(str, v##arr);                                   \
         UASSERT(uvector_is_sorted(v));                                 \
@@ -181,7 +181,7 @@ void test_sort(sort_func sort)
         UASSERT_NO_ERROR(t);
         FILE *fd = G_AS_PTR(t);
         UASSERT(fd);
-        for (size_t i = 0; i < ARR_LEN(fff); i++)
+        for (size_t i = 0; i < ARRAY_LEN(fff); i++)
         {
             int tmp;
             UASSERT_INT_EQ(fscanf(fd, "%d", &tmp), 1);
@@ -189,8 +189,8 @@ void test_sort(sort_func sort)
         }
         t = ufile_close(fd);
         UASSERT_NO_ERROR(t);
-        sort(fff, ARR_LEN(fff), NULL);
-        ugeneric_array_is_sorted(fff, ARR_LEN(fff), NULL);
+        sort(fff, ARRAY_LEN(fff), NULL);
+        ugeneric_array_is_sorted(fff, ARRAY_LEN(fff), NULL);
     }
 }
 
@@ -206,11 +206,11 @@ void test_count_iversions(void)
     ugeneric_t d[] = {G_INT(1), G_INT(1), G_INT(1), G_INT(2), G_INT(2)};
     ugeneric_t e[] = {G_INT(3), G_INT(2), G_INT(1), G_INT(0), G_INT(-1)};
 
-    UASSERT_INT_EQ(1, count_inversions(a, ARR_LEN(a), NULL));
-    UASSERT_INT_EQ(3, count_inversions(b, ARR_LEN(b), NULL));
-    UASSERT_INT_EQ(29, count_inversions(c, ARR_LEN(c), NULL));
-    UASSERT_INT_EQ(0, count_inversions(d, ARR_LEN(d), NULL));
-    UASSERT_INT_EQ(10, count_inversions(e, ARR_LEN(e), NULL));
+    UASSERT_INT_EQ(1,  count_inversions(a, ARRAY_LEN(a), NULL));
+    UASSERT_INT_EQ(3,  count_inversions(b, ARRAY_LEN(b), NULL));
+    UASSERT_INT_EQ(29, count_inversions(c, ARRAY_LEN(c), NULL));
+    UASSERT_INT_EQ(0,  count_inversions(d, ARRAY_LEN(d), NULL));
+    UASSERT_INT_EQ(10, count_inversions(e, ARRAY_LEN(e), NULL));
 
     ugeneric_t f[100000];
     const char *path = "utdata/array.txt";
@@ -218,7 +218,7 @@ void test_count_iversions(void)
     UASSERT_NO_ERROR(t);
     FILE *fd = G_AS_PTR(t);
     UASSERT(fd);
-    for (size_t i = 0; i < ARR_LEN(f); i++)
+    for (size_t i = 0; i < ARRAY_LEN(f); i++)
     {
         int tmp;
         UASSERT_INT_EQ(fscanf(fd, "%d", &tmp), 1);
@@ -226,7 +226,7 @@ void test_count_iversions(void)
     }
     t = ufile_close(fd);
     UASSERT_NO_ERROR(t);
-    UASSERT_LLINT_EQ(2407905288, count_inversions(f, ARR_LEN(f), NULL));
+    UASSERT_LLINT_EQ(2407905288, count_inversions(f, ARRAY_LEN(f), NULL));
 }
 
 int main(void)

@@ -14,11 +14,11 @@ typedef enum {
     UDICT_BACKEND_MAX, // keep it last
 } udict_backend_t;
 
-#define UDICT_ON_BST(d) ((d->backend == UDICT_BACKEND_BST_PLAIN) || \
-                         (d->backend == UDICT_BACKEND_BST_RB))
+#define UDICT_ON_BST(d) (((d)->backend == UDICT_BACKEND_BST_PLAIN) || \
+                         (((d))->backend == UDICT_BACKEND_BST_RB))
 
-#define UDICT_ON_HTBL(d) ((d->backend == UDICT_BACKEND_HTBL_WITH_CHAINING) || \
-                          (d->backend == UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING))
+#define UDICT_ON_HTBL(d) (((d)->backend == UDICT_BACKEND_HTBL_WITH_CHAINING) || \
+                          ((d)->backend == UDICT_BACKEND_HTBL_WITH_OPEN_ADDRESSING))
 
 
 void libugeneric_udict_set_default_backend(udict_backend_t backend);

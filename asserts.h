@@ -1,5 +1,5 @@
-#ifndef UUASSERTS_H__
-#define UUASSERTS_H__
+#ifndef UASSERTS_H__
+#define UASSERTS_H__
 
 #include "backtrace.h"
 #include <stdio.h>

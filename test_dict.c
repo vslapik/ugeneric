@@ -124,10 +124,10 @@ void test_large_dict(udict_backend_t backend)
     size_t vsize = uvector_get_size(v);
     for (size_t i = 0; i < vsize; i++)
     {
-       uvector_t *v2 = ustring_split(G_AS_STR(uvector_get_at(v, i)), " ");
-       uvector_drop_data_ownership(v2);
-       udict_put(d, uvector_get_at(v2, 0), uvector_get_at(v2, 1));
-       uvector_destroy(v2);
+        uvector_t *v2 = ustring_split(G_AS_STR(uvector_get_at(v, i)), " ");
+        uvector_drop_data_ownership(v2);
+        udict_put(d, uvector_get_at(v2, 0), uvector_get_at(v2, 1));
+        uvector_destroy(v2);
     }
     uvector_destroy(v);
     //udict_print(d, stdout);

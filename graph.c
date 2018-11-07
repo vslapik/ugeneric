@@ -102,7 +102,7 @@ void ugraph_add_edge(ugraph_t *g, size_t from, size_t to, int weight)
 
         ulist_prepend(G_AS_PTR(uvector_get_at(g->adj, from)), G_PTR(e));
 
-        if ((g->type == UGRAPH_UNDIRECTED))
+        if (g->type == UGRAPH_UNDIRECTED)
         {
             e = umalloc(sizeof(*edge));
             e->f = to;
@@ -118,7 +118,7 @@ void ugraph_add_edge(ugraph_t *g, size_t from, size_t to, int weight)
     else
     {
         ((ugraph_edge_t *)edge)->w = weight;
-        if ((g->type == UGRAPH_UNDIRECTED))
+        if (g->type == UGRAPH_UNDIRECTED)
         {
             // Update the counterpart as well.
             edge = ugraph_get_edge(g, to, from);
@@ -721,7 +721,7 @@ void ugraph_dump_to_dot(const ugraph_t *g, const char *name, FILE *out)
 
     const char *arrow = (g->type == UGRAPH_UNDIRECTED) ?  "--" : "->";
     fprintf(out, "%s %s {\n",
-           (g->type == UGRAPH_UNDIRECTED) ? "graph" : "digraph", name);
+            (g->type == UGRAPH_UNDIRECTED) ? "graph" : "digraph", name);
     for (size_t i = 0; i < g->n; i++)
     {
         bool indented = false;

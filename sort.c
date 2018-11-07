@@ -202,7 +202,7 @@ void merge_sort(ugeneric_t *base, size_t nmemb, void_cmp_t cmp)
     {
         UASSERT_INPUT(base);
         ugeneric_t *aux = umalloc(nmemb * sizeof(*aux));
-         _merge_sort(base, aux, nmemb, cmp);
+        _merge_sort(base, aux, nmemb, cmp);
         ufree(aux);
     }
 }

@@ -11,7 +11,7 @@ void libugeneric_set_oom_handler(oom_handler_t handler, void *ctx);
 
 void *umalloc(size_t size);
 void *ucalloc(size_t nmemb, size_t size);
-void *urealloc(void *uptr, size_t nmemb);
+void *urealloc(void *ptr, size_t size);
 void *umemdup(const void *src, size_t n);
 void ufree(void *ptr);
 
@@ -31,7 +31,7 @@ typedef struct {
 } umemchunk_t;
 
 void ubuffer_append_data(ubuffer_t *buf, const void *data, size_t size);
-void ubuffer_append_memchunk(ubuffer_t *buf, const umemchunk_t *data);
+void ubuffer_append_memchunk(ubuffer_t *buf, const umemchunk_t *chunk);
 void ubuffer_append_buffer(ubuffer_t *buf, const ubuffer_t *data);
 void ubuffer_append_byte(ubuffer_t *buf, char byte);
 void ubuffer_append_string(ubuffer_t *buf, const char *str);

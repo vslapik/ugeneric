@@ -20,7 +20,7 @@ ugeneric_t gen_random_generic(int depth, size_t ctn_max_len, bool verbose, bool 
         exclude_containers = true;
     }
     ugeneric_type_e gtype = types[
-        ugeneric_random_from_range(0, ARR_LEN(types) - 2 * exclude_containers - 1)
+        ugeneric_random_from_range(0, ARRAY_LEN(types) - 2 * exclude_containers - 1)
     ];
 
     ugeneric_t g;

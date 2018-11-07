@@ -334,7 +334,7 @@ ugeneric_t uvector_pop_back(uvector_t *v)
 
 void uvector_reverse(uvector_t *v)
 {
-    ugeneric_array_reverse(v->cells, v->size, 0, v->size ? v->size -1 : 0);
+    ugeneric_array_reverse(v->cells, v->size, 0, v->size ? v->size - 1 : 0);
 }
 
 void uvector_reverse_range(uvector_t *v, size_t l, size_t r)
