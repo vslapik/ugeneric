@@ -23,7 +23,6 @@ typedef struct uhtbl_record uhtbl_record_t;
 
 typedef struct {
     void (*destroy_buckets)(uhtbl_t *h);
-    void (*resize)(uhtbl_t *h);
     void (*put)(uhtbl_t *h, ugeneric_t k, ugeneric_t v);
     bool (*pop)(uhtbl_t *h, ugeneric_t k, ugeneric_t *out);
     ugeneric_kv_t *(*find_kv)(const uhtbl_t *h, ugeneric_t k);

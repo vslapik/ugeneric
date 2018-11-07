@@ -84,7 +84,7 @@ int uvector_compare(const uvector_t *v1, const uvector_t *v2)
 
     if (diff == 0)
     {
-        diff = v1->size - v2->size;
+        diff = (v1->size > v2->size) ?  1 : ((v1->size < v2->size) ? -1 : 0);
     }
 
     return diff;

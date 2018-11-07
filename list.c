@@ -278,7 +278,8 @@ int ulist_compare(const ulist_t *l1, const ulist_t *l2, void_cmp_t cmp)
             return diff;
         }
     }
-    return l1->size - l2->size;
+
+    return (l1->size > l2->size) ?  1 : ((l1->size < l2->size) ? -1 : 0);
 }
 
 ulist_t *ulist_copy(const ulist_t *l)
