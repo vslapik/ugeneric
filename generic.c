@@ -50,7 +50,6 @@ int ugeneric_fprint_type(ugeneric_t g, FILE *out)
     return fprintf(out, "%s\n", ugeneric_get_type_str(g));
 }
 
-
 int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
     long i1, i2;
