@@ -2,8 +2,8 @@ lib = libugeneric.a
 #CC = g++ -fpermissive
 PFLAGS = -fprofile-arcs -ftest-coverage
 CFLAGS_COMMON=-I. -g -std=c11 -Wall -Wextra -Winline -pedantic -Wno-missing-field-initializers -Wno-missing-braces
-CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
-#CFLAGS = $(CFLAGS_COMMON) -O3
+#CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
+CFLAGS = $(CFLAGS_COMMON) -O3
 VFLAGS = -q --child-silent-after-fork=yes --leak-check=full --error-exitcode=3
 
 src = generic.c stack.c vector.c queue.c heap.c list.c graph.c bitmap.c sort.c string_utils.c file_utils.c bst.c mem.c dsu.c dict.c htbl.c struct.c set.c
@@ -20,6 +20,11 @@ $(obj): Makefile
 
 lib: $(lib)
 
+CTAGS := $(shell command -v ctags 2> /dev/null)
+LINT := $(shell command -v cland-tidy 2> /dev/null)
+ASTYLE := $(shell command -v astyle 2> /dev/null)
+VALGRIND := $(shell command -v valgrind 2> /dev/null)
+
 test: $(texe)
 test_%: test_%.c $(lib)
 	$(CC) $(CFLAGS) test_$*.c $(lib) -o $@
@@ -29,7 +34,11 @@ $(lib): $(obj) tags $(hdr) Makefile backtrace.c
 	ar rcs $(lib) $(obj) backtrace.o
 
 tags: $(src) $(hdr)
-	ctags -R .
+ifdef CTAGS
+	$(CTAGS) -R .
+else
+	$(warning "ctags is not found, index generation is skipped")
+endif
 
 test_fuzz: $(lib) ut_utils.c test_fuzz.c
 	$(CC) $(CFLAGS) -c ut_utils.c -o ut_utils.o
@@ -42,7 +51,12 @@ clean:
 
 check_%: test_%
 	@printf "====================[ %-12s ]====================\n"  $*
-	@valgrind $(VFLAGS) ./test_$* && echo "valgrind: OK"
+ifdef VALGRIND
+	@$(VALGRIND) $(VFLAGS) ./test_$* && echo "valgrind: OK"
+else
+	$(warning "valgrind is not found, consider to install it")
+	./test_$*
+endif
 ifeq ($(CC), gcc)
 	@gcov $*.c | grep $*.c -A1 | grep Lines | sed 's/Lines executed:/Coverage: /'
 endif
