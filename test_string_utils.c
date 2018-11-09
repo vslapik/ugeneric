@@ -55,11 +55,17 @@ void test_ustring_fmt(void)
     UASSERT_SIZE_EQ(size, 12);
     ufree(str);
 
-    /* TODO: clarify behaviour
     str = ustring_fmt("%s", "");
     UASSERT_STR_EQ(str, "");
     ufree(str);
-    */
+
+    str = ustring_fmt("%s%s%s", "", "", "");
+    UASSERT_STR_EQ(str, "");
+    ufree(str);
+
+    str = ustring_fmt("", "");
+    UASSERT_STR_EQ(str, "");
+    ufree(str);
 }
 
 void test_ustring_replace_char(void)

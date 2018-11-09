@@ -139,13 +139,19 @@ static umemchunk_t _vstr_fmt(const char *fmt, va_list ap)
     va_list ap_copy;
     va_copy(ap_copy, ap);
 
+    /* C99 and POSIX allows str to be NULL in the call below,
+     * in this case vsnprintf gives the number of characters
+     * that would have been written in case the output string
+     * has been large enough. Use this trick to calculate the
+     * size of buffer required to alloc for formatted string.
+     */
     size = vsnprintf(str, size, fmt, ap_copy);
-    if (size > 0)
-    {
-        size++; // '\0'
-        str = umalloc(size);
-        UASSERT(vsnprintf(str, size, fmt, ap) > 0);
-    }
+    UASSERT_INTERNAL(size >= 0);
+
+    size++; // make room for '\0'
+
+    str = umalloc(size);
+    UASSERT(vsnprintf(str, size, fmt, ap) >= 0);
     va_end(ap_copy);
 
     mem.data = str;
