@@ -142,9 +142,7 @@ typedef size_t (*void_hasher_t)(const void *ptr);
 typedef bool (*ugeneric_kv_iter_t)(ugeneric_t k, ugeneric_t v, void *data);
 typedef void (*ugeneric_sorter_t)(ugeneric_t *base, size_t nmemb, void_cmp_t cmp);
 
-void ugeneric_swap(ugeneric_t *g1, ugeneric_t *g2);
 size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher);
-
 ugeneric_t ugeneric_copy_v(ugeneric_t g, void_cpy_t cpy);
 int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp);
 void ugeneric_destroy_v(ugeneric_t g, void_dtr_t dtr);
