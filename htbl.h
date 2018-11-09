@@ -53,6 +53,6 @@ static inline uvector_t *uhtbl_get_keys(const uhtbl_t *h, bool deep) {return uht
 static inline uvector_t *uhtbl_get_values(const uhtbl_t *h, bool deep) {return uhtbl_get_items(h, UDICT_VALUES, deep);}
 
 ugeneric_base_t *uhtbl_get_base(uhtbl_t *h);
-DEFINE_BASE_FUNCS(uhtbl)
+DEFINE_BASE_FUNCS(uhtbl, h)
 
 #endif

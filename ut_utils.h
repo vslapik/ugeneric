@@ -6,6 +6,7 @@
 #include "dict.h"
 #include "generic.h"
 #include "vector.h"
+
 #include <errno.h>
 
 ugeneric_t gen_random_generic(int depth, size_t ctn_max_len, bool verbose, bool exclude_containers);
@@ -79,9 +80,9 @@ ugeneric_t gen_random_void_data(int depth, bool verbose);
 
 #ifdef __unix__
 
+#include <sys/resource.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/resource.h>
 #include <unistd.h>
 
 #define UASSERT_ABORTS(s) do {                                              \

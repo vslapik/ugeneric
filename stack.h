@@ -26,6 +26,6 @@ int ustack_fprint(const ustack_t *s, FILE *out);
 static inline int ustack_print(const ustack_t *s) {return ustack_fprint(s, stdout);}
 
 ugeneric_base_t *ustack_get_base(ustack_t *s);
-DEFINE_BASE_FUNCS(ustack)
+DEFINE_BASE_FUNCS(ustack, s)
 
 #endif

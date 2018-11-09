@@ -830,7 +830,7 @@ static uint32_t _hash(const void *key, int len, uint32_t seed)
         h1 = 5 * h1 + 0xe6546b64;
     }
 
-    const uint8_t *tail = (const uint8_t *)(data + 4 * nblocks);
+    const uint8_t *tail = data + 4 * nblocks;
     uint32_t k1 = 0;
 
     switch (len & 3)

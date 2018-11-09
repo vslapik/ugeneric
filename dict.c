@@ -105,7 +105,7 @@ udict_t *udict_create_with_backend(udict_backend_t backend)
 void udict_update(udict_t *d, udict_t *update)
 {
     udict_iterator_t *di = udict_iterator_create(update);
-    void_cpy_t cpy = udict_get_void_copier((udict_t *)d);
+    void_cpy_t cpy = udict_get_void_copier(d);
     while (udict_iterator_has_next(di))
     {
         ugeneric_kv_t kv = udict_iterator_get_next(di);

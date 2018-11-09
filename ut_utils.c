@@ -1,6 +1,7 @@
 #include "ut_utils.h"
-#include "string_utils.h"
+
 #include "heap.h"
+#include "string_utils.h"
 
 typedef struct {
     int i1;

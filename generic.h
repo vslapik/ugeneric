@@ -209,17 +209,17 @@ typedef struct {
     bool is_data_owner;
 } ugeneric_base_t;
 
-#define DEFINE_BASE_FUNCS(_ctn_) \
-static inline void _ctn_##_set_void_destroyer(_ctn_##_t *self, void_dtr_t dtr)  {_ctn_##_get_base(self)->void_handlers.dtr = dtr;} \
-static inline void _ctn_##_set_void_comparator(_ctn_##_t *self, void_cmp_t cmp) {_ctn_##_get_base(self)->void_handlers.cmp = cmp;} \
-static inline void _ctn_##_set_void_copier(_ctn_##_t *self, void_cpy_t cpy)     {_ctn_##_get_base(self)->void_handlers.cpy = cpy;} \
-static inline void _ctn_##_set_void_serializer(_ctn_##_t *self, void_s8r_t s8r) {_ctn_##_get_base(self)->void_handlers.s8r = s8r;} \
-static inline void_dtr_t _ctn_##_get_void_destroyer(_ctn_##_t *self)   {return _ctn_##_get_base(self)->void_handlers.dtr;} \
-static inline void_cmp_t _ctn_##_get_void_comparator(_ctn_##_t *self)  {return _ctn_##_get_base(self)->void_handlers.cmp;} \
-static inline void_cpy_t _ctn_##_get_void_copier(_ctn_##_t *self)      {return _ctn_##_get_base(self)->void_handlers.cpy;} \
-static inline void_s8r_t _ctn_##_get_void_serializer(_ctn_##_t *self)  {return _ctn_##_get_base(self)->void_handlers.s8r;} \
-static inline void _ctn_##_take_data_ownership(_ctn_##_t *self) {_ctn_##_get_base(self)->is_data_owner = true;}  \
-static inline void _ctn_##_drop_data_ownership(_ctn_##_t *self) {_ctn_##_get_base(self)->is_data_owner = false;} \
-static inline bool _ctn_##_is_data_owner(_ctn_##_t *self)       {return _ctn_##_get_base(self)->is_data_owner;}  \
+#define DEFINE_BASE_FUNCS(_type_, _name_) \
+static inline void _type_##_set_void_destroyer(_type_##_t *(_name_), void_dtr_t dtr)  {_type_##_get_base(_name_)->void_handlers.dtr = dtr;}  \
+static inline void _type_##_set_void_comparator(_type_##_t *(_name_), void_cmp_t cmp) {_type_##_get_base(_name_)->void_handlers.cmp = cmp;}  \
+static inline void _type_##_set_void_copier(_type_##_t *(_name_), void_cpy_t cpy)     {_type_##_get_base(_name_)->void_handlers.cpy = cpy;}  \
+static inline void _type_##_set_void_serializer(_type_##_t *(_name_), void_s8r_t s8r) {_type_##_get_base(_name_)->void_handlers.s8r = s8r;}  \
+static inline void_dtr_t _type_##_get_void_destroyer(_type_##_t *(_name_))            {return _type_##_get_base(_name_)->void_handlers.dtr;} \
+static inline void_cmp_t _type_##_get_void_comparator(_type_##_t *(_name_))           {return _type_##_get_base(_name_)->void_handlers.cmp;} \
+static inline void_cpy_t _type_##_get_void_copier(_type_##_t *(_name_))               {return _type_##_get_base(_name_)->void_handlers.cpy;} \
+static inline void_s8r_t _type_##_get_void_serializer(_type_##_t *(_name_))           {return _type_##_get_base(_name_)->void_handlers.s8r;} \
+static inline void _type_##_take_data_ownership(_type_##_t *(_name_))                 {_type_##_get_base(_name_)->is_data_owner = true;}     \
+static inline void _type_##_drop_data_ownership(_type_##_t *(_name_))                 {_type_##_get_base(_name_)->is_data_owner = false;}    \
+static inline bool _type_##_is_data_owner(_type_##_t *(_name_))                       {return _type_##_get_base(_name_)->is_data_owner;}     \
 
 #endif

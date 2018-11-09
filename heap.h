@@ -16,7 +16,7 @@ typedef enum {
 } uheap_type_t;
 
 uheap_t *uheap_create(void);
-uheap_t *uheap_create_ext(size_t capacity, uheap_type_t);
+uheap_t *uheap_create_ext(size_t capacity, uheap_type_t type);
 uheap_t *uheap_build_from_array(const ugeneric_t *base, size_t nmemb,
                                 uheap_type_t type,
                                 uvoid_handlers_t *void_handlers);
@@ -48,6 +48,6 @@ static inline int uheap_print(const uheap_t *h) {return uheap_fprint(h, stdout);
 void uheap_dump_to_dot(const uheap_t *h, const char *name, FILE *out);
 
 ugeneric_base_t *uheap_get_base(uheap_t *h);
-DEFINE_BASE_FUNCS(uheap)
+DEFINE_BASE_FUNCS(uheap, h)
 
 #endif

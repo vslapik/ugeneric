@@ -68,6 +68,6 @@ static inline uvector_t *ubst_get_keys(const ubst_t *b, bool deep) {return ubst_
 static inline uvector_t *ubst_get_values(const ubst_t *b, bool deep) {return ubst_get_items(b, UDICT_VALUES, deep);}
 
 ugeneric_base_t *ubst_get_base(ubst_t *b);
-DEFINE_BASE_FUNCS(ubst)
+DEFINE_BASE_FUNCS(ubst, b)
 
 #endif

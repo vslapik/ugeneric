@@ -69,6 +69,6 @@ void uvector_dump_to_gnuplot(const uvector_t *v, gnuplot_attrs_t *attrs,
                              FILE *out);
 
 ugeneric_base_t *uvector_get_base(uvector_t *v);
-DEFINE_BASE_FUNCS(uvector)
+DEFINE_BASE_FUNCS(uvector, v)
 
 #endif

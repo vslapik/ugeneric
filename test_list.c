@@ -1,8 +1,8 @@
-#include "mem.h"
 #include "list.h"
-#include "vector.h"
-#include "ut_utils.h"
+#include "mem.h"
 #include "string_utils.h"
+#include "ut_utils.h"
+#include "vector.h"
 
 void test_ulist_api(void)
 {

@@ -338,8 +338,6 @@ void _test_udict_cmp(udict_backend_t b1, udict_backend_t b2)
 
         tc++;
     }
-
-    return;
 }
 
 void test_udict_cmp(udict_backend_t backend)
@@ -347,7 +345,9 @@ void test_udict_cmp(udict_backend_t backend)
     for (int i = 1; i < UDICT_BACKEND_MAX; i++)
     {
         if (i == UDICT_BACKEND_BST_RB)
+        {
             continue;
+        }
         //printf("%d %d\n", backend, i);
         _test_udict_cmp(backend, i);
     }
@@ -413,7 +413,9 @@ int main(int argc, char **argv)
     for (int i = 1; i < UDICT_BACKEND_MAX; i++)
     {
         if (i == UDICT_BACKEND_BST_RB)
+        {
             continue;
+        }
         test_udict_iterator(i);
         test_udict_const_str(i);
         test_udict_pop(i);

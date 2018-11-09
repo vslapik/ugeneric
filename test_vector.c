@@ -113,7 +113,9 @@ void test_uvector_next_permutation(bool verbose)
 
     do {
         if (verbose)
+        {
             uvector_print(v);
+        }
     } while (uvector_next_permutation(v));
 
     uvector_destroy(v);
@@ -138,7 +140,9 @@ void test_uvector_serialization(bool verbose)
     uvector_append(v, G_VECTOR(uvector_deep_copy(v)));
 
     if (verbose)
+    {
         uvector_print(v);
+    }
     vs = uvector_as_str(v);
     UASSERT_STR_EQ(vs,
                   "[11, 22, 33, \"44\", \"5\", [11, 22, 33, \"44\", \"5\"], [11, 22, 33, \"44\", \"5\", [11, 22, 33, \"44\", \"5\"]]]");
@@ -372,7 +376,7 @@ void test_gnuplot(void)
 }
 */
 
-void _check_slice(const uvector_t *v, size_t b, size_t e, size_t s, char *exp)
+void _check_slice(const uvector_t *v, size_t b, size_t e, size_t s, const char *exp)
 {
     uvector_t *slice = uvector_get_slice(v, b, e, s);
     char *str = uvector_as_str(slice);

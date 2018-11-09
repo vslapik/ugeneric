@@ -16,7 +16,9 @@ void test_graph(bool verbose)
     ugraph_add_edge(g, 6, 36, 1);
     ugraph_add_edge(g, 6, 39, 1);
     if (verbose)
+    {
         ugraph_dump_to_dot(g, "test", stdout);
+    }
     ugraph_destroy(g);
 }
 

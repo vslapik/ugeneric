@@ -43,6 +43,6 @@ void ulist_iterator_reset(ulist_iterator_t *li);
 void ulist_iterator_destroy(ulist_iterator_t *li);
 
 ugeneric_base_t *ulist_get_base(ulist_t *l);
-DEFINE_BASE_FUNCS(ulist)
+DEFINE_BASE_FUNCS(ulist, l)
 
 #endif

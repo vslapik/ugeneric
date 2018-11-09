@@ -44,6 +44,6 @@ uset_t *uset_get_symmetric_diff(const uset_t *s1, const uset_t *s2);
 uset_t *uset_copy(const uset_t *s);
 
 static inline ugeneric_base_t *uset_get_base(uset_t *s) {return udict_get_base(s->data);}
-DEFINE_BASE_FUNCS(uset)
+DEFINE_BASE_FUNCS(uset, s)
 
 #endif

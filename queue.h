@@ -28,6 +28,6 @@ static void uqueue_drop_data_ownership(uqueue_t *q);
 static bool uqueue_is_data_owner(uqueue_t *q);
 
 ugeneric_base_t *uqueue_get_base(uqueue_t *q);
-DEFINE_BASE_FUNCS(uqueue)
+DEFINE_BASE_FUNCS(uqueue, q)
 
 #endif

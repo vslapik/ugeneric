@@ -116,6 +116,6 @@ static inline void udict_iterator_reset(udict_iterator_t *di) {di->vtable->reset
 void udict_iterator_destroy(udict_iterator_t *di);
 
 static inline ugeneric_base_t *udict_get_base(udict_t *d) {return d->vtable->get_base(d->vobj);}
-DEFINE_BASE_FUNCS(udict)
+DEFINE_BASE_FUNCS(udict, d)
 
 #endif
