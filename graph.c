@@ -64,13 +64,6 @@ ugraph_t *ugraph_create(size_t n, ugraph_type_t type)
     return g;
 }
 
-static inline void swap(size_t *x, size_t *y)
-{
-    size_t tmp = *x;
-    *x = *y;
-    *y = tmp;
-}
-
 const ugraph_edge_t *ugraph_get_edge(const ugraph_t *g, size_t from, size_t to)
 {
     UASSERT_INPUT(g);

@@ -301,13 +301,12 @@ void test_serialize(void)
     uvector_append(v, G_INT(2));
     uvector_append(v, G_REAL(3.4));
     uvector_append(v, G_SIZE(188881));
-    uvector_append(v, G_PTR(NULL));
     uvector_append(v, G_MEMCHUNK(umemdup("\xff\xaa\xbb", 3), 3));
     uvector_set_void_destroyer(v, ufree);
     udict_put(d, G_CSTR("key"), G_VECTOR(v));
 
     char *str = ugeneric_as_str(G_DICT(d));
-    UASSERT_STR_EQ(str, "{\"key\": [null, true, false, [], {}, -1, 2, 3.4, 188881, ptr:0x(nil), mem:ffaabb]}");
+    UASSERT_STR_EQ(str, "{\"key\": [null, true, false, [], {}, -1, 2, 3.4, 188881, mem:ffaabb]}");
     ufree(str);
     udict_destroy(d);
 }
