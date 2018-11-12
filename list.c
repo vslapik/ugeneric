@@ -213,6 +213,10 @@ void ulist_remove_at(ulist_t *l, size_t i)
     ulist_item_t *f = *t;
 
     *t = (*t)->next;
+    if (l->is_data_owner)
+    {
+        ugeneric_destroy_v(f->data, l->void_handlers.dtr);
+    }
     ufree(f);
 
     l->size--;

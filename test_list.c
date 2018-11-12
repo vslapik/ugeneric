@@ -223,6 +223,10 @@ void test_list_void_data(void)
 
     ulist_destroy(l);
     ulist_destroy(l2);
+
+    // remove_at
+    ulist_remove_at(l3, 0);
+    ulist_remove_at(l3, 0);
     ulist_destroy(l3);
 }
 

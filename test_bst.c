@@ -94,6 +94,16 @@ static ubst_t *_create_test_tree3(void)
     return b;
 }
 
+static ubst_t *_create_test_tree4(void)
+{
+    ubst_t *b = ubst_create_ext(UBST_NO_BALANCING);
+    ubst_put(b, G_INT(1), G_STR(ustring_dup("one")));
+    ubst_put(b, G_INT(2), G_STR(ustring_dup("two")));
+    ubst_put(b, G_INT(3), G_STR(ustring_dup("three")));
+
+    return b;
+}
+
 void test_api(void)
 {
     ubst_t *b = _create_test_tree();
@@ -155,10 +165,38 @@ void test_pop(void)
     ubuffer_null_terminate(&buf);
     UASSERT_STR_EQ(buf.data, "012456");
     ubuffer_reset(&buf);
-//    ubst_dump_to_dot(b, "UBST2", false, stdout);
     ubst_destroy(b);
 
     ufree(buf.data);
+
+    //
+    ugeneric_t e;
+    b = _create_test_tree4();
+    e = ubst_pop(b, G_INT(1), G_INT(-1));
+    UASSERT_G_EQ(e, G_STR("one"));
+    ugeneric_destroy_v(e, NULL);
+
+    e = ubst_pop(b, G_INT(2), G_INT(-1));
+    UASSERT_G_EQ(e, G_STR("two"));
+    ugeneric_destroy_v(e, NULL);
+
+    e = ubst_pop(b, G_INT(3), G_INT(-1));
+    UASSERT_G_EQ(e, G_STR("three"));
+    ugeneric_destroy_v(e, NULL);
+
+    ubst_destroy(b);
+
+    //
+    b = _create_test_tree4();
+    UASSERT(ubst_remove(b, G_INT(1)));
+    UASSERT(ubst_remove(b, G_INT(2)));
+    UASSERT(ubst_remove(b, G_INT(3)));
+
+    UASSERT(!ubst_remove(b, G_INT(1)));
+    UASSERT(!ubst_remove(b, G_INT(2)));
+    UASSERT(!ubst_remove(b, G_INT(3)));
+
+    ubst_destroy(b);
 }
 
 bool _find_2(ugeneric_t k, ugeneric_t v, void *data)
@@ -170,6 +208,7 @@ bool _find_2(ugeneric_t k, ugeneric_t v, void *data)
     // Stop when 2 is found.
     return (G_AS_INT(k) == 2) ? true : false;
 }
+
 void test_traverse(void)
 {
     char *str;

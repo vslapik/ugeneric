@@ -589,8 +589,12 @@ ugeneric_t ubst_pop(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
 bool ubst_remove(ubst_t *b, ugeneric_t k)
 {
     ugeneric_t r = ubst_pop(b, k, G_ERROR(""));
-    return G_IS_ERROR(r);
-
+    bool ret = !G_IS_ERROR(r);
+    if (ret)
+    {
+        ugeneric_destroy_v(r, b->void_handlers.dtr);
+    }
+    return ret;
 }
 
 ugeneric_t ubst_get(ubst_t *b, ugeneric_t k, ugeneric_t vdef)
