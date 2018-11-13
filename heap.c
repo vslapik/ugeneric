@@ -140,6 +140,7 @@ void uheap_push(uheap_t *h, ugeneric_t e)
     void_cmp_t cmp = uheap_get_void_comparator(h);
     while (i != ROOT_IDX)
     {
+        // Bubble up the new element to its proper position.
         if (h->type * ugeneric_compare_v(a[i], a[PARENT_IDX(i)], cmp) < 0)
         {
             ugeneric_swap(&a[i], &a[PARENT_IDX(i)]);

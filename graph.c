@@ -24,7 +24,7 @@ struct ugraph_edge_iterator_opaq {
 
 // This function is used for searching the edge from source vertex to sink vertex,
 // thus it compares only these two field of edge structure, weight is irrelevant.
-int _edge_cmp(const void *ptr1, const void *ptr2)
+static int _edge_cmp(const void *ptr1, const void *ptr2)
 {
     const ugraph_edge_t *e1 = ptr1;
     const ugraph_edge_t *e2 = ptr2;
@@ -439,7 +439,7 @@ static _dist_t *_alloc_dist(size_t n, size_t dist)
 }
 
 // distance/node pairs are ordered by distance in the heap
-int _dist_cmp(const void *ptr1, const void *ptr2)
+static int _dist_cmp(const void *ptr1, const void *ptr2)
 {
     const _dist_t *d1 = ptr1;
     const _dist_t *d2 = ptr2;
@@ -625,6 +625,80 @@ exit:
     ufree(prev);
 
     return path;
+}
+
+// Used for picking up the edge with the smallest weight.
+static int _edge_weight_cmp(const void *ptr1, const void *ptr2)
+{
+    const ugraph_edge_t *e1 = ptr1;
+    const ugraph_edge_t *e2 = ptr2;
+    return (e1->w > e2->w) ? 1 : ((e1->w < e2->w) ? -1 : 0);
+}
+
+char *_edge_s8r(const void *ptr, size_t *output_size)
+{
+    const ugraph_edge_t *e = ptr;
+    return ustring_fmt_sized("(%zu->%zu, w: %d)", output_size, e->f, e->t, e->w);
+}
+
+/* Construct MSP (minimal spanning tree). */
+ugraph_t *ugraph_get_mst(const ugraph_t *g)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(g->n);
+
+    size_t n = 0; // start with the first node
+    const ugraph_edge_t *e = NULL;
+    ugraph_edge_iterator_t *ei = NULL;
+
+    ugraph_t *mst = ugraph_create(g->n, g->type);
+
+    // Create and initialize priority queue for storing edges.
+    uheap_t *h = uheap_create();
+    uheap_set_void_comparator(h, _edge_weight_cmp);
+    uheap_set_void_serializer(h, _edge_s8r);
+    uheap_drop_data_ownership(h); // stores pointers to edges from adj lists
+
+    // Bitmap for storing nodes which are already in MST.
+    uint8_t *visited_nodes = ubitmap_allocate(g->n);
+
+    // Push all the edges of the first node to the heap.
+    ei = ugraph_edge_iterator_create(g, n);
+    while (ugraph_edge_iterator_has_next(ei))
+    {
+        e = ugraph_edge_iterator_get_next(ei);
+        uheap_push(h, G_PTR((void *)e));
+    }
+    ugraph_edge_iterator_destroy(ei);
+    ubitmap_set_bit(visited_nodes, n);
+
+    // Loop and construct MST taking edges from
+    // min-heap to unvisited nodes (Prim's algo).
+    while (!uheap_is_empty(h))
+    {
+        e = (const ugraph_edge_t *)G_AS_PTR(uheap_pop(h));
+        if (!ubitmap_bit_is_set(visited_nodes, e->t))
+        {
+            ubitmap_set_bit(visited_nodes, e->t);
+            ugraph_add_edge(mst, e->f, e->t, e->w);
+        }
+        n = e->t;
+        ei = ugraph_edge_iterator_create(g, n);
+        while (ugraph_edge_iterator_has_next(ei))
+        {
+            e = ugraph_edge_iterator_get_next(ei);
+            if (!ubitmap_bit_is_set(visited_nodes, e->t))
+            {
+                uheap_push(h, G_PTR((void *)e));
+            }
+        }
+        ugraph_edge_iterator_destroy(ei);
+    }
+
+    uheap_destroy(h);
+    ufree(visited_nodes);
+
+    return mst;
 }
 
 uvector_t *_get_reversed_adj(const ugraph_t *g)

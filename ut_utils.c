@@ -45,7 +45,7 @@ ugeneric_t gen_random_generic(int depth, size_t ctn_max_len, bool verbose, bool 
     return g;
 }
 
-int _void_cmp(const void *ptr1, const void *ptr2)
+static int _void_cmp(const void *ptr1, const void *ptr2)
 {
     int ret = 0;
     const void_t *p1 = ptr1;

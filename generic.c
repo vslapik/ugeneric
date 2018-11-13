@@ -319,7 +319,7 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             }
             else
             {
-                snprintf(tmp, sizeof(tmp), "ptr:0x%p", G_AS_PTR(g));
+                snprintf(tmp, sizeof(tmp), "ptr:%p", G_AS_PTR(g));
                 m.data = tmp, m.size = strlen(tmp);
                 ubuffer_append_memchunk(buf, &m);
             }

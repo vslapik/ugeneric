@@ -438,7 +438,7 @@ void test_topological_ordering(bool verbose)
     ugraph_destroy(g);
 }
 
-int _scc_cmp(const void *ptr1, const void *ptr2)
+static int _scc_cmp(const void *ptr1, const void *ptr2)
 {
     const uvector_t *v1 = ptr1;
     const uvector_t *v2 = ptr2;
@@ -448,6 +448,7 @@ int _scc_cmp(const void *ptr1, const void *ptr2)
 
     return vlen1 - vlen2;
 }
+
 void test_scc_large(void)
 {
     ugraph_t *g;
@@ -555,6 +556,101 @@ void test_scc(void)
     ugraph_destroy(g);
 }
 
+void test_mst_large(void)
+{
+    ugraph_t *g;
+    const char *path = "utdata/edges.txt";
+    ugeneric_t t = ufile_read_lines(path, "\n");
+    UASSERT_NO_ERROR(t);
+    uvector_t *v = G_AS_PTR(t);
+    size_t vlen = uvector_get_size(v);
+
+    char *row = G_AS_PTR(uvector_get_at(v, 0));
+    uvector_t *va = ustring_split(row, " ");
+    UASSERT_SIZE_EQ(uvector_get_size(va), 2);
+    ugeneric_t nn = ugeneric_parse(G_AS_STR(uvector_get_at(va, 0)));
+    ugeneric_t ne = ugeneric_parse(G_AS_STR(uvector_get_at(va, 1)));
+    UASSERT_NO_ERROR(nn);
+    UASSERT_NO_ERROR(ne);
+    uvector_destroy(va);
+
+    g = ugraph_create(vlen - 1, UGRAPH_UNDIRECTED);
+    for (size_t i = 1; i < vlen; i++)
+    {
+        char *row = G_AS_PTR(uvector_get_at(v, i));
+        uvector_t *va = ustring_split(row, " ");
+        UASSERT_SIZE_EQ(uvector_get_size(va), 3);
+        ugeneric_t gf = ugeneric_parse(G_AS_STR(uvector_get_at(va, 0)));
+        ugeneric_t gt = ugeneric_parse(G_AS_STR(uvector_get_at(va, 1)));
+        ugeneric_t gw = ugeneric_parse(G_AS_STR(uvector_get_at(va, 2)));
+        UASSERT_NO_ERROR(gf);
+        UASSERT_NO_ERROR(gt);
+        UASSERT_NO_ERROR(gw);
+
+        size_t f = G_AS_SIZE(gf) - 1;
+        size_t t = G_AS_SIZE(gt) - 1;
+        size_t w = G_AS_SIZE(gw);
+
+        ugraph_add_edge(g, f, t, w);
+        uvector_destroy(va);
+    }
+    uvector_destroy(v);
+
+    ugraph_t *mst = ugraph_get_mst(g);
+    uvector_t *edges = ugraph_get_edges(mst);
+    vlen = uvector_get_size(edges);
+    int s = 0;
+    for (size_t i = 0; i < vlen; i++)
+    {
+        ugraph_edge_t *e = G_AS_PTR(uvector_get_at(edges, i));
+        s += e->w;
+    }
+//    printf("answer is : %d\n", s);
+    UASSERT_INT_EQ(-3612829, s);
+
+    uvector_destroy(edges);
+    ugraph_destroy(mst);
+    ugraph_destroy(g);
+}
+
+// Compare edges by weight.
+static int _edge_cmp(const void *ptr1, const void *ptr2)
+{
+    const ugraph_edge_t *e1 = ptr1;
+    const ugraph_edge_t *e2 = ptr2;
+
+    if (e1->w < e2->w) return -1;
+    if (e1->w > e2->w) return  1;
+
+    return 0;
+}
+
+void test_mst(void)
+{
+    ugraph_t *g = ugraph_create(4, UGRAPH_UNDIRECTED);
+    ugraph_add_edge(g, 0, 1, 1);
+    ugraph_add_edge(g, 0, 2, 0);
+    ugraph_add_edge(g, 0, 3, 5);
+    ugraph_add_edge(g, 1, 2, 4);
+    ugraph_add_edge(g, 1, 3, 2);
+    ugraph_add_edge(g, 2, 3, 3);
+    //ugraph_dump_to_dot(g, "test", stdout);
+
+    ugraph_t *mst = ugraph_get_mst(g);
+    uvector_t *edges = ugraph_get_edges(mst);
+    uvector_set_void_comparator(edges, _edge_cmp);
+    uvector_sort(edges);
+
+    UASSERT_INT_EQ(3, uvector_get_size(edges));
+    UASSERT_INT_EQ(0, ((ugraph_edge_t *)G_AS_PTR(uvector_get_at(edges, 0)))->w);
+    UASSERT_INT_EQ(1, ((ugraph_edge_t *)G_AS_PTR(uvector_get_at(edges, 1)))->w);
+    UASSERT_INT_EQ(2, ((ugraph_edge_t *)G_AS_PTR(uvector_get_at(edges, 2)))->w);
+
+    uvector_destroy(edges);
+    ugraph_destroy(mst);
+    ugraph_destroy(g);
+}
+
 int main(int argc, char **argv)
 {
     (void)argv;
@@ -567,6 +663,8 @@ int main(int argc, char **argv)
     test_dijkstra_large(argc > 1);
     test_topological_ordering(argc > 1);
     test_scc();
+    test_mst();
+    test_mst_large();
     if (0) test_scc_large();
 
     return 0;
