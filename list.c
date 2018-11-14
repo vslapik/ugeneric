@@ -117,27 +117,6 @@ ugeneric_t ulist_pop_front(ulist_t *l)
     return e;
 }
 
-void ulist_destroy(ulist_t *l)
-{
-    if (l)
-    {
-        ulist_item_t *li = l->head;
-        ugeneric_t g;
-
-        if (l->is_data_owner)
-        {
-            while (li)
-            {
-                g = li->data;
-                ugeneric_destroy_v(g, l->void_handlers.dtr);
-                li = li->next;
-            }
-        }
-        ulist_clear(l);
-        ufree(l);
-    }
-}
-
 void ulist_clear(ulist_t *l)
 {
     UASSERT_INPUT(l);
@@ -147,11 +126,25 @@ void ulist_clear(ulist_t *l)
 
     while (li)
     {
+        if (l->is_data_owner)
+        {
+            ugeneric_destroy_v(li->data, l->void_handlers.dtr);
+        }
         t = li;
         li = li->next;
         ufree(t);
     }
     l->head = NULL;
+    l->size = 0;
+}
+
+void ulist_destroy(ulist_t *l)
+{
+    if (l)
+    {
+        ulist_clear(l);
+        ufree(l);
+    }
 }
 
 bool ulist_is_empty(const ulist_t *l)

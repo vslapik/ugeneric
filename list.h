@@ -7,12 +7,12 @@ typedef struct ulist_opaq ulist_t;
 typedef struct ulist_iterator_opaq ulist_iterator_t;
 
 ulist_t *ulist_create(void);
+void ulist_clear(ulist_t *l);
 void ulist_destroy(ulist_t *l);
 void ulist_append(ulist_t *l, ugeneric_t e);
 void ulist_prepend(ulist_t *l, ugeneric_t e);
 ugeneric_t ulist_pop_back(ulist_t *l);
 ugeneric_t ulist_pop_front(ulist_t *l);
-void ulist_clear(ulist_t *l);
 bool ulist_is_empty(const ulist_t *l);
 size_t ulist_get_size(const ulist_t *l);
 ugeneric_t ulist_get_at(const ulist_t *l, size_t i);

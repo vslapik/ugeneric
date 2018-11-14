@@ -136,17 +136,25 @@ uvector_t *uvector_create_from_array(void *array, size_t array_len,
     return v;
 }
 
+void uvector_clear(uvector_t *v)
+{
+    UASSERT_INPUT(v);
+
+    if (v->is_data_owner)
+    {
+        for (size_t i = 0; i < v->size; i++)
+        {
+            ugeneric_destroy_v(v->cells[i], v->void_handlers.dtr);
+        }
+    }
+    v->size = 0;
+}
+
 void uvector_destroy(uvector_t *v)
 {
     if (v)
     {
-        if (v->is_data_owner)
-        {
-            for (size_t i = 0; i < v->size; i++)
-            {
-                ugeneric_destroy_v(v->cells[i], v->void_handlers.dtr);
-            }
-        }
+        uvector_clear(v);
         ufree(v->cells);
         ufree(v);
     }
@@ -275,23 +283,6 @@ void uvector_remove_at(uvector_t *v, size_t i)
     }
     memmove(v->cells + i, v->cells + i + 1, (v->size - i - 1) * sizeof(v->cells[0]));
     v->size--;
-}
-
-void uvector_clear(uvector_t *v)
-{
-    UASSERT_INPUT(v);
-
-    if (v->size)
-    {
-        if (v->is_data_owner)
-        {
-            for (size_t i = 0; i < v->size; i++)
-            {
-                ugeneric_destroy_v(v->cells[i], v->void_handlers.dtr);
-            }
-        }
-    }
-    v->size = 0;
 }
 
 void uvector_append(uvector_t *v, ugeneric_t e)

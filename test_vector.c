@@ -30,7 +30,7 @@ void *copy_nage_t(const void *pnage)
     return n;
 }
 
-void test_uvector_copy(bool verbose)
+void test_vector_copy(bool verbose)
 {
     (void)verbose;
 
@@ -51,7 +51,7 @@ void test_uvector_copy(bool verbose)
     uvector_destroy(v3);
 }
 
-void test_uvector_bsearch(void)
+void test_vector_bsearch(void)
 {
     uvector_t *v = uvector_create();
     uvector_append(v, G_INT(1));
@@ -103,7 +103,7 @@ void test_uvector_bsearch(void)
     uvector_destroy(v);
 }
 
-void test_uvector_next_permutation(bool verbose)
+void test_vector_next_permutation(bool verbose)
 {
     uvector_t *v = uvector_create();
     uvector_append(v, G_INT(4));
@@ -121,7 +121,7 @@ void test_uvector_next_permutation(bool verbose)
     uvector_destroy(v);
 }
 
-void test_uvector_serialization(bool verbose)
+void test_vector_serialization(bool verbose)
 {
     char *vs;
     uvector_t *v = uvector_create();
@@ -150,7 +150,7 @@ void test_uvector_serialization(bool verbose)
     uvector_destroy(v);
 }
 
-void test_uvector_api()
+void test_vector_api()
 {
     uvector_t *v = uvector_create();
     uvector_append(v, G_INT(0));
@@ -263,8 +263,7 @@ void test_uvector_api()
     UASSERT(!uvector_contains(v, G_BOOL(true)));
     UASSERT(!uvector_contains(v, G_INT(100)));
     uvector_destroy(v);
-
-
+/*
 #if defined(__unix__) && defined(ENABLE_UASSERT_INPUT)
     // Check asserts.
     UASSERT_ABORTS(uvector_append(NULL, G_INT(0)));
@@ -291,6 +290,7 @@ void test_uvector_api()
     UASSERT_ABORTS(uvector_insert_at(v, 500, G_INT(400)));
     uvector_destroy(v);
 #endif
+*/
 
 }
 
@@ -308,7 +308,7 @@ int cmp(const char *s1, const char *s2)
     return diff;
 }
 
-void test_uvector_compare(void)
+void test_vector_compare(void)
 {
     uvector_t *v1 = uvector_create();
     uvector_t *v2 = uvector_create();
@@ -385,7 +385,7 @@ void _check_slice(const uvector_t *v, size_t b, size_t e, size_t s, const char *
     uvector_destroy(slice);
 }
 
-void test_uvector_slice(void)
+void test_vector_slice(void)
 {
     ugeneric_t g = ugeneric_parse("[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]");
     UASSERT_NO_ERROR(g);
@@ -411,12 +411,12 @@ void test_uvector_slice(void)
     uvector_destroy(v);
 }
 
-void test_uvector_data_ownership(void)
+void test_vector_data_ownership(void)
 {
     uvector_t *v = uvector_create();
     UASSERT(uvector_is_data_owner(v));
-    //uvector_append(v, G_CSTR("s1"));
-    //uvector_append(v, G_CSTR("s1"));
+    uvector_append(v, G_CSTR("s1"));
+    uvector_append(v, G_CSTR("s1"));
 
     // shallow copy
     uvector_t *copy1 = uvector_copy(v);
@@ -425,13 +425,24 @@ void test_uvector_data_ownership(void)
     // deep copy
     uvector_t *copy2 = uvector_deep_copy(v);
     UASSERT(uvector_is_data_owner(copy2));
-    uvector_drop_data_ownership(copy2);
-    UASSERT(!uvector_is_data_owner(copy2));
 
     // kick the bucket
     uvector_destroy(v);
     uvector_destroy(copy1);
     uvector_destroy(copy2);
+}
+
+void test_vector_clear(void)
+{
+    uvector_t *v = uvector_create();
+    uvector_append(v, G_STR(ustring_dup("one")));
+    uvector_append(v, G_STR(ustring_dup("two")));
+    uvector_append(v, G_STR(ustring_dup("three")));
+    uvector_append(v, G_STR(ustring_dup("four")));
+    UASSERT_SIZE_EQ(4, uvector_get_size(v));
+    uvector_clear(v);
+    UASSERT_SIZE_EQ(0, uvector_get_size(v));
+    uvector_destroy(v);
 }
 
 void _check_reverse(const char *in, const char *rev)
@@ -446,7 +457,7 @@ void _check_reverse(const char *in, const char *rev)
     uvector_destroy(v);
 }
 
-void test_uvector_reverse(void)
+void test_vector_reverse(void)
 {
     _check_reverse("[]", "[]");
     _check_reverse("[1]", "[1]");
@@ -461,15 +472,16 @@ int main(int argc, char **argv)
 //    test_gnuplot();
 
     (void)argv;
-    test_uvector_api();
-    test_uvector_serialization(argc > 1);
-    test_uvector_next_permutation(argc > 1);
-    test_uvector_copy(argc > 1);
-    test_uvector_bsearch();
-    test_uvector_compare();
-    test_uvector_slice();
-    test_uvector_data_ownership();
-    test_uvector_reverse();
+    test_vector_api();
+    test_vector_clear();
+    test_vector_serialization(argc > 1);
+    test_vector_next_permutation(argc > 1);
+    test_vector_copy(argc > 1);
+    test_vector_bsearch();
+    test_vector_compare();
+    test_vector_slice();
+    test_vector_data_ownership();
+    test_vector_reverse();
 
     return EXIT_SUCCESS;
 }

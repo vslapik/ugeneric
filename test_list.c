@@ -4,7 +4,7 @@
 #include "ut_utils.h"
 #include "vector.h"
 
-void test_ulist_api(void)
+void test_list_api(void)
 {
     ulist_t *l = ulist_create();
     UASSERT(ulist_is_empty(l));
@@ -136,7 +136,20 @@ void test_ulist_api(void)
     ulist_destroy(l2);
 }
 
-void test_ulist_iterator(void)
+void test_list_clear(void)
+{
+    ulist_t *l = ulist_create();
+    ulist_append(l, G_STR(ustring_dup("one")));
+    ulist_append(l, G_STR(ustring_dup("two")));
+    ulist_append(l, G_STR(ustring_dup("three")));
+    ulist_append(l, G_STR(ustring_dup("four")));
+    UASSERT_SIZE_EQ(4, ulist_get_size(l));
+    ulist_clear(l);
+    UASSERT_SIZE_EQ(0, ulist_get_size(l));
+    ulist_destroy(l);
+}
+
+void test_list_iterator(void)
 {
     char *str;
     uvector_t *v = uvector_create();
@@ -177,7 +190,7 @@ void test_ulist_iterator(void)
     uvector_destroy(v);
 }
 
-void test_ulist_serialize(void)
+void test_list_serialize(void)
 {
     char *str;
     ulist_t *l = ulist_create();
@@ -235,9 +248,10 @@ int main(int argc, char **argv)
     (void)argv;
     (void)argc;
 
-    test_ulist_serialize();
-    test_ulist_api();
-    test_ulist_iterator();
+    test_list_serialize();
+    test_list_api();
+    test_list_clear();
+    test_list_iterator();
     test_list_void_data();
 
     return 0;

@@ -19,6 +19,7 @@ test_deque
 test_dict
 test_dsu
 test_file_utils
+test_fuzz
 test_generic
 test_graph
 test_heap
@@ -26,10 +27,9 @@ test_htbl
 test_list
 test_mem
 test_queue
+test_set
 test_sort
 test_stack
 test_string_utils
-test_vector
-test_fuzz
 test_struct
-test_set
+test_vector

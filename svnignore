@@ -1,1 +1,0 @@
-svn propset svn:ignore -RF svnignore.list .
