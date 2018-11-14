@@ -11,13 +11,14 @@ class GenericsPrettyPrinter:
         #print(str(t))
         #print(str(v))
 
-        if t['type'] >= 11: # magic constant comes from generic.h
-            return "G_MEMCHUNK{.data = %s, .size = %s}" % (v['ptr'], t['memchunk_size'] - 11)
+        if t['type'] >= 12: # magic constant comes from generic.h
+            return "G_MEMCHUNK{.data = %s, .size = %s}" % (v['ptr'], t['memchunk_size'] - 12)
         else:
             return str(t['type'])[:-2] + "{" + {
                 "G_ERROR_T": str(v['err']),
                 "G_NULL_T":  "",
                 "G_PTR_T":   str(v['ptr']),
+                "G_CPTR_T":  str(v['cptr']),
                 "G_STR_T":   str(v['str']),
                 "G_CSTR_T":  str(v['cstr']),
                 "G_INT_T":   str(v['integer']),

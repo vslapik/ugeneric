@@ -24,17 +24,18 @@ const char *ugeneric_get_type_str(ugeneric_t g)
     const char *r = "unknown type";
     switch (ugeneric_get_type(g))
     {
-        case G_PTR_T:      return "G_STR";
+        case G_ERROR_T:    return "G_ERROR";
         case G_NULL_T:     return "G_NULL";
+        case G_PTR_T:      return "G_PTR";
+        case G_CPTR_T:     return "G_CPTR";
+        case G_STR_T:      return "G_STR";
+        case G_CSTR_T:     return "G_CSTR";
         case G_INT_T:      return "G_INT";
+        case G_REAL_T:     return "G_REAL";
         case G_SIZE_T:     return "G_SIZE";
         case G_BOOL_T:     return "G_BOOL";
-        case G_CSTR_T:     return "G_CSTR";
-        case G_STR_T:      return "G_STR";
-        case G_REAL_T:     return "G_REAL";
         case G_VECTOR_T:   return "G_VECTOR";
         case G_DICT_T:     return "G_DICT";
-        case G_ERROR_T:    return "G_ERROR";
         case G_MEMCHUNK_T: return "G_MEMCHUNK";
 
         default:
@@ -66,10 +67,17 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 
     int ret = t1 - t2;
 
-    // Generics of different types are always not equal except G_STR and G_CSTR.
-    if (ret != 0 && G_IS_STRING(g1) && G_IS_STRING(g2))
+    // Generics of different types are not equal except cases below.
+    if (ret != 0)
     {
-        ret = 0;
+        if (G_IS_STRING(g1) && G_IS_STRING(g2))
+        {
+            ret = 0;
+        }
+        if (G_IS_POINTER(g1) && G_IS_POINTER(g2))
+        {
+            ret = 0;
+        }
     }
 
     if (ret == 0)
@@ -81,6 +89,7 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 break;
 
             case G_PTR_T:
+            case G_CPTR_T:
                 UASSERT_MSG(cmp, "don't know how to compare void data");
                 ret = cmp(G_AS_PTR(g1), G_AS_PTR(g2));
                 break;
@@ -158,6 +167,7 @@ void ugeneric_destroy_v(ugeneric_t g, void_dtr_t dtr)
         case G_INT_T:
         case G_SIZE_T:
         case G_BOOL_T:
+        case G_CPTR_T:
         case G_CSTR_T:
             // nothing to be done there
             break;
@@ -225,6 +235,7 @@ ugeneric_t ugeneric_copy_v(ugeneric_t g, void_cpy_t cpy)
     switch (ugeneric_get_type(g))
     {
         case G_PTR_T:
+        case G_CPTR_T:
             UASSERT_MSG(cpy, "don't know how to copy void data");
             ret = G_PTR(cpy(G_AS_PTR(g)));
             break;
@@ -311,6 +322,7 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             break;
 
         case G_PTR_T:
+        case G_CPTR_T:
             if (void_serializer)
             {
                 m.data = void_serializer(G_AS_PTR(g), &m.size);
@@ -862,6 +874,7 @@ size_t ugeneric_hash(ugeneric_t g, void_hasher_t hasher)
             return 0;
 
         case G_PTR_T:
+        case G_CPTR_T:
             UASSERT_MSG(hasher, "don't know how to hash void data");
             return hasher(G_AS_PTR(g));
 
@@ -942,5 +955,10 @@ int ugeneric_random_from_range(int l, int h)
     }
 
     /* TODO: quality of this randomness is an open question. */
-    return l + (int)(rand() / ((double)RAND_MAX / (h - l + 1)));
+    int ret = l + (int)(rand() / ((double)RAND_MAX / (h - l + 1)));
+
+    UASSERT_INTERNAL(ret <= h);
+    UASSERT_INTERNAL(ret >= l);
+
+    return ret;
 }

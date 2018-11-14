@@ -7,6 +7,7 @@
 
 #include "asserts.h"
 #include "mem.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -17,22 +18,23 @@
 typedef enum {
     G_ERROR_T   = 0,    // Error object.
     G_NULL_T    = 1,    // null, None, NULL, nil, whatever ...
-    G_PTR_T     = 2,    // Generic data pointer, no size information.
-    G_STR_T     = 3,    // Reference to a string.
-    G_CSTR_T    = 4,    // Reference to a constant string.
-    G_INT_T     = 5,    // Signed integer value (long).
-    G_REAL_T    = 6,    // Real value (double).
-    G_SIZE_T    = 7,    // Unsigned integer value (size_t).
-    G_BOOL_T    = 8,    // Boolean (G_TRUE or G_FALSE).
-    G_VECTOR_T  = 9,    // Dynamically resizable array of generics.
-    G_DICT_T    = 10,   // Associative array of generics.
+    G_PTR_T     = 2,    // Generic pointer to data, no size.
+    G_CPTR_T    = 3,    // Generic pointer to const data, no size.
+    G_STR_T     = 4,    // Reference to a string.
+    G_CSTR_T    = 5,    // Reference to a constant string.
+    G_INT_T     = 6,    // Signed integer value (long).
+    G_REAL_T    = 7,    // Real value (double).
+    G_SIZE_T    = 8,    // Unsigned integer value (size_t).
+    G_BOOL_T    = 9,    // Boolean (G_TRUE or G_FALSE).
+    G_VECTOR_T  = 10,   // Dynamically resizable array of generics.
+    G_DICT_T    = 11,   // Associative array of generics.
 
     /*
      * G_MEMCHUNK_T should be the last in the list, values greater than
      * G_MEMCHUNK_T represent size of mchunk. Value of G_MEMCHUNK_T
      * essentially represents memory chunk of exactly 0 size.
      */
-    G_MEMCHUNK_T = 11,  // Reference to a chunk of memory.
+    G_MEMCHUNK_T = 12,  // Reference to a chunk of memory.
 } ugeneric_type_e;
 
 typedef struct {
@@ -46,6 +48,7 @@ typedef struct {
     union {
         char *err;
         void *ptr;
+        const void *cptr;
         char *str;
         const char *cstr;
         long integer;
@@ -73,6 +76,7 @@ static inline ugeneric_type_e ugeneric_get_type(ugeneric_t g)
 
 static inline ugeneric_t G_ERROR(char *v)      {ugeneric_t g; g.t.type = G_ERROR_T;  g.v.err = v;         return g;}
 static inline ugeneric_t G_PTR(void *v)        {ugeneric_t g; g.t.type = G_PTR_T;    g.v.ptr = v;         return g;}
+static inline ugeneric_t G_CPTR(const void *v) {ugeneric_t g; g.t.type = G_CPTR_T;   g.v.cptr = v;        return g;}
 static inline ugeneric_t G_STR(char *v)        {ugeneric_t g; g.t.type = G_STR_T;    g.v.str = v;         return g;}
 static inline ugeneric_t G_CSTR(const char *v) {ugeneric_t g; g.t.type = G_CSTR_T;   g.v.cstr = v;        return g;}
 static inline ugeneric_t G_INT(long v)         {ugeneric_t g; g.t.type = G_INT_T;    g.v.integer = v;     return g;}
@@ -88,6 +92,7 @@ static inline ugeneric_t G_FALSE(void)         {ugeneric_t g; g.t.type = G_BOOL_
 #define G_AS_INT(g)    ((g).v.integer)
 #define G_AS_REAL(g)   ((g).v.real)
 #define G_AS_PTR(g)    ((g).v.ptr)
+#define G_AS_CPTR(g)   ((g).v.cptr)
 #define G_AS_SIZE(g)   ((g).v.size)
 #define G_AS_STR(g)    ((g).v.str)
 #define G_AS_BOOL(g)   ((g).v.boolean)
@@ -114,6 +119,8 @@ static inline umemchunk_t G_AS_MEMCHUNK(ugeneric_t g)
 static inline bool G_IS_ERROR(ugeneric_t g)   {return g.t.type == G_ERROR_T;}
 static inline bool G_IS_NULL(ugeneric_t g)    {return g.t.type == G_NULL_T;}
 static inline bool G_IS_PTR(ugeneric_t g)     {return g.t.type == G_PTR_T;}
+static inline bool G_IS_CPTR(ugeneric_t g)    {return g.t.type == G_CPTR_T;}
+static inline bool G_IS_POINTER(ugeneric_t g) {return g.t.type == G_PTR_T || g.t.type == G_CPTR_T;}
 static inline bool G_IS_STR(ugeneric_t g)     {return g.t.type == G_STR_T;}
 static inline bool G_IS_CSTR(ugeneric_t g)    {return g.t.type == G_CSTR_T;}
 static inline bool G_IS_STRING(ugeneric_t g)  {return g.t.type == G_STR_T || g.t.type == G_CSTR_T;}

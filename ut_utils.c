@@ -14,7 +14,7 @@ ugeneric_t gen_random_generic(int depth, size_t ctn_max_len, bool verbose, bool 
     UASSERT(depth >= 0);
 
     // G_VECTOR_T and G_DICT_T are the last two, optionally can be excluded
-    int types[] = {G_NULL_T, /*G_PTR_T,*/ G_STR_T, G_CSTR_T, G_INT_T,
+    int types[] = {G_NULL_T, /*G_PTR_T, G_CPTR*/ G_STR_T, G_CSTR_T, G_INT_T,
                    G_REAL_T, G_BOOL_T, G_MEMCHUNK_T, G_VECTOR_T, G_DICT_T};
     if (!depth)
     {

@@ -667,7 +667,7 @@ ugraph_t *ugraph_get_mst(const ugraph_t *g)
     while (ugraph_edge_iterator_has_next(ei))
     {
         e = ugraph_edge_iterator_get_next(ei);
-        uheap_push(h, G_PTR((void *)e));
+        uheap_push(h, G_CPTR(e));
     }
     ugraph_edge_iterator_destroy(ei);
     ubitmap_set_bit(visited_nodes, n);
@@ -689,7 +689,7 @@ ugraph_t *ugraph_get_mst(const ugraph_t *g)
             e = ugraph_edge_iterator_get_next(ei);
             if (!ubitmap_bit_is_set(visited_nodes, e->t))
             {
-                uheap_push(h, G_PTR((void *)e));
+                uheap_push(h, G_CPTR(e));
             }
         }
         ugraph_edge_iterator_destroy(ei);
