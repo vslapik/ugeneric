@@ -1,10 +1,21 @@
 lib = libugeneric.a
+
+CTAGS := $(shell command -v ctags 2> /dev/null)
+LINT := $(shell command -v cland-tidy 2> /dev/null)
+ASTYLE := $(shell command -v astyle 2> /dev/null)
+VALGRIND := $(shell command -v valgrind 2> /dev/null)
+DEBUG := $(shell ls debug 2> /dev/null)
+
 #CC = g++ -fpermissive
 PFLAGS = -fprofile-arcs -ftest-coverage
-CFLAGS_COMMON=-I. -g -std=c11 -Wall -Wextra -Winline -pedantic -Wno-missing-field-initializers -Wno-missing-braces
-CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
-#CFLAGS = $(CFLAGS_COMMON) -O3
 VFLAGS = -q --child-silent-after-fork=yes --leak-check=full --error-exitcode=3
+CFLAGS_COMMON=-I. -g -std=c11 -Wall -Wextra -Winline -pedantic -Wno-missing-field-initializers -Wno-missing-braces
+
+ifdef DEBUG
+CFLAGS = $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
+else
+CFLAGS = $(CFLAGS_COMMON) -O3
+endif
 
 src = generic.c stack.c vector.c queue.c heap.c list.c graph.c bitmap.c sort.c string_utils.c file_utils.c bst.c mem.c dsu.c dict.c htbl.c struct.c set.c
 tsrc = $(patsubst %.c, test_%.c, $(src))
@@ -19,11 +30,6 @@ all: $(lib) tags test test_fuzz
 $(obj): Makefile
 
 lib: $(lib)
-
-CTAGS := $(shell command -v ctags 2> /dev/null)
-LINT := $(shell command -v cland-tidy 2> /dev/null)
-ASTYLE := $(shell command -v astyle 2> /dev/null)
-VALGRIND := $(shell command -v valgrind 2> /dev/null)
 
 test: $(texe)
 test_%: test_%.c $(lib)

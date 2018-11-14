@@ -21,7 +21,11 @@
 - add UTs for file writers (deal with fs garbage)
 - _Generic c11 macros for putting scalars to containers
 - comments: inside a function - imperative form (do something); outside - indicative form (does something)
-- graph: add void handlers/data ownership functionality
-- Bellman-Ford
 - bloom filter
 - file_reader read_line()
+- graph: add void handlers/data ownership functionality
+- Bellman-Ford
+- check whether a graph is bipartite
+- pre and post callbacks for BFS
+- provide a way to expose path from root to current node in BFS/DFS callbacks
+- implement generic comparison between numeric generics, i.e G_FLOAT, G_INT and G_SIZE

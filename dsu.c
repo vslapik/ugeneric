@@ -26,7 +26,7 @@ udsu_t *udsu_create(size_t size)
     return d;
 }
 
-static size_t _root(udsu_t *d, size_t e)
+static size_t _root(const udsu_t *d, size_t e)
 {
     while (e != d->ids[e])
     {
@@ -37,7 +37,7 @@ static size_t _root(udsu_t *d, size_t e)
     return e;
 }
 
-bool udsu_is_united(udsu_t *d, size_t p, size_t q)
+bool udsu_is_united(const udsu_t *d, size_t p, size_t q)
 {
     UASSERT_INPUT(d);
     UASSERT_INPUT(q < d->size);
