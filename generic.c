@@ -942,20 +942,23 @@ void ugeneric_random_init_with_seed(unsigned int seed)
 
 /*
  * Generate random number from range. Range is inclusive, [l, h],
- * similar to library call rand(), where range is [0, RAND_MAX].
+ * similar to library call rand(). l and h should be strictly less
+ * than RAND_MAX as RAND_MAX + 1 may overflow.
  */
 int ugeneric_random_from_range(int l, int h)
 {
     UASSERT_INPUT(l <= h);
-    UASSERT_INPUT(h <= RAND_MAX);
+    UASSERT_INPUT(h < RAND_MAX);
 
     if (!_rand_is_initialized)
     {
         ugeneric_random_init();
     }
 
-    /* TODO: quality of this randomness is an open question. */
-    int ret = l + (int)(rand() / ((double)RAND_MAX / (h - l + 1)));
+    /* Quality of this randomness is an open question.
+       Idea is taken from http://c-faq.com/lib/randrange.html
+    */
+    int ret = l + (int)(rand() / (1 + (double)RAND_MAX / (h - l + 1)));
 
     UASSERT_INTERNAL(ret <= h);
     UASSERT_INTERNAL(ret >= l);

@@ -25,6 +25,7 @@ void uvector_remove_at(uvector_t *v, size_t i);
 ugeneric_t uvector_pop_at(uvector_t *v, size_t i);
 ugeneric_t uvector_pop_back(uvector_t *v);
 ugeneric_t uvector_get_back(const uvector_t *v);
+ugeneric_t uvector_get_front(const uvector_t *v);
 ugeneric_t uvector_get_at(const uvector_t *v, size_t i);
 ugeneric_t uvector_get_at_random(const uvector_t *v);
 void uvector_set_at(uvector_t *v, size_t i, ugeneric_t e);

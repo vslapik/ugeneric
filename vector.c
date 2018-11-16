@@ -304,6 +304,12 @@ ugeneric_t uvector_get_back(const uvector_t *v)
     return v->cells[v->size - 1];
 }
 
+ugeneric_t uvector_get_front(const uvector_t *v)
+{
+    UASSERT_INPUT(v);
+    return v->cells[0];
+}
+
 ugeneric_t uvector_pop_at(uvector_t *v, size_t i)
 {
     UASSERT_INPUT(v);

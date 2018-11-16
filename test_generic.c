@@ -134,10 +134,26 @@ void test_generic(void)
 
 void test_random(void)
 {
-    while (true)
+    #define N 10000
+
+    uvector_t *v = uvector_create_with_size(21, G_INT(0));
+    for (size_t i = 0; i < N; i++)
     {
-        printf("%d\n", ugeneric_random_from_range(0, 20));
+        int n = ugeneric_random_from_range(-10, 10);
+        UASSERT(n >= -10);
+        UASSERT(n <= 10);
+        uvector_set_at(v, n + 10, G_INT(G_AS_INT(uvector_get_at(v, n + 10)) + 1));
     }
+
+    //uvector_print(v);
+    uvector_sort(v);
+
+    int diff = G_AS_INT(uvector_get_front(v)) - G_AS_INT(uvector_get_back(v));
+    //printf("diff is %d\n", diff);
+
+    UASSERT(diff < N/33); // let's at least ask for 5%
+
+    uvector_destroy(v);
 }
 
 void test_parse(void)
@@ -367,7 +383,7 @@ int main(int argc, char **argv)
     }
 
     test_types();
-    //test_random();
+    test_random();
     test_generic();
     test_parse();
     test_large_parse();
