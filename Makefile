@@ -77,7 +77,6 @@ style:
 
 LINT_CHECKS = -checks=*,-llvm-header-guard,-hicpp-braces-around-statements,-readability-braces-around-statements,-google-readability-todo,-hicpp-signed-bitwise,-readability-else-after-return
 
-
 lint:
 	clang-tidy *.[ch] -header-filter=.* $(LINT_CHECKS) -- -std=c11
 

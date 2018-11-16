@@ -641,8 +641,8 @@ char *_edge_s8r(const void *ptr, size_t *output_size)
     return ustring_fmt_sized("(%zu->%zu, w: %d)", output_size, e->f, e->t, e->w);
 }
 
-/* Construct MSP (minimal spanning tree). */
-ugraph_t *ugraph_get_mst(const ugraph_t *g)
+/* Construct MSP (minimal spanning tree by Prim's algo). */
+ugraph_t *ugraph_get_prims_mst(const ugraph_t *g)
 {
     UASSERT_INPUT(g);
     UASSERT_INPUT(g->n);
@@ -697,6 +697,41 @@ ugraph_t *ugraph_get_mst(const ugraph_t *g)
 
     uheap_destroy(h);
     ufree(visited_nodes);
+
+    return mst;
+}
+
+/* Construct MSP (minimal spanning tree by Kruskal's algo). */
+ugraph_t *ugraph_get_kruskal_mst(const ugraph_t *g)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(g->n);
+
+    uvector_t *edges = ugraph_get_edges(g);
+    uvector_set_void_comparator(edges, _edge_weight_cmp);
+    uvector_sort(edges);
+    UASSERT_INTERNAL(uvector_get_size(edges) == g->m);
+
+    udsu_t *dsu = udsu_create(g->n);
+    const ugraph_edge_t *e = NULL;
+    ugraph_t *mst = ugraph_create(g->n, g->type);
+
+    for (size_t i = 0; i < g->m; i++)
+    {
+        e = (const ugraph_edge_t *)G_AS_PTR(uvector_get_at(edges, i));
+        if (!udsu_is_united(dsu, e->f, e->t))
+        {
+            udsu_unite(dsu, e->f, e->t);
+            ugraph_add_edge(mst, e->f, e->t, e->w);
+        }
+        if (mst->m == (g->n - 1))
+        {
+            break;
+        }
+    }
+
+    udsu_destroy(dsu);
+    uvector_destroy(edges);
 
     return mst;
 }

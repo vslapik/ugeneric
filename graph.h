@@ -42,7 +42,8 @@ void ugraph_dfs_postorder(const ugraph_t *g, size_t root, ugraph_node_callback_t
 uvector_t *ugraph_dijkstra(const ugraph_t *g, size_t from, size_t to);
 int ugraph_compute_path_length(const ugraph_t *g, const uvector_t *path);
 
-ugraph_t *ugraph_get_mst(const ugraph_t *g);
+ugraph_t *ugraph_get_prims_mst(const ugraph_t *g);
+ugraph_t *ugraph_get_kruskal_mst(const ugraph_t *g);
 
 void ugraph_dump_to_dot(const ugraph_t *g, const char *name, FILE *out);
 //ugraph_t ugraph_load_from_dot(FILE *in);

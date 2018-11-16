@@ -556,7 +556,10 @@ void test_scc(void)
     ugraph_destroy(g);
 }
 
-void test_mst_large(void)
+
+typedef ugraph_t *(*get_mst_f)(const ugraph_t *g);
+
+void test_mst_large(get_mst_f get_mst)
 {
     ugraph_t *g;
     const char *path = "utdata/edges.txt";
@@ -596,7 +599,7 @@ void test_mst_large(void)
     }
     uvector_destroy(v);
 
-    ugraph_t *mst = ugraph_get_mst(g);
+    ugraph_t *mst = get_mst(g);
     uvector_t *edges = ugraph_get_edges(mst);
     vlen = uvector_get_size(edges);
     int s = 0;
@@ -625,7 +628,7 @@ static int _edge_cmp(const void *ptr1, const void *ptr2)
     return 0;
 }
 
-void test_mst(void)
+void test_mst(get_mst_f get_mst)
 {
     ugraph_t *g = ugraph_create(4, UGRAPH_UNDIRECTED);
     ugraph_add_edge(g, 0, 1, 1);
@@ -636,7 +639,7 @@ void test_mst(void)
     ugraph_add_edge(g, 2, 3, 3);
     //ugraph_dump_to_dot(g, "test", stdout);
 
-    ugraph_t *mst = ugraph_get_mst(g);
+    ugraph_t *mst = get_mst(g);
     uvector_t *edges = ugraph_get_edges(mst);
     uvector_set_void_comparator(edges, _edge_cmp);
     uvector_sort(edges);
@@ -663,8 +666,13 @@ int main(int argc, char **argv)
     test_dijkstra_large(argc > 1);
     test_topological_ordering(argc > 1);
     test_scc();
-    test_mst();
-    test_mst_large();
+
+    test_mst(ugraph_get_prims_mst);
+    test_mst(ugraph_get_kruskal_mst);
+
+    test_mst_large(ugraph_get_prims_mst);
+    test_mst_large(ugraph_get_kruskal_mst);
+
     if (0) test_scc_large();
 
     return 0;

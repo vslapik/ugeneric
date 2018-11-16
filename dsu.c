@@ -5,7 +5,12 @@ struct udsu_opaq {
     size_t rank; // rank
     size_t size; // number of IDs in DSU
     size_t *ids; // IDs array
-    size_t *rs;  // rank of subtree rooted at ids[i]
+
+    // Upper-bound of rank of subtree rooted at ids[i],
+    // path, path-compression doesn't updated it makes it
+    // out of think with subtree depth which is expected
+    // size effect (see CLRS).
+    size_t *rs;
 };
 
 udsu_t *udsu_create(size_t size)
