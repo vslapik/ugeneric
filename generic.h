@@ -134,6 +134,13 @@ static inline bool G_IS_VECTOR(ugeneric_t g)  {return g.t.type == G_VECTOR_T;}
 static inline bool G_IS_DICT(ugeneric_t g)    {return g.t.type == G_DICT_T;}
 static inline bool G_IS_MEMCHUNK(ugeneric_t g){return g.t.type > G_MEMCHUNK_T;}
 
+static inline bool G_IS_NUMBER(ugeneric_t g)
+{
+    return (g.t.type == G_INT_T)  ||
+           (g.t.type == G_REAL_T) ||
+           (g.t.type == G_SIZE_T);
+}
+
 static inline void ugeneric_swap(ugeneric_t *g1, ugeneric_t *g2)
 {
     ugeneric_t t = *g2;

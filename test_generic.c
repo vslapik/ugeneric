@@ -6,6 +6,7 @@
 #include "ut_utils.h"
 #include "vector.h"
 #include <limits.h>
+#include <float.h>
 
 void test_types(void)
 {
@@ -121,15 +122,42 @@ void test_generic_cmp(void)
     UASSERT(ugeneric_compare(G_SIZE(ULONG_MAX), G_SIZE(0)) > 0);
     UASSERT(ugeneric_compare(G_SIZE(0), G_SIZE(ULONG_MAX)) < 0);
     UASSERT(ugeneric_compare(G_INT(ULONG_MAX), G_INT(ULONG_MAX)) == 0);
+
+    UASSERT(ugeneric_compare(G_INT(-1), G_SIZE(1)) < 0);
+    UASSERT(ugeneric_compare(G_SIZE(1), G_INT(-1)) > 0);
+    UASSERT(ugeneric_compare(G_SIZE(1), G_INT(1)) == 0);
+    UASSERT(ugeneric_compare(G_INT(INT_MIN), G_SIZE(SIZE_MAX)) < 0);
+    UASSERT(ugeneric_compare(G_SIZE(SIZE_MAX), G_INT(INT_MIN)) > 0);
+    UASSERT(ugeneric_compare(G_INT(0), G_SIZE(0)) == 0);
+
+    UASSERT(ugeneric_compare(G_REAL(0), G_INT(0)) == 0);
+    UASSERT(ugeneric_compare(G_REAL(0.115), G_INT(-17)) > 0);
+    UASSERT(ugeneric_compare(G_REAL(3.4), G_INT(2)) > 0);
+    UASSERT(ugeneric_compare(G_INT(2), G_REAL(3.4)) < 0);
+    UASSERT(ugeneric_compare(G_REAL(0), G_SIZE(0)) == 0);
 }
 
 void test_generic(void)
 {
-    //printf("%zu\n", sizeof(ugeneric_t));
+    printf("generic_t size:            %zu\n", sizeof(ugeneric_t));
+    printf("G_PTR_T (void *) size:     %zu\n", sizeof(void *));
+    printf("G_INT_T (long int) size:   %zu\n", sizeof(long int));
+    printf("G_REAL_T (double) size is: %zu\n", sizeof(double));
+    printf("DBL_MANT_DIG is            %d\n", DBL_MANT_DIG);
+}
 
-    char *str = ugeneric_as_str(G_STR("generic"));
-    UASSERT(strcmp(str, "\"generic\"") == 0) ;
-    ufree(str);
+void test_vv(void)
+{
+    ugeneric_t g = ugeneric_parse("[9007199254740995, 9007199254740994.0, 9007199254740993, 9007199254740992.0]");
+    UASSERT_NO_ERROR(g);
+
+    uvector_t *v = G_AS_PTR(g);
+    uvector_print(v);
+
+    uvector_sort(v);
+    uvector_print(v);
+
+    uvector_destroy(v);
 }
 
 void test_random(void)
@@ -313,16 +341,18 @@ void test_serialize(void)
     uvector_append(v, G_FALSE());
     uvector_append(v, G_VECTOR(vempty));
     uvector_append(v, G_DICT(dempty));
-    uvector_append(v, G_INT(-1));
-    uvector_append(v, G_INT(2));
-    uvector_append(v, G_REAL(3.4));
     uvector_append(v, G_SIZE(188881));
+    uvector_append(v, G_REAL(3.4));
+    uvector_append(v, G_INT(2));
+    uvector_append(v, G_INT(-1));
     uvector_append(v, G_MEMCHUNK(umemdup("\xff\xaa\xbb", 3), 3));
     uvector_set_void_destroyer(v, ufree);
     udict_put(d, G_CSTR("key"), G_VECTOR(v));
 
+    uvector_sort(v);
+
     char *str = ugeneric_as_str(G_DICT(d));
-    UASSERT_STR_EQ(str, "{\"key\": [null, true, false, [], {}, -1, 2, 3.4, 188881, mem:ffaabb]}");
+    UASSERT_STR_EQ(str, "{\"key\": [null, -1, 2, 3.4, 188881, false, true, [], {}, mem:ffaabb]}");
     ufree(str);
     udict_destroy(d);
 }
@@ -382,9 +412,10 @@ int main(int argc, char **argv)
         }
     }
 
+    //test_generic();
+    //test_vv();
     test_types();
     test_random();
-    test_generic();
     test_parse();
     test_large_parse();
     test_serialize();

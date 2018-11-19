@@ -28,4 +28,3 @@
 - check whether a graph is bipartite
 - pre and post callbacks for BFS
 - provide a way to expose path from root to current node in BFS/DFS callbacks
-- implement generic comparison between numeric generics, i.e G_FLOAT, G_INT and G_SIZE

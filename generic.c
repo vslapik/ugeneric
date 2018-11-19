@@ -9,6 +9,9 @@
 #include <limits.h>
 #include <time.h>
 
+#define THREE_WAY_CMP(x, y) ((((x) > (y)) - ((x) < (y))))
+#define IS_NAN(x) ((x) != (x))
+
 static ugeneric_t _parse_item(const char **str);
 
 static inline void _skip_whitespaces(const char **str)
@@ -51,10 +54,49 @@ int ugeneric_fprint_type(ugeneric_t g, FILE *out)
     return fprintf(out, "%s\n", ugeneric_get_type_str(g));
 }
 
+static int _cmp_int_to_real(long i, double f)
+{
+    UASSERT(!IS_NAN(f));
+    if (((f + 1) == f))
+    {
+        UABORT("precision loss"); // TODO: learn to live with it
+    }
+    return THREE_WAY_CMP(i, f);
+}
+
+static int _cmp_int_to_size(long i, size_t s)
+{
+    if (i < 0)
+    {
+        return -1;
+    }
+    else
+    {
+        return THREE_WAY_CMP((size_t)i, s);
+    }
+}
+
+static int _cmp_size_to_real(size_t s, double f)
+{
+    UASSERT(!IS_NAN(f));
+
+    if (((f + 1) == f))
+    {
+        UABORT("precision loss"); // TODO: learn to live with it
+    }
+
+    if (f < 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return THREE_WAY_CMP((double)s, f);
+    }
+}
+
 int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
 {
-    long i1, i2;
-    double f1, f2;
     size_t s1, s2;
 
     ugeneric_type_e t1 = ugeneric_get_type(g1);
@@ -70,13 +112,57 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
     // Generics of different types are not equal except cases below.
     if (ret != 0)
     {
+        // Pointers to strings comparison doesn't care about const.
         if (G_IS_STRING(g1) && G_IS_STRING(g2))
         {
             ret = 0;
         }
-        if (G_IS_POINTER(g1) && G_IS_POINTER(g2))
+
+        // Pointers to data comparison doesn't care about const.
+        else if (G_IS_POINTER(g1) && G_IS_POINTER(g2))
         {
             ret = 0;
+        }
+
+        // Compare two numerics.
+        else if (t1 == G_INT_T)
+        {
+            if (t2 == G_REAL_T)
+            {
+                ret = _cmp_int_to_real(G_AS_INT(g1), G_AS_REAL(g2));
+                goto exit;
+            }
+            else if (t2 == G_SIZE_T)
+            {
+                ret = _cmp_int_to_size(G_AS_INT(g1), G_AS_SIZE(g2));
+                goto exit;
+            }
+        }
+        else if (t1 == G_REAL_T)
+        {
+            if (t2 == G_INT_T)
+            {
+                ret = -_cmp_int_to_real(G_AS_INT(g2), G_AS_REAL(g1));
+                goto exit;
+            }
+            else if (t2 == G_SIZE_T)
+            {
+                ret = -_cmp_size_to_real(G_AS_SIZE(g2), G_AS_REAL(g1));
+                goto exit;
+            }
+        }
+        else if (t1 == G_SIZE_T)
+        {
+            if (t2 == G_INT_T)
+            {
+                ret = -_cmp_int_to_size(G_AS_INT(g2), G_AS_SIZE(g1));
+                goto exit;
+            }
+            else if (t2 == G_REAL_T)
+            {
+                ret = _cmp_size_to_real(G_AS_SIZE(g1), G_AS_REAL(g2));
+                goto exit;
+            }
         }
     }
 
@@ -100,25 +186,19 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 break;
 
             case G_INT_T:
-                i1 = G_AS_INT(g1);
-                i2 = G_AS_INT(g2);
-                ret = (i1 > i2) ?  1 : ((i1 < i2) ? -1 : 0);
+                ret = THREE_WAY_CMP(G_AS_INT(g1), G_AS_INT(g2));
                 break;
 
             case G_REAL_T:
-                f1 = G_AS_REAL(g1);
-                f2 = G_AS_REAL(g2);
-                if ((f1 != f1) || (f2 != f2))
+                if (IS_NAN(G_AS_REAL(g1)) || IS_NAN(G_AS_REAL(g2)))
                 {
                     UABORT("NAN in comparison");
                 }
-                ret = (f1 > f2) ?  1 : ((f1 < f2) ? -1 : 0);
+                ret = THREE_WAY_CMP(G_AS_REAL(g1), G_AS_REAL(g2));
                 break;
 
             case G_SIZE_T:
-                s1 = G_AS_SIZE(g1);
-                s2 = G_AS_SIZE(g2);
-                ret = (s1 > s2) ?  1 : ((s1 < s2) ? -1 : 0);
+                ret = THREE_WAY_CMP(G_AS_SIZE(g1), G_AS_SIZE(g2));
                 break;
 
             case G_BOOL_T:
@@ -140,7 +220,7 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                              MIN(s1, s2));
                 if (ret == 0)
                 {
-                    ret = s1 - s2;
+                    ret = THREE_WAY_CMP(s1, s2);
                 }
                 break;
 
@@ -148,6 +228,14 @@ int ugeneric_compare_v(ugeneric_t g1, ugeneric_t g2, void_cmp_t cmp)
                 UASSERT_INTERNAL("unknown type");
         }
     }
+
+exit:
+/*
+    str1 = ugeneric_as_str(g1);
+    str2 = ugeneric_as_str(g2);
+    printf("Comparing '%s' > '%s' -> %d\n", str1, str2, ret);
+    ufree(str1); ufree(str2);
+*/
 
     return ret;
 }
@@ -359,6 +447,7 @@ void ugeneric_serialize_v(ugeneric_t g, ubuffer_t *buf, void_s8r_t void_serializ
             break;
 
         case G_REAL_T:
+//            snprintf(tmp, sizeof(tmp), "%.3f", G_AS_REAL(g));
             snprintf(tmp, sizeof(tmp), "%g", G_AS_REAL(g));
             m.data = tmp, m.size = strlen(tmp);
             ubuffer_append_memchunk(buf, &m);

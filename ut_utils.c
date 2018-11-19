@@ -3,6 +3,8 @@
 #include "heap.h"
 #include "string_utils.h"
 
+#include <limits.h>
+
 typedef struct {
     int i1;
     int i2;
@@ -14,8 +16,8 @@ ugeneric_t gen_random_generic(int depth, size_t ctn_max_len, bool verbose, bool 
     UASSERT(depth >= 0);
 
     // G_VECTOR_T and G_DICT_T are the last two, optionally can be excluded
-    int types[] = {G_NULL_T, /*G_PTR_T, G_CPTR*/ G_STR_T, G_CSTR_T, G_INT_T,
-                   G_REAL_T, G_BOOL_T, G_MEMCHUNK_T, G_VECTOR_T, G_DICT_T};
+    int types[] = {G_NULL_T, /*G_PTR_T, G_CPTR,*/ G_STR_T, G_CSTR_T, G_INT_T,
+                   G_REAL_T, G_SIZE_T, G_BOOL_T, G_MEMCHUNK_T, G_VECTOR_T, G_DICT_T};
     if (!depth)
     {
         exclude_containers = true;
@@ -33,12 +35,12 @@ ugeneric_t gen_random_generic(int depth, size_t ctn_max_len, bool verbose, bool 
         case G_CSTR_T:     g = gen_random_string(depth, verbose);                   break;
         case G_INT_T:      g = G_INT(ugeneric_random_from_range(-100, 100));        break;
         case G_REAL_T:     g = G_REAL(ugeneric_random_from_range(100, 200)/1000.0); break;
-//            case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(200, 300));      break;
+        case G_SIZE_T:     g = G_SIZE(ugeneric_random_from_range(0, RAND_MAX - 1)); break;
         case G_BOOL_T:     g = G_BOOL(ugeneric_random_from_range(0, 1));            break;
         case G_VECTOR_T:   g = gen_random_vector(depth, ctn_max_len, verbose);      break;
         case G_DICT_T:     g = gen_random_dict(depth, ctn_max_len, verbose);        break;
         case G_MEMCHUNK_T: g = gen_random_memchunk(depth, verbose);                 break;
-        default:                                                                           ;
+        default:
             UABORT("internal error");
     }
 
