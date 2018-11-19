@@ -3,7 +3,7 @@
 #include "asserts.h"
 #include "mem.h"
 
-#define UHTBL_INITIAL_NUM_OF_BUCKETS 4
+#define UHTBL_INITIAL_NUM_OF_BUCKETS 32
 #define UHTBL_C_LOAD_THRESHOLD 0.75
 #define UHTBL_OA_LOAD_THRESHOLD 0.5
 

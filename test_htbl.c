@@ -16,7 +16,7 @@ void test_htbl_api(uhtbl_type_t type)
     h = uhtbl_create();
     uhtbl_put(h, G_CSTR("1"), G_CSTR("one"));
     uhtbl_put(h, G_CSTR("2"), G_CSTR("two"));
-    uhtbl_put(h, G_STR(ustring_dup("3")), G_STR(ustring_dup("txhree")));
+    uhtbl_put(h, G_STR(ustring_dup("3")), G_STR(ustring_dup("xree")));
 
     uvector_t *keys = uhtbl_get_keys(h, false);
     uvector_t *values = uhtbl_get_values(h, false);
@@ -26,7 +26,7 @@ void test_htbl_api(uhtbl_type_t type)
     char *keys_str = uvector_as_str(keys);
     char *values_str = uvector_as_str(values);
     UASSERT_STR_EQ(keys_str, "[\"1\", \"2\", \"3\"]");
-    UASSERT_STR_EQ(values_str, "[\"one\", \"two\", \"txhree\"]");
+    UASSERT_STR_EQ(values_str, "[\"one\", \"two\", \"xree\"]");
 
     ufree(keys_str);
     ufree(values_str);
