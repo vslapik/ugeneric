@@ -6,6 +6,8 @@
 #include "ut_utils.h"
 #include "vector.h"
 
+#include <limits.h>
+
 void test_graph(bool verbose)
 {
     ugraph_t *g = ugraph_create(100, UGRAPH_UNDIRECTED);
@@ -577,7 +579,7 @@ void test_mst_large(get_mst_f get_mst)
     UASSERT_NO_ERROR(ne);
     uvector_destroy(va);
 
-    g = ugraph_create(vlen - 1, UGRAPH_UNDIRECTED);
+    g = ugraph_create(G_AS_INT(nn), UGRAPH_UNDIRECTED);
     for (size_t i = 1; i < vlen; i++)
     {
         char *row = G_AS_PTR(uvector_get_at(v, i));
@@ -592,7 +594,7 @@ void test_mst_large(get_mst_f get_mst)
 
         size_t f = G_AS_SIZE(gf) - 1;
         size_t t = G_AS_SIZE(gt) - 1;
-        size_t w = G_AS_SIZE(gw);
+        int w = G_AS_INT(gw);
 
         ugraph_add_edge(g, f, t, w);
         uvector_destroy(va);
@@ -654,6 +656,124 @@ void test_mst(get_mst_f get_mst)
     ugraph_destroy(g);
 }
 
+void test_clustering(void)
+{
+    ugraph_t *g = ugraph_create(8, UGRAPH_UNDIRECTED);
+    ugraph_add_edge(g, 0, 1, 14);
+    ugraph_add_edge(g, 0, 2, 33);
+    ugraph_add_edge(g, 0, 3, 19);
+    ugraph_add_edge(g, 0, 4, 16);
+    ugraph_add_edge(g, 0, 5, 52);
+    ugraph_add_edge(g, 0, 6, 58);
+    ugraph_add_edge(g, 0, 7, 5);
+    ugraph_add_edge(g, 1, 2, 26);
+    ugraph_add_edge(g, 1, 3, 9);
+    ugraph_add_edge(g, 1, 4, 34);
+    ugraph_add_edge(g, 1, 5, 17);
+    ugraph_add_edge(g, 1, 6, 40);
+    ugraph_add_edge(g, 1, 7, 58);
+    ugraph_add_edge(g, 2, 3, 29);
+    ugraph_add_edge(g, 2, 4, 6);
+    ugraph_add_edge(g, 2, 5, 44);
+    ugraph_add_edge(g, 2, 6, 22);
+    ugraph_add_edge(g, 2, 7, 5);
+    ugraph_add_edge(g, 3, 4, 30);
+    ugraph_add_edge(g, 3, 5, 50);
+    ugraph_add_edge(g, 3, 6, 11);
+    ugraph_add_edge(g, 3, 7, 30);
+    ugraph_add_edge(g, 4, 5, 37);
+    ugraph_add_edge(g, 4, 6, 62);
+    ugraph_add_edge(g, 4, 7, 25);
+    ugraph_add_edge(g, 5, 6, 55);
+    ugraph_add_edge(g, 5, 7, 23);
+    ugraph_add_edge(g, 6, 7, 18);
+
+    udsu_t *dsu = ugraph_get_max_space_clustering(g, 4);
+    uvector_t *edges = ugraph_get_edges(g);
+    size_t vlen = uvector_get_size(edges);
+
+    int maxw = INT_MAX;
+    for (size_t i = 0; i < vlen; i++)
+    {
+        ugraph_edge_t *e = G_AS_PTR(uvector_get_at(edges, i));
+        if (!udsu_is_united(dsu, e->f, e->t))
+        {
+            if (e->w < maxw)
+            {
+                maxw = e->w;
+            }
+        }
+    }
+
+    UASSERT_INT_EQ(maxw, 11);
+
+    udsu_destroy(dsu);
+    uvector_destroy(edges);
+    ugraph_destroy(g);
+}
+
+void test_clustering_large(void)
+{
+    ugraph_t *g;
+    const char *path = "utdata/clustering1.txt";
+    ugeneric_t t = ufile_read_lines(path, "\n");
+    UASSERT_NO_ERROR(t);
+    uvector_t *v = G_AS_PTR(t);
+    size_t vlen = uvector_get_size(v);
+
+    char *row = G_AS_PTR(uvector_get_at(v, 0));
+    uvector_t *va = ustring_split(row, " ");
+    UASSERT_SIZE_EQ(uvector_get_size(va), 1);
+    ugeneric_t nn = ugeneric_parse(G_AS_STR(uvector_get_at(va, 0)));
+    UASSERT_NO_ERROR(nn);
+    uvector_destroy(va);
+
+    g = ugraph_create(G_AS_SIZE(nn), UGRAPH_UNDIRECTED);
+    for (size_t i = 1; i < vlen; i++)
+    {
+        char *row = G_AS_PTR(uvector_get_at(v, i));
+        uvector_t *va = ustring_split(row, " ");
+        UASSERT_SIZE_EQ(uvector_get_size(va), 3);
+        ugeneric_t gf = ugeneric_parse(G_AS_STR(uvector_get_at(va, 0)));
+        ugeneric_t gt = ugeneric_parse(G_AS_STR(uvector_get_at(va, 1)));
+        ugeneric_t gw = ugeneric_parse(G_AS_STR(uvector_get_at(va, 2)));
+        UASSERT_NO_ERROR(gf);
+        UASSERT_NO_ERROR(gt);
+        UASSERT_NO_ERROR(gw);
+
+        size_t f = G_AS_SIZE(gf) - 1;
+        size_t t = G_AS_SIZE(gt) - 1;
+        int w = G_AS_INT(gw);
+
+        ugraph_add_edge(g, f, t, w);
+        uvector_destroy(va);
+    }
+    uvector_destroy(v);
+
+    udsu_t *dsu = ugraph_get_max_space_clustering(g, 4);
+    uvector_t *edges = ugraph_get_edges(g);
+    vlen = uvector_get_size(edges);
+
+    int maxw = INT_MAX;
+    for (size_t i = 0; i < vlen; i++)
+    {
+        ugraph_edge_t *e = G_AS_PTR(uvector_get_at(edges, i));
+        if (!udsu_is_united(dsu, e->f, e->t))
+        {
+            if (e->w < maxw)
+            {
+                maxw = e->w;
+            }
+        }
+    }
+
+    printf("%d\n", maxw);
+
+    udsu_destroy(dsu);
+    uvector_destroy(edges);
+    ugraph_destroy(g);
+}
+
 int main(int argc, char **argv)
 {
     (void)argv;
@@ -673,7 +793,9 @@ int main(int argc, char **argv)
     test_mst_large(ugraph_get_prims_mst);
     test_mst_large(ugraph_get_kruskal_mst);
 
-    if (0) test_scc_large();
+    test_clustering();
 
+    if (0) test_scc_large();
+    if (0) test_clustering_large();
     return 0;
 }

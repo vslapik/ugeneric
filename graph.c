@@ -1,7 +1,6 @@
 #include "graph.h"
 
 #include "bitmap.h"
-#include "dsu.h"
 #include "heap.h"
 #include "list.h"
 #include "mem.h"
@@ -701,20 +700,22 @@ ugraph_t *ugraph_get_prims_mst(const ugraph_t *g)
     return mst;
 }
 
-/* Construct MSP (minimal spanning tree by Kruskal's algo). */
-ugraph_t *ugraph_get_kruskal_mst(const ugraph_t *g)
+/*
+ * g - input graph
+ * k - stop when k clusters remain, k == 1 - for stopping when MST is built
+ * mst - output mst graph, should be preallocated by caller
+ */
+udsu_t *_kruskal(const ugraph_t *g, size_t k, ugraph_t *mst)
 {
-    UASSERT_INPUT(g);
-    UASSERT_INPUT(g->n);
+    UASSERT_INPUT(k < g->n);
 
     uvector_t *edges = ugraph_get_edges(g);
     uvector_set_void_comparator(edges, _edge_weight_cmp);
     uvector_sort(edges);
-    UASSERT_INTERNAL(uvector_get_size(edges) == g->m);
 
     udsu_t *dsu = udsu_create(g->n);
     const ugraph_edge_t *e = NULL;
-    ugraph_t *mst = ugraph_create(g->n, g->type);
+    size_t m = 0;
 
     for (size_t i = 0; i < g->m; i++)
     {
@@ -722,18 +723,47 @@ ugraph_t *ugraph_get_kruskal_mst(const ugraph_t *g)
         if (!udsu_is_united(dsu, e->f, e->t))
         {
             udsu_unite(dsu, e->f, e->t);
-            ugraph_add_edge(mst, e->f, e->t, e->w);
+            if (mst)
+            {
+                ugraph_add_edge(mst, e->f, e->t, e->w);
+            }
+            m++;
         }
-        if (mst->m == (g->n - 1))
+        // There are exactly n - 1 edges in MST, it makes
+        // sense to break earlier if we reach that number
+        // Another break condition is reaching the asked
+        // number of clusters which is rank of union-find.
+        if (m == (g->n - 1) || (k == udsu_get_rank(dsu)))
         {
             break;
         }
     }
 
-    udsu_destroy(dsu);
     uvector_destroy(edges);
 
+    return dsu;
+}
+
+/* Construct MSP (minimal spanning tree by Kruskal's algo). */
+ugraph_t *ugraph_get_kruskal_mst(const ugraph_t *g)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(g->n);
+
+    ugraph_t *mst = ugraph_create(g->n, g->type);
+    udsu_t *clusters = _kruskal(g, 1, mst);
+    udsu_destroy(clusters);
+
     return mst;
+}
+
+// k is a number clusters in max space clustering
+udsu_t *ugraph_get_max_space_clustering(const ugraph_t *g, size_t k)
+{
+    UASSERT_INPUT(g);
+    UASSERT_INPUT(g->n);
+
+    return _kruskal(g, k, NULL);
 }
 
 uvector_t *_get_reversed_adj(const ugraph_t *g)

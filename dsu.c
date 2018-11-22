@@ -51,6 +51,11 @@ bool udsu_is_united(const udsu_t *d, size_t p, size_t q)
     return _root(d, p) == _root(d, q);
 }
 
+size_t udsu_get_rank(const udsu_t *d)
+{
+    return d->rank;
+}
+
 void udsu_unite(udsu_t *d, size_t p, size_t q)
 {
     UASSERT_INPUT(d);

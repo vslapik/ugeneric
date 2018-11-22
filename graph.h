@@ -1,6 +1,7 @@
 #ifndef UGRAPH_H__
 #define UGRAPH_H__
 
+#include "dsu.h"
 #include "generic.h"
 #include "vector.h"
 
@@ -44,6 +45,7 @@ int ugraph_compute_path_length(const ugraph_t *g, const uvector_t *path);
 
 ugraph_t *ugraph_get_prims_mst(const ugraph_t *g);
 ugraph_t *ugraph_get_kruskal_mst(const ugraph_t *g);
+udsu_t *ugraph_get_max_space_clustering(const ugraph_t *g, size_t k);
 
 void ugraph_dump_to_dot(const ugraph_t *g, const char *name, FILE *out);
 //ugraph_t ugraph_load_from_dot(FILE *in);

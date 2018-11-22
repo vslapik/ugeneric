@@ -29,3 +29,4 @@
 - pre and post callbacks for BFS
 - provide a way to expose path from root to current node in BFS/DFS callbacks
 - reversed order for all sorters
+- convert iterator to a vector (htbl/bst/dict _get_items) -> [[k, v], [k, v] ... ]
