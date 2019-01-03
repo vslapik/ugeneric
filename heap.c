@@ -29,23 +29,18 @@ static uheap_t *_hcpy(const uheap_t *h, bool deep)
 static void _heapify(ugeneric_t *base, size_t nmemb, size_t i,
                      uheap_type_t type, void_cmp_t cmp)
 {
-    size_t t = 0;
     size_t l = LCHILD_IDX(i);
     size_t r = RCHILD_IDX(i);
 
     while (l < nmemb || r < nmemb) // percolate i-th element down to the correct position
     {
-        if (r < nmemb)
+        size_t t = LCHILD_IDX(i); // index of child (left or right) for swapping with
+        if (r < nmemb) // right child exists only if left also exists
         {
-            t = LCHILD_IDX(i);
             if (type * ugeneric_compare_v(base[l], base[r], cmp) > 0)
             {
                 t = RCHILD_IDX(i);
             }
-        }
-        else if (l < nmemb)
-        {
-            t = LCHILD_IDX(i);
         }
         if (type * ugeneric_compare_v(base[i], base[t], cmp) > 0)
         {
