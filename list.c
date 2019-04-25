@@ -1,11 +1,12 @@
 #include "list.h"
 #include "mem.h"
 
-/* head->[e{0}]->[e{1}]-> ... >[e{size-2}]->[e{size-1}]->NULL  */
+/* head->[e{0}]<->[e{1}] ... [e{size-2}]<->[e{size-1}]<-tail */
 
 typedef struct ulist_item {
     ugeneric_t data;
     struct ulist_item *next;
+    struct ulist_item *prev;
 } ulist_item_t;
 
 struct ulist_opaq {
@@ -13,22 +14,53 @@ struct ulist_opaq {
     bool is_data_owner;
     size_t size;
     ulist_item_t *head;
+    ulist_item_t *tail;
 };
 
 struct ulist_iterator_opaq {
     const ulist_t *list;
-    ulist_item_t *next;
+    ulist_item_t *current;
+    bool rev;
 };
 
-static inline ulist_item_t **_rewind_to(ulist_t *l, size_t i)
+static inline ulist_item_t *_rewind_to(ulist_t *l, size_t i)
 {
-    ulist_item_t **t = &l->head;
+    ulist_item_t *t = l->head;
     while (i--)
     {
-        t = &(*t)->next;
+        t = t->next;
     }
 
+    UASSERT_INTERNAL(t);
     return t;
+}
+
+static ugeneric_t _pop_at(ulist_t *l, size_t i)
+{
+    ulist_item_t *t = _rewind_to(l, i);
+    ugeneric_t g = t->data;
+
+    if (t == l->head)
+    {
+        l->head = t->next;
+    }
+    if (t == l->tail)
+    {
+        l->tail = t->prev;
+    }
+    if (t->next)
+    {
+        t->next->prev = t->prev;
+    }
+    if (t->prev)
+    {
+        t->prev->next = t->next;
+    }
+
+    ufree(t);
+    l->size--;
+
+    return g;
 }
 
 static ulist_t *_lcpy(const ulist_t *l, bool deep)
@@ -40,6 +72,7 @@ static ulist_t *_lcpy(const ulist_t *l, bool deep)
 
     ulist_item_t *from = l->head;
     ulist_item_t **to = &copy->head;
+    ulist_item_t *prev = NULL;
 
     copy->is_data_owner = deep;
     while (from)
@@ -47,9 +80,13 @@ static ulist_t *_lcpy(const ulist_t *l, bool deep)
         *to = umalloc(sizeof(**to));
         (*to)->data = deep ? ugeneric_copy_v(from->data, l->void_handlers.cpy) : from->data;
         (*to)->next = NULL;
+        (*to)->prev = prev;
+        prev = *to;
         to = &(*to)->next;
         from = from->next;
     }
+
+    copy->tail = prev;
 
     return copy;
 }
@@ -61,60 +98,103 @@ ulist_t *ulist_create(void)
     l->size = 0;
     l->is_data_owner = true;
     l->head = NULL;
+    l->tail = NULL;
     memset(&l->void_handlers, 0, sizeof(l->void_handlers));
 
     return l;
 }
 
+void ulist_insert_at(ulist_t *l, size_t i, ugeneric_t e)
+{
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(i < l->size);
+
+    ulist_item_t *li = umalloc(sizeof(*li));
+    li->data = e;
+
+    ulist_item_t *t = _rewind_to(l, i);
+
+    // Assume that insert_at is always called on a list with
+    // at least one elment so tail pointer is never affected.
+    if (t == l->head)
+    {
+        l->head = li;
+    }
+
+    li->next = t;
+    li->prev = t->prev;
+    if (t->prev)
+    {
+        t->prev->next = li;
+    }
+    t->prev = li;
+
+    l->size++;
+}
+
 void ulist_append(ulist_t *l, ugeneric_t e)
 {
     UASSERT_INPUT(l);
-    ulist_item_t *li = umalloc(sizeof(*li));
 
+    ulist_item_t *li = umalloc(sizeof(*li));
     li->data = e;
     li->next = NULL;
 
-    *_rewind_to(l, l->size) = li;
+    if (l->tail)
+    {
+        li->prev = l->tail;
+        li->prev->next = li;
+    }
+    else
+    {
+        li->prev = NULL;
+        l->head = li;
+    }
+    l->tail = li;
     l->size++;
 }
 
 void ulist_prepend(ulist_t *l, ugeneric_t e)
 {
     UASSERT_INPUT(l);
-    ulist_item_t *li = umalloc(sizeof(*li));
 
-    li->next = l->head;
+    ulist_item_t *li = umalloc(sizeof(*li));
     li->data = e;
+    li->prev = NULL;
+
+    if (l->head)
+    {
+        li->next = l->head;
+        li->next->prev = li;
+    }
+    else
+    {
+        li->next = NULL;
+        l->tail = li;
+    }
     l->head = li;
     l->size++;
+}
+
+ugeneric_t ulist_pop_at(ulist_t *l, size_t i)
+{
+    UASSERT_INPUT(l);
+    UASSERT_INPUT(i < l->size);
+    return _pop_at(l, i);
 }
 
 ugeneric_t ulist_pop_back(ulist_t *l)
 {
     UASSERT_INPUT(l);
     UASSERT_INPUT(l->size);
-
-    ulist_item_t **t = _rewind_to(l, l->size - 1);
-    ugeneric_t e = (*t)->data;
-    ufree(*t);
-    *t = NULL;
-    l->size--;
-
-    return e;
+    return _pop_at(l, l->size - 1);
 }
 
 ugeneric_t ulist_pop_front(ulist_t *l)
 {
     UASSERT_INPUT(l);
     UASSERT_INPUT(l->size);
-
-    ulist_item_t *li = l->head;
-    ugeneric_t e = li->data;
-    l->head = li->next;
-    ufree(li);
-    l->size--;
-
-    return e;
+    return _pop_at(l, 0);
 }
 
 void ulist_clear(ulist_t *l)
@@ -135,6 +215,7 @@ void ulist_clear(ulist_t *l)
         ufree(t);
     }
     l->head = NULL;
+    l->tail = NULL;
     l->size = 0;
 }
 
@@ -164,9 +245,9 @@ ugeneric_t ulist_get_at(const ulist_t *l, size_t i)
     UASSERT_INPUT(l);
     UASSERT_INPUT(i < l->size);
 
-    ulist_item_t **t = _rewind_to((ulist_t *)l, i);
+    ulist_item_t *t = _rewind_to((ulist_t *)l, i);
 
-    return (*t)->data;
+    return t->data;
 }
 
 void ulist_set_at(ulist_t *l, size_t i, ugeneric_t e)
@@ -174,27 +255,12 @@ void ulist_set_at(ulist_t *l, size_t i, ugeneric_t e)
     UASSERT_INPUT(l);
     UASSERT_INPUT(i < l->size);
 
-    ulist_item_t **t = _rewind_to(l, i);
+    ulist_item_t *t = _rewind_to(l, i);
     if (l->is_data_owner)
     {
-        ugeneric_destroy_v((*t)->data, l->void_handlers.dtr);
+        ugeneric_destroy_v(t->data, l->void_handlers.dtr);
     }
-    (*t)->data = e;
-}
-
-void ulist_insert_at(ulist_t *l, size_t i, ugeneric_t e)
-{
-    UASSERT_INPUT(l);
-    UASSERT_INPUT(i < l->size);
-
-    ulist_item_t *li = umalloc(sizeof(*li));
-    li->data = e;
-
-    ulist_item_t **t = _rewind_to(l, i);
-
-    li->next = *t;
-    *t = li;
-    l->size++;
+    t->data = e;
 }
 
 void ulist_remove_at(ulist_t *l, size_t i)
@@ -202,17 +268,21 @@ void ulist_remove_at(ulist_t *l, size_t i)
     UASSERT_INPUT(l);
     UASSERT_INPUT(i < l->size);
 
-    ulist_item_t **t = _rewind_to(l, i);
-    ulist_item_t *f = *t;
-
-    *t = (*t)->next;
+    ugeneric_t g = _pop_at(l, i);
     if (l->is_data_owner)
     {
-        ugeneric_destroy_v(f->data, l->void_handlers.dtr);
+        ugeneric_destroy_v(g, l->void_handlers.dtr);
     }
-    ufree(f);
+}
 
-    l->size--;
+void ulist_remove_back(ulist_t *l)
+{
+    ulist_remove_at(l, l->size - 1);
+}
+
+void ulist_remove_front(ulist_t *l)
+{
+    ulist_remove_at(l, 0);
 }
 
 ugeneric_t *ulist_find(ulist_t *l, ugeneric_t e)
@@ -221,7 +291,6 @@ ugeneric_t *ulist_find(ulist_t *l, ugeneric_t e)
 
     ulist_item_t *li = l->head;
     ulist_item_t *t;
-
     ugeneric_t *g = NULL;
 
     while (li)
@@ -246,11 +315,23 @@ bool ulist_contains(const ulist_t *l, ugeneric_t e)
 void ulist_reverse(ulist_t *l)
 {
     UASSERT_INPUT(l);
-    UABORT("not implemented");
-    ulist_item_t *li = l->head;
 
-    while (li)
+    if (l->size > 1)
     {
+        ulist_item_t *t = l->head;
+        ulist_item_t *li;
+
+        while (t)
+        {
+            li = t;
+            t = li->next;
+            li->next = li->prev;
+            li->prev = t;
+        }
+
+        t = l->head;
+        l->head = l->tail;
+        l->tail = t;
     }
 }
 
@@ -276,7 +357,7 @@ int ulist_compare(const ulist_t *l1, const ulist_t *l2, void_cmp_t cmp)
         }
     }
 
-    return (l1->size > l2->size) ?  1 : ((l1->size < l2->size) ? -1 : 0);
+    return (l1->size > l2->size) - (l1->size < l2->size);
 }
 
 ulist_t *ulist_copy(const ulist_t *l)
@@ -332,44 +413,88 @@ char *ulist_as_str(const ulist_t *l)
     return buf.data;
 }
 
-ulist_iterator_t *ulist_iterator_create(const ulist_t *l)
+static void _iterator_reset(ulist_iterator_t *li)
+{
+    li->current = (li->rev) ? li->list->tail : li->list->head;
+}
+
+static ulist_iterator_t *_iterator_create(const ulist_t *l, bool rev)
 {
     UASSERT_INPUT(l);
     ulist_iterator_t *li = umalloc(sizeof(*li));
 
     li->list = l;
-    li->next = l->head;
+    li->rev = rev;
+
+    _iterator_reset(li);
 
     return li;
 }
 
-ugeneric_t ulist_iterator_get_next(ulist_iterator_t *li)
+ugeneric_t *_iterator_get_next(ulist_iterator_t *li)
 {
     UASSERT_INPUT(li);
     UASSERT_MSG(li->list->size, "container is empty");
-    UASSERT_MSG(li->next, "iteration is done");
+    UASSERT_MSG(!li->rev, "no next in reverse iterator");
+    UASSERT_MSG(li->current, "no next");
 
-    ugeneric_t g = li->next->data;
-    li->next = li->next->next;
+    ugeneric_t *g = &li->current->data;
+    li->current = li->current->next;
 
     return g;
+}
+
+ugeneric_t *_iterator_get_prev(ulist_iterator_t *li)
+{
+    UASSERT_INPUT(li);
+    UASSERT_MSG(li->list->size, "container is empty");
+    UASSERT_MSG(li->rev, "no prev in forward iterator");
+    UASSERT_MSG(li->current, "no prev");
+
+    ugeneric_t *g = &li->current->data;
+    li->current = li->current->prev;
+
+    return g;
+}
+
+ulist_iterator_t *ulist_iterator_create_rev(const ulist_t *l)
+{
+    return _iterator_create(l, true);
+}
+
+ulist_iterator_t *ulist_iterator_create(const ulist_t *l)
+{
+    return _iterator_create(l, false);
+}
+
+ugeneric_t ulist_iterator_get_next(ulist_iterator_t *li)
+{
+    return *_iterator_get_next(li);
 }
 
 ugeneric_t *ulist_iterator_get_next_ref(ulist_iterator_t *li)
 {
-    UASSERT_INPUT(li);
-    UASSERT_MSG(li->list->size, "container is empty");
-    UASSERT_MSG(li->next, "iteration is done");
+    return _iterator_get_next(li);
+}
 
-    ugeneric_t *g = &li->next->data;
-    li->next = li->next->next;
+ugeneric_t ulist_iterator_get_prev(ulist_iterator_t *li)
+{
+    return *_iterator_get_prev(li);
+}
 
-    return g;
+ugeneric_t *ulist_iterator_get_prev_ref(ulist_iterator_t *li)
+{
+    return _iterator_get_prev(li);
 }
 
 bool ulist_iterator_has_next(const ulist_iterator_t *li)
 {
-    return li->next;
+    return (li->rev) ? false : li->current;
+}
+
+bool ulist_iterator_has_prev(const ulist_iterator_t *li)
+{
+    return (!li->rev) ? false : li->current;
 }
 
 void ulist_iterator_destroy(ulist_iterator_t *li)
@@ -382,7 +507,8 @@ void ulist_iterator_destroy(ulist_iterator_t *li)
 
 void ulist_iterator_reset(ulist_iterator_t *li)
 {
-    li->next = li->list->head;
+    UASSERT_INPUT(li);
+    _iterator_reset(li);
 }
 
 ugeneric_base_t *ulist_get_base(ulist_t *l)

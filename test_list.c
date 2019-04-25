@@ -2,7 +2,6 @@
 #include "mem.h"
 #include "string_utils.h"
 #include "ut_utils.h"
-#include "vector.h"
 
 void test_list_api(void)
 {
@@ -110,7 +109,7 @@ void test_list_api(void)
     ulist_destroy(l1);
     ulist_destroy(l2);
 
-    // List compare
+    // List compare.
     l1 = ulist_create();
     l2 = ulist_create();
     UASSERT_INT_EQ(ulist_compare(l1, l2, NULL), 0); // empty list compare equal
@@ -134,6 +133,37 @@ void test_list_api(void)
 
     ulist_destroy(l1);
     ulist_destroy(l2);
+
+    // List reverse.
+    l = ulist_create();
+    ulist_reverse(l);
+    UASSERT(ulist_is_empty(l));
+
+    ulist_append(l, G_INT(1));
+    ulist_reverse(l);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 0)), 1);
+
+    ulist_append(l, G_INT(2));
+    ulist_reverse(l);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 0)), 2);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 1)), 1);
+
+    ulist_append(l, G_INT(3));
+    ulist_append(l, G_INT(4));
+
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 0)), 2);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 1)), 1);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 2)), 3);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 3)), 4);
+
+    ulist_reverse(l);
+
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 0)), 4);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 1)), 3);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 2)), 1);
+    UASSERT_INT_EQ(G_AS_INT(ulist_get_at(l, 3)), 2);
+
+    ulist_destroy(l);
 }
 
 void test_list_clear(void)
@@ -151,8 +181,7 @@ void test_list_clear(void)
 
 void test_list_iterator(void)
 {
-    char *str;
-    uvector_t *v = uvector_create();
+    ugeneric_t g;
     ulist_t *l = ulist_create();
 
     ulist_append(l, G_INT(1));
@@ -161,58 +190,122 @@ void test_list_iterator(void)
     ulist_append(l, G_INT(4));
 
     ulist_iterator_t *li = ulist_iterator_create(l);
-    while (ulist_iterator_has_next(li))
-    {
-        uvector_append(v, *ulist_iterator_get_next_ref(li));
-    }
-    str = uvector_as_str(v);
-    UASSERT(strcmp("[1, 2, 3, 4]", str) == 0);
-    ufree(str);
+    ulist_iterator_t *li_rev = ulist_iterator_create_rev(l);
 
-    size_t j = 101;
-    ulist_iterator_reset(li);
-    while (ulist_iterator_has_next(li))
+    for (int i = 0; i < 2; i++)
     {
-        *ulist_iterator_get_next_ref(li) = G_INT(j++);
-    }
+        // 1
+        UASSERT(ulist_iterator_has_next(li));
+        UASSERT(!ulist_iterator_has_prev(li));
+        g = *ulist_iterator_get_next_ref(li);
+        UASSERT_INT_EQ(G_AS_INT(g), 1);
 
-    ulist_iterator_reset(li);
-    uvector_clear(v);
-    while (ulist_iterator_has_next(li))
-    {
-        uvector_append(v, *ulist_iterator_get_next_ref(li));
+        // 2
+        UASSERT(ulist_iterator_has_next(li));
+        UASSERT(!ulist_iterator_has_prev(li));
+        g = ulist_iterator_get_next(li);
+        UASSERT_INT_EQ(G_AS_INT(g), 2);
+
+        // 3
+        UASSERT(ulist_iterator_has_next(li));
+        UASSERT(!ulist_iterator_has_prev(li));
+        g = *ulist_iterator_get_next_ref(li);
+        UASSERT_INT_EQ(G_AS_INT(g), 3);
+
+        // 4
+        UASSERT(ulist_iterator_has_next(li));
+        UASSERT(!ulist_iterator_has_prev(li));
+        g = ulist_iterator_get_next(li);
+        UASSERT_INT_EQ(G_AS_INT(g), 4);
+        UASSERT(!ulist_iterator_has_next(li));
+        UASSERT(!ulist_iterator_has_prev(li));
+
+        // 4
+        UASSERT(!ulist_iterator_has_next(li_rev));
+        UASSERT(ulist_iterator_has_prev(li_rev));
+        g = *ulist_iterator_get_prev_ref(li_rev);
+        UASSERT_INT_EQ(G_AS_INT(g), 4);
+
+        // 3
+        UASSERT(!ulist_iterator_has_next(li_rev));
+        UASSERT(ulist_iterator_has_prev(li_rev));
+        g = ulist_iterator_get_prev(li_rev);
+        UASSERT_INT_EQ(G_AS_INT(g), 3);
+
+        // 2
+        UASSERT(!ulist_iterator_has_next(li_rev));
+        UASSERT(ulist_iterator_has_prev(li_rev));
+        g = *ulist_iterator_get_prev_ref(li_rev);
+        UASSERT_INT_EQ(G_AS_INT(g), 2);
+
+        // 1
+        UASSERT(!ulist_iterator_has_next(li_rev));
+        UASSERT(ulist_iterator_has_prev(li_rev));
+        g = ulist_iterator_get_prev(li_rev);
+        UASSERT_INT_EQ(G_AS_INT(g), 1);
+        UASSERT(!ulist_iterator_has_next(li_rev));
+        UASSERT(!ulist_iterator_has_prev(li_rev));
+
+        ulist_iterator_reset(li);
+        ulist_iterator_reset(li_rev);
+        i++;
     }
-    str = uvector_as_str(v);
-    ufree(str);
 
     ulist_iterator_destroy(li);
+    ulist_iterator_destroy(li_rev);
     ulist_destroy(l);
-    uvector_destroy(v);
+}
+
+ugeneric_t _int(int i)
+{
+    int *p = umalloc(sizeof(int));
+    *p = i;
+    return G_PTR(p);
+}
+
+char *_int_s8r(const void *ptr, size_t *output_size)
+{
+    const int *i = ptr;
+    return ustring_fmt_sized("%d", output_size, *i);
+}
+
+void _check_list(const ulist_t *l, const char *str)
+{
+    char *s = ulist_as_str(l);
+    UASSERT_STR_EQ(s, str);
+    ufree(s);
 }
 
 void test_list_serialize(void)
 {
-    char *str;
     ulist_t *l = ulist_create();
+    ulist_set_void_serializer(l, _int_s8r);
+    ulist_set_void_destroyer(l, ufree);
 
-    str = ulist_as_str(l);
-    UASSERT_STR_EQ("[]", str);
-    ufree(str);
+    _check_list(l, "[]");
 
-    ulist_append(l, G_INT(0));
-    str = ulist_as_str(l);
-    UASSERT_STR_EQ("[0]", str);
-    ufree(str);
+    ulist_append(l, _int(1));
+    _check_list(l, "[1]");
 
-    ulist_append(l, G_INT(0));
-    str = ulist_as_str(l);
-    UASSERT_STR_EQ("[0, 0]", str);
-    ufree(str);
+    ugeneric_destroy_v(ulist_pop_back(l), ufree);
+    _check_list(l, "[]");
 
-    ulist_append(l, G_INT(1));
-    str = ulist_as_str(l);
-    UASSERT_STR_EQ("[0, 0, 1]", str);
-    ufree(str);
+    ulist_prepend(l, _int(2));
+    _check_list(l, "[2]");
+
+    ugeneric_destroy_v(ulist_pop_front(l), ufree);
+    _check_list(l, "[]");
+
+    ulist_append(l, _int(3));
+    ulist_append(l, _int(4));
+    ulist_append(l, _int(5));
+    _check_list(l, "[3, 4, 5]");
+
+    ulist_remove_at(l, 1);
+    _check_list(l, "[3, 5]");
+
+    ulist_insert_at(l, 1, _int(6));
+    _check_list(l, "[3, 6, 5]");
 
     ulist_destroy(l);
 }
@@ -248,11 +341,11 @@ int main(int argc, char **argv)
     (void)argv;
     (void)argc;
 
-    test_list_serialize();
     test_list_api();
     test_list_clear();
     test_list_iterator();
     test_list_void_data();
+    test_list_serialize();
 
     return 0;
 }

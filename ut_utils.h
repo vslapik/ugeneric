@@ -6,6 +6,7 @@
 #include "dict.h"
 #include "generic.h"
 #include "vector.h"
+#include "list.h"
 
 #include <errno.h>
 
@@ -15,6 +16,8 @@ ugeneric_t gen_random_dict(int depth, size_t ctn_max_len, bool verbose);
 ugeneric_t gen_random_string(int depth, bool verbose);
 ugeneric_t gen_random_memchunk(int depth, bool verbose);
 ugeneric_t gen_random_void_data(int depth, bool verbose);
+
+ulist_t *gen_random_list(bool verbose);
 
 #define UASSERT_STR_EQ(s1, s2) do {                                         \
     const char *__s1 = (s1); if (!__s1) __s1 = "null";                      \

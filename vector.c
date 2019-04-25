@@ -78,16 +78,11 @@ int uvector_compare(const uvector_t *v1, const uvector_t *v2)
         diff = ugeneric_compare_v(v1->cells[i], v2->cells[i], v1->void_handlers.cmp);
         if (diff)
         {
-            break;
+            return diff;
         }
     }
 
-    if (diff == 0)
-    {
-        diff = (v1->size > v2->size) ?  1 : ((v1->size < v2->size) ? -1 : 0);
-    }
-
-    return diff;
+    return (v1->size > v2->size) - (v1->size < v2->size);
 }
 
 uvector_t *uvector_create_with_size(size_t size, ugeneric_t value)
@@ -283,6 +278,11 @@ void uvector_remove_at(uvector_t *v, size_t i)
     }
     memmove(v->cells + i, v->cells + i + 1, (v->size - i - 1) * sizeof(v->cells[0]));
     v->size--;
+}
+
+void uvector_remove_back(uvector_t *v)
+{
+    uvector_remove_at(v, v->size - 1);
 }
 
 void uvector_append(uvector_t *v, ugeneric_t e)

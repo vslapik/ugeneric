@@ -246,7 +246,6 @@ int udict_compare(const udict_t *d1, const udict_t *d2)
 
     return ugeneric_compare_v(udict_get(d1, min_diff_key_a, G_ERROR("")),
                               udict_get(d2, min_diff_key_b, G_ERROR("")), cmp);
-
 }
 
 udict_t *_dcpy(const udict_t *d, bool deep)

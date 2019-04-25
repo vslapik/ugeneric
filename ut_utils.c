@@ -1,8 +1,5 @@
 #include "ut_utils.h"
-
-#include "heap.h"
 #include "string_utils.h"
-
 #include <limits.h>
 
 typedef struct {
@@ -196,4 +193,45 @@ ugeneric_t gen_random_void_data(int depth, bool verbose)
     }
 
     return G_PTR(p);
+}
+
+ugeneric_t _int(int i)
+{
+    int *p = umalloc(sizeof(int));
+    *p = i;
+    return G_PTR(p);
+}
+
+char *_int_s8r(const void *ptr, size_t *output_size)
+{
+    const int *i = ptr;
+    return ustring_fmt_sized("%d", output_size, *i);
+}
+
+static int _int_cmp(const void *ptr1, const void *ptr2)
+{
+    const int *i1 = ptr1;
+    const int *i2 = ptr2;
+    return (i1 > i2) - (i2 < i1);
+}
+
+ulist_t *gen_random_list(bool verbose)
+{
+    ulist_t *l = ulist_create();
+    ulist_set_void_serializer(l, _int_s8r);
+    ulist_set_void_destroyer(l, ufree);
+    ulist_set_void_comparator(l, _int_cmp);
+
+    size_t size = ugeneric_random_from_range(0, 10);
+    for (size_t i = 0; i < size; i++)
+    {
+        ugeneric_t e = _int(ugeneric_random_from_range(0, 10));
+        ulist_append(l, e);
+    }
+    if (verbose)
+    {
+        ulist_print(l);
+    }
+
+    return l;
 }
