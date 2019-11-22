@@ -7,6 +7,7 @@ VALGRIND := $(shell command -v valgrind 2> /dev/null)
 DEBUG    := $(shell ls debug 2> /dev/null)
 
 #CC           := g++ -fpermissive
+SANFLAGS      := -fsanitize=undefined
 PFLAGS        := -fprofile-arcs -ftest-coverage
 VFLAGS        := -q --child-silent-after-fork=yes --leak-check=full \
                  --error-exitcode=3
@@ -14,7 +15,7 @@ CFLAGS_COMMON := -I. -g -std=c11 -Wall -Wextra -Winline -pedantic \
                  -Wno-missing-field-initializers -Wno-missing-braces
 
 ifdef DEBUG
-CFLAGS := $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS)
+CFLAGS := $(CFLAGS_COMMON) -O0 -DENABLE_UASSERT_INPUT $(PFLAGS) $(SANFLAGS)
 else
 CFLAGS := $(CFLAGS_COMMON) -O3
 endif
