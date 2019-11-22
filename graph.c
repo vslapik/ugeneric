@@ -168,7 +168,7 @@ uvector_t *ugraph_get_edges(const ugraph_t *g)
             if (g->type == UGRAPH_UNDIRECTED)
             {
                 // As internally there are two edges (forward and backward)
-                // in undirected graph we return only the first one (f -> t)
+                // in undirected graph we return only the first one (f -> t).
                 if (e->t < i)
                 {
                     continue;
@@ -508,7 +508,7 @@ static uvector_t *_get_topological_order(const ugraph_t *g, bool ignore_cycles)
     }
     else
     {
-        // This is mandatory step as for topological sort it is
+        // This is a mandatory step as for the topological sort it is
         // required to get exactly reversed post-order list of
         // nodes but callback is appending them to the vector so
         // the vector needs to be reversed before returning it.
@@ -640,7 +640,7 @@ char *_edge_s8r(const void *ptr, size_t *output_size)
     return ustring_fmt_sized("(%zu->%zu, w: %d)", output_size, e->f, e->t, e->w);
 }
 
-/* Construct MSP (minimal spanning tree by Prim's algo). */
+/* Construct MST (minimal spanning tree by Prim's algo). */
 ugraph_t *ugraph_get_prims_mst(const ugraph_t *g)
 {
     UASSERT_INPUT(g);
@@ -730,9 +730,9 @@ udsu_t *_kruskal(const ugraph_t *g, size_t k, ugraph_t *mst)
             m++;
         }
         // There are exactly n - 1 edges in MST, it makes
-        // sense to break earlier if we reach that number
+        // sense to break earlier if we've reached that number.
         // Another break condition is reaching the asked
-        // number of clusters which is rank of union-find.
+        // number of clusters which is rank of the union-find.
         if (m == (g->n - 1) || (k == udsu_get_rank(dsu)))
         {
             break;
@@ -744,7 +744,7 @@ udsu_t *_kruskal(const ugraph_t *g, size_t k, ugraph_t *mst)
     return dsu;
 }
 
-/* Construct MSP (minimal spanning tree by Kruskal's algo). */
+/* Construct MST (minimal spanning tree by Kruskal's algo). */
 ugraph_t *ugraph_get_kruskal_mst(const ugraph_t *g)
 {
     UASSERT_INPUT(g);
