@@ -248,7 +248,6 @@ void test_list_iterator(void)
 
         ulist_iterator_reset(li);
         ulist_iterator_reset(li_rev);
-        i++;
     }
 
     ulist_iterator_destroy(li);
