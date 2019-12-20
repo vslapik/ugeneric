@@ -53,7 +53,7 @@ endif
 test_fuzz: $(lib) ut_utils.c test_fuzz.c
 	$(CC) $(CFLAGS) -c ut_utils.c -o ut_utils.o
 	$(CC) $(CFLAGS) -c test_fuzz.c -o test_fuzz.o
-	$(CC) $(CFLAGS) ut_utils.o test_fuzz.o $(lib) -o $@ -lgcov
+	$(CC) $(CFLAGS) ut_utils.o test_fuzz.o $(lib) -o $@
 
 .PHONY: clean
 clean:
