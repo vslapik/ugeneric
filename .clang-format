@@ -1,0 +1,9 @@
+﻿---
+AlignAfterOpenBracket: Align
+BreakBeforeBraces: Allman
+IndentWidth: '4'
+PointerAlignment: Right
+TabWidth: '4'
+UseTab: Never
+
+...

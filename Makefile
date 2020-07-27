@@ -6,11 +6,12 @@ BUILDDIR := build
 TESTDIR  := tests
 
 CTAGS    := $(shell command -v ctags 2> /dev/null)
-LINT     := $(shell command -v clang-tidy 2> /dev/null)
 VALGRIND := $(shell command -v valgrind 2> /dev/null)
+LINT     := $(shell command -v scan-build 2> /dev/null)
+FORMAT   := $(shell command -v clang-format 2> /dev/null)
 DEBUG    := $(shell ls debug 2> /dev/null)
 
-#CC           := g++ -fpermissive
+#CC           := g++ -fpermissive # cries but compiles
 SANFLAGS      := -fsanitize=undefined
 PFLAGS        := -fprofile-arcs -ftest-coverage
 VFLAGS        := -q --child-silent-after-fork=yes --leak-check=full \
@@ -39,13 +40,12 @@ $(BUILDDIR):
 	mkdir -p $(BUILDDIR) # create build dir if not present
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
-	$(CC) $(CFLAGS) -MM $< -MT $(BUILDDIR)/$*.o > $(BUILDDIR)/$*.c.d
+	@$(CC) $(CFLAGS) -MM $< -MT $(BUILDDIR)/$*.o > $(BUILDDIR)/$*.c.d
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-test: $(texe)
 
 $(BUILDDIR)/ut_utils.o: $(TESTDIR)/ut_utils.c
-	$(CC) $(CFLAGS) -MM $< -MT $(BUILDDIR)/ut_utils.o > $(BUILDDIR)/ut_utils.c.d
+	@$(CC) $(CFLAGS) -MM $< -MT $(BUILDDIR)/ut_utils.o > $(BUILDDIR)/ut_utils.c.d
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 test_%: $(TESTDIR)/test_%.c $(lib) $(BUILDDIR)/ut_utils.o $(lib)
@@ -54,19 +54,10 @@ test_%: $(TESTDIR)/test_%.c $(lib) $(BUILDDIR)/ut_utils.o $(lib)
 $(lib): $(obj) Makefile
 	ar rcs $(lib) $(obj)
 
--include $(obj:.o=.c.d) # drag in all the dependecies for existing obj files
+-include $(obj:.o=.c.d) # drag in all the dependencies for existing obj files
 
-.PHONY: tags
-tags:
-ifdef CTAGS
-	$(CTAGS) -R .
-else
-	$(warning "ctags is not found, index generation is skipped")
-endif
 
-.PHONY: clean
-clean:
-	rm -rf $(BUILDDIR) $(lib) tags core* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s default.profraw
+test: $(texe)
 
 check_%: test_%
 	@printf "====================[ %-12s ]====================\n"  $*
@@ -85,16 +76,39 @@ check: $(checks)
 check_all: $(checks)
 	make check_fuzz
 
+# Style checker.
 style:
-	astyle --options=astyle.cfg *.[ch]
-
-LINT_CHECKS = -checks=*,clang-analyzer-*,-clang-analyzer-cplusplus*
-
-lint:
-ifdef LINT
-	clang-tidy src/*.c $(LINT_CHECKS) -- -std=c11 -I$(INCDIR)
+ifdef FORMAT
+	find . -regex '.*\.\(c\|h\)' -exec clang-format -style=file -i {} \;
 else
-	$(warning "clang-tidy is not found, consider installing it")
+	$(warning "clang-format was not found, consider installing it")
 endif
 
+
+# Static analysis.
+lint:
+ifdef LINT
+	scan-build make
+else
+	$(warning "scan-build was not found, consider installing it")
+endif
+
+
+# Debug helper, 'make print-VAR' to see what is in VAR.
 print-%  : ; @echo $* = $($*)
+
+
+# Clean-up.
+.PHONY: clean
+clean:
+	rm -rf $(BUILDDIR) $(lib) tags core* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s default.profraw
+
+
+# Index generation for vim.
+.PHONY: tags
+tags:
+ifdef CTAGS
+	$(CTAGS) -R .
+else
+	$(warning "ctags is not found, index generation is skipped")
+endif
