@@ -195,14 +195,14 @@ ugeneric_t gen_random_void_data(int depth, bool verbose)
     return G_PTR(p);
 }
 
-ugeneric_t _int(int i)
+static ugeneric_t _int(int i)
 {
     int *p = umalloc(sizeof(int));
     *p = i;
     return G_PTR(p);
 }
 
-char *_int_s8r(const void *ptr, size_t *output_size)
+static char *_int_s8r(const void *ptr, size_t *output_size)
 {
     const int *i = ptr;
     return ustring_fmt_sized("%d", output_size, *i);

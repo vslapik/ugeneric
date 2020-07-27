@@ -1,8 +1,12 @@
 lib = libugeneric.a
 
+SRCDIR   := src
+INCDIR   := include
+BUILDDIR := build
+TESTDIR  := tests
+
 CTAGS    := $(shell command -v ctags 2> /dev/null)
-LINT     := $(shell command -v cland-tidy 2> /dev/null)
-ASTYLE   := $(shell command -v astyle 2> /dev/null)
+LINT     := $(shell command -v clang-tidy 2> /dev/null)
 VALGRIND := $(shell command -v valgrind 2> /dev/null)
 DEBUG    := $(shell ls debug 2> /dev/null)
 
@@ -11,7 +15,7 @@ SANFLAGS      := -fsanitize=undefined
 PFLAGS        := -fprofile-arcs -ftest-coverage
 VFLAGS        := -q --child-silent-after-fork=yes --leak-check=full \
                  --error-exitcode=3
-CFLAGS_COMMON := -I. -g -std=c11 -Wall -Wextra -Winline -pedantic \
+CFLAGS_COMMON := -I$(INCDIR) -g -std=c11 -Wall -Wextra -Winline -pedantic \
                  -Wno-missing-field-initializers -Wno-missing-braces
 
 ifdef DEBUG
@@ -20,51 +24,56 @@ else
 CFLAGS := $(CFLAGS_COMMON) -O3
 endif
 
-src    := generic.c stack.c vector.c queue.c heap.c list.c graph.c bitmap.c \
-          sort.c string_utils.c file_utils.c bst.c mem.c dsu.c dict.c htbl.c \
-          struct.c set.c
-tsrc   := $(patsubst %.c, test_%.c, $(src))
-texe   := $(patsubst %.c, %, $(tsrc))
+src    := $(shell find $(SRCDIR) -type f -name \*.c)
+hdr    := $(shell find $(INCDIR) -type f -name \*.h)
+obj    := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(src:.c=.o))
+tsrc   := $(shell find $(TESTDIR) -type f -name test\*.c)
+texe   := $(patsubst $(TESTDIR)/%.c, %, $(tsrc))
 checks := $(patsubst test_%, check_%, $(texe))
-hdr    := ${src:.c=.h}
-obj    := ${src:.c=.o}
 
-all: $(lib) tags test test_fuzz
-
+all: $(lib)
+lib: $(lib)
 $(obj): Makefile
 
-lib: $(lib)
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR) # create build dir if not present
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
+	$(CC) $(CFLAGS) -MM $< -MT $(BUILDDIR)/$*.o > $(BUILDDIR)/$*.c.d
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 test: $(texe)
-test_%: test_%.c $(lib)
-	$(CC) $(CFLAGS) test_$*.c $(lib) -o $@
 
-$(lib): $(obj) tags $(hdr) Makefile backtrace.c
-	$(CC) $(CFLAGS) -c backtrace.c -o backtrace.o
-	ar rcs $(lib) $(obj) backtrace.o
+$(BUILDDIR)/ut_utils.o: $(TESTDIR)/ut_utils.c
+	$(CC) $(CFLAGS) -MM $< -MT $(BUILDDIR)/ut_utils.o > $(BUILDDIR)/ut_utils.c.d
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-tags: $(src) $(hdr)
+test_%: $(TESTDIR)/test_%.c $(lib) $(BUILDDIR)/ut_utils.o $(lib)
+	$(CC) $(CFLAGS) $(BUILDDIR)/ut_utils.o $< $(lib) -o $@
+
+$(lib): $(obj) Makefile
+	ar rcs $(lib) $(obj)
+
+-include $(obj:.o=.c.d) # drag in all the dependecies for existing obj files
+
+.PHONY: tags
+tags:
 ifdef CTAGS
 	$(CTAGS) -R .
 else
 	$(warning "ctags is not found, index generation is skipped")
 endif
 
-test_fuzz: $(lib) ut_utils.c test_fuzz.c
-	$(CC) $(CFLAGS) -c ut_utils.c -o ut_utils.o
-	$(CC) $(CFLAGS) -c test_fuzz.c -o test_fuzz.o
-	$(CC) $(CFLAGS) ut_utils.o test_fuzz.o $(lib) -o $@
-
 .PHONY: clean
 clean:
-	$(RM) *.o $(lib) tags core* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s test_fuzz default.profraw
+	rm -rf $(BUILDDIR) $(lib) tags core* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s default.profraw
 
 check_%: test_%
 	@printf "====================[ %-12s ]====================\n"  $*
 ifdef VALGRIND
 	@$(VALGRIND) $(VFLAGS) ./test_$* && echo "valgrind: OK"
 else
-	$(warning "valgrind is not found, consider to install it")
+	$(warning "valgrind is not found, consider installing it")
 	./test_$*
 endif
 ifeq ($(CC), gcc)
@@ -79,9 +88,13 @@ check_all: $(checks)
 style:
 	astyle --options=astyle.cfg *.[ch]
 
-LINT_CHECKS = -checks=*,-llvm-header-guard,-hicpp-braces-around-statements,-readability-braces-around-statements,-google-readability-todo,-hicpp-signed-bitwise,-readability-else-after-return
+LINT_CHECKS = -checks=*,clang-analyzer-*,-clang-analyzer-cplusplus*
 
 lint:
-	clang-tidy *.[ch] -header-filter=.* $(LINT_CHECKS) -- -std=c11
+ifdef LINT
+	clang-tidy src/*.c $(LINT_CHECKS) -- -std=c11 -I$(INCDIR)
+else
+	$(warning "clang-tidy is not found, consider installing it")
+endif
 
 print-%  : ; @echo $* = $($*)
