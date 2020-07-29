@@ -23,7 +23,8 @@
     #define UASSERT_INTERNAL(cond) do {                                     \
         if (!(cond))                                                        \
         {                                                                   \
-            fprintf(stderr, "Sanity violation at %s:%d, the \"impossible\" happened.\n", \
+            fprintf(stderr, "Sanity violation at %s:%d, "                   \
+                            "the \"impossible\" happened.\n",               \
                     __FILE__, __LINE__);                                    \
             utrace_print();                                                 \
             abort();                                                        \

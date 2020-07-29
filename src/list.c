@@ -20,6 +20,7 @@ struct ulist_opaq {
 struct ulist_iterator_opaq {
     const ulist_t *list;
     ulist_item_t *current;
+    ulist_item_t fake;
     bool rev;
 };
 
@@ -415,7 +416,18 @@ char *ulist_as_str(const ulist_t *l)
 
 static void _iterator_reset(ulist_iterator_t *li)
 {
-    li->current = (li->rev) ? li->list->tail : li->list->head;
+    if (li->rev)
+    {
+        li->fake.next = NULL;
+        li->fake.prev = li->list->tail;
+    }
+    else
+    {
+        li->fake.next = li->list->head;
+        li->fake.prev = NULL;
+    }
+
+    li->current = &li->fake;
 }
 
 static ulist_iterator_t *_iterator_create(const ulist_t *l, bool rev)
@@ -435,35 +447,49 @@ ugeneric_t *_iterator_get_next(ulist_iterator_t *li)
 {
     UASSERT_INPUT(li);
     UASSERT_MSG(li->list->size, "container is empty");
-    UASSERT_MSG(!li->rev, "no next in reverse iterator");
-    UASSERT_MSG(li->current, "no next");
 
-    ugeneric_t *g = &li->current->data;
-    li->current = li->current->next;
+    if (li->rev)
+    {
+        UASSERT_MSG(li->current->prev, "no next");
+        li->current = li->current->prev;
+    }
+    else
+    {
+        UASSERT_MSG(li->current->next, "no next");
+        li->current = li->current->next;
+    }
 
-    return g;
+    return &li->current->data;
 }
 
 ugeneric_t *_iterator_get_prev(ulist_iterator_t *li)
 {
     UASSERT_INPUT(li);
     UASSERT_MSG(li->list->size, "container is empty");
-    UASSERT_MSG(li->rev, "no prev in forward iterator");
-    UASSERT_MSG(li->current, "no prev");
 
-    ugeneric_t *g = &li->current->data;
-    li->current = li->current->prev;
+    if (li->rev)
+    {
+        UASSERT_MSG(li->current->next, "no prev");
+        li->current = li->current->next;
+    }
+    else
+    {
+        UASSERT_MSG(li->current->prev, "no prev");
+        li->current = li->current->prev;
+    }
 
-    return g;
+    return &li->current->data;
 }
 
 ulist_iterator_t *ulist_iterator_create_rev(const ulist_t *l)
 {
+    UASSERT_INPUT(l);
     return _iterator_create(l, true);
 }
 
 ulist_iterator_t *ulist_iterator_create(const ulist_t *l)
 {
+    UASSERT_INPUT(l);
     return _iterator_create(l, false);
 }
 
@@ -479,22 +505,42 @@ ugeneric_t *ulist_iterator_get_next_ref(ulist_iterator_t *li)
 
 ugeneric_t ulist_iterator_get_prev(ulist_iterator_t *li)
 {
+    UASSERT_INPUT(li);
     return *_iterator_get_prev(li);
 }
 
 ugeneric_t *ulist_iterator_get_prev_ref(ulist_iterator_t *li)
 {
+    UASSERT_INPUT(li);
     return _iterator_get_prev(li);
 }
 
 bool ulist_iterator_has_next(const ulist_iterator_t *li)
 {
-    return (li->rev) ? false : li->current;
+    UASSERT_INPUT(li);
+
+    if (li->rev)
+    {
+        return li->list->size && li->current->prev;
+    }
+    else
+    {
+        return li->list->size && li->current->next;
+    }
 }
 
 bool ulist_iterator_has_prev(const ulist_iterator_t *li)
 {
-    return (!li->rev) ? false : li->current;
+    UASSERT_INPUT(li);
+
+    if (li->rev)
+    {
+        return li->list->size && li->current->next;
+    }
+    else
+    {
+        return li->list->size && li->current->prev;
+    }
 }
 
 void ulist_iterator_destroy(ulist_iterator_t *li)

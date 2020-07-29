@@ -11,7 +11,7 @@ LINT     := $(shell command -v scan-build 2> /dev/null)
 FORMAT   := $(shell command -v clang-format 2> /dev/null)
 DEBUG    := $(shell ls debug 2> /dev/null)
 
-#CC           := g++ -fpermissive # cries but compiles
+#CC            := g++ -fpermissive # cries but compiles
 SANFLAGS      := -fsanitize=undefined
 PFLAGS        := -fprofile-arcs -ftest-coverage
 VFLAGS        := -q --child-silent-after-fork=yes --leak-check=full \
@@ -44,7 +44,7 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 
-$(BUILDDIR)/ut_utils.o: $(TESTDIR)/ut_utils.c
+$(BUILDDIR)/ut_utils.o: $(TESTDIR)/ut_utils.c $(TESTDIR)/ut_utils.h
 	@$(CC) $(CFLAGS) -MM $< -MT $(BUILDDIR)/ut_utils.o > $(BUILDDIR)/ut_utils.c.d
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -101,7 +101,7 @@ print-%  : ; @echo $* = $($*)
 # Clean-up.
 .PHONY: clean
 clean:
-	rm -rf $(BUILDDIR) $(lib) tags core* vgcore.* *.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s default.profraw
+	rm -rf $(BUILDDIR) $(lib) tags core* vgcore.* src/*.gcno *.gcda *.gcov $(texe) callgrind.out.* *.i *.s default.profraw
 
 
 # Index generation for vim.

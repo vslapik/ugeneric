@@ -181,73 +181,157 @@ void test_list_clear(void)
 
 void test_list_iterator(void)
 {
+    int n;
     ugeneric_t g;
-    ulist_t *l = ulist_create();
+    bool has_next;
 
+    //-------------------
+
+    ulist_t *l0 = ulist_create();
+    ulist_iterator_t *li = ulist_iterator_create(l0);
+    ulist_iterator_t *li_rev = ulist_iterator_create_rev(l0);
+    UASSERT(!ulist_iterator_has_next(li));
+    UASSERT(!ulist_iterator_has_prev(li));
+    UASSERT(!ulist_iterator_has_next(li));
+    UASSERT(!ulist_iterator_has_prev(li_rev));
+
+    ulist_iterator_destroy(li);
+    ulist_iterator_destroy(li_rev);
+    ulist_destroy(l0);
+
+    //-------------------
+
+    ulist_t *l1 = ulist_create();
+    ulist_append(l1, G_INT(1));
+
+    li = ulist_iterator_create(l1);
+    UASSERT(ulist_iterator_has_next(li));
+    UASSERT(!ulist_iterator_has_prev(li));
+
+    g = ulist_iterator_get_next(li);
+    UASSERT_INT_EQ(G_AS_INT(g), 1);
+    UASSERT(!ulist_iterator_has_next(li));
+    UASSERT(!ulist_iterator_has_prev(li));
+
+    ulist_iterator_reset(li);
+    UASSERT(ulist_iterator_has_next(li));
+    UASSERT(!ulist_iterator_has_prev(li));
+    g = ulist_iterator_get_next(li);
+    UASSERT_INT_EQ(G_AS_INT(g), 1);
+
+    li_rev = ulist_iterator_create_rev(l1);
+    UASSERT(ulist_iterator_has_next(li_rev));
+    UASSERT(!ulist_iterator_has_prev(li_rev));
+
+    g = ulist_iterator_get_next(li_rev);
+    UASSERT_INT_EQ(G_AS_INT(g), 1);
+    UASSERT(!ulist_iterator_has_next(li_rev));
+    UASSERT(!ulist_iterator_has_prev(li_rev));
+    ulist_iterator_reset(li_rev);
+    UASSERT(ulist_iterator_has_next(li_rev));
+    UASSERT(!ulist_iterator_has_prev(li_rev));
+    g = ulist_iterator_get_next(li_rev);
+    UASSERT_INT_EQ(G_AS_INT(g), 1);
+    UASSERT(!ulist_iterator_has_next(li_rev));
+    UASSERT(!ulist_iterator_has_prev(li_rev));
+
+    ulist_iterator_destroy(li);
+    ulist_iterator_destroy(li_rev);
+    ulist_destroy(l1);
+
+    //-------------------
+
+    ulist_t *l = ulist_create();
     ulist_append(l, G_INT(1));
     ulist_append(l, G_INT(2));
     ulist_append(l, G_INT(3));
     ulist_append(l, G_INT(4));
 
-    ulist_iterator_t *li = ulist_iterator_create(l);
-    ulist_iterator_t *li_rev = ulist_iterator_create_rev(l);
+    li = ulist_iterator_create(l);
+    li_rev = ulist_iterator_create_rev(l);
+    UASSERT(ulist_iterator_has_next(li));
+    UASSERT(!ulist_iterator_has_prev(li));
+    UASSERT(ulist_iterator_has_next(li_rev));
+    UASSERT(!ulist_iterator_has_prev(li_rev));
 
     for (int i = 0; i < 2; i++)
     {
-        // 1
-        UASSERT(ulist_iterator_has_next(li));
-        UASSERT(!ulist_iterator_has_prev(li));
         g = *ulist_iterator_get_next_ref(li);
         UASSERT_INT_EQ(G_AS_INT(g), 1);
-
-        // 2
         UASSERT(ulist_iterator_has_next(li));
         UASSERT(!ulist_iterator_has_prev(li));
+
         g = ulist_iterator_get_next(li);
         UASSERT_INT_EQ(G_AS_INT(g), 2);
-
-        // 3
         UASSERT(ulist_iterator_has_next(li));
-        UASSERT(!ulist_iterator_has_prev(li));
+        UASSERT(ulist_iterator_has_prev(li));
+
         g = *ulist_iterator_get_next_ref(li);
         UASSERT_INT_EQ(G_AS_INT(g), 3);
-
-        // 4
         UASSERT(ulist_iterator_has_next(li));
-        UASSERT(!ulist_iterator_has_prev(li));
+        UASSERT(ulist_iterator_has_prev(li));
+
         g = ulist_iterator_get_next(li);
         UASSERT_INT_EQ(G_AS_INT(g), 4);
         UASSERT(!ulist_iterator_has_next(li));
-        UASSERT(!ulist_iterator_has_prev(li));
-
-        // 4
-        UASSERT(!ulist_iterator_has_next(li_rev));
-        UASSERT(ulist_iterator_has_prev(li_rev));
-        g = *ulist_iterator_get_prev_ref(li_rev);
-        UASSERT_INT_EQ(G_AS_INT(g), 4);
-
-        // 3
-        UASSERT(!ulist_iterator_has_next(li_rev));
-        UASSERT(ulist_iterator_has_prev(li_rev));
-        g = ulist_iterator_get_prev(li_rev);
-        UASSERT_INT_EQ(G_AS_INT(g), 3);
-
-        // 2
-        UASSERT(!ulist_iterator_has_next(li_rev));
-        UASSERT(ulist_iterator_has_prev(li_rev));
-        g = *ulist_iterator_get_prev_ref(li_rev);
-        UASSERT_INT_EQ(G_AS_INT(g), 2);
-
-        // 1
-        UASSERT(!ulist_iterator_has_next(li_rev));
-        UASSERT(ulist_iterator_has_prev(li_rev));
-        g = ulist_iterator_get_prev(li_rev);
-        UASSERT_INT_EQ(G_AS_INT(g), 1);
-        UASSERT(!ulist_iterator_has_next(li_rev));
-        UASSERT(!ulist_iterator_has_prev(li_rev));
+        UASSERT(ulist_iterator_has_prev(li));
 
         ulist_iterator_reset(li);
+    }
+
+    n = 1;
+    has_next = ulist_iterator_has_next(li);
+    UASSERT(has_next);
+    while (ulist_iterator_has_next(li))
+    {
+        g = ulist_iterator_get_next(li);
+        UASSERT_G_EQ(g, G_INT(n++));
+    }
+    n = 4;
+    while (ulist_iterator_has_prev(li))
+    {
+        g = ulist_iterator_get_prev(li);
+        UASSERT_G_EQ(g, G_INT(--n));
+    }
+
+    for (int i = 0; i < 2; i++)
+    {
+        g = *ulist_iterator_get_next_ref(li_rev);
+        UASSERT_INT_EQ(G_AS_INT(g), 4);
+        UASSERT(ulist_iterator_has_next(li_rev));
+        UASSERT(!ulist_iterator_has_prev(li_rev));
+
+        g = ulist_iterator_get_next(li_rev);
+        UASSERT_INT_EQ(G_AS_INT(g), 3);
+        UASSERT(ulist_iterator_has_next(li_rev));
+        UASSERT(ulist_iterator_has_prev(li_rev));
+
+        g = *ulist_iterator_get_next_ref(li_rev);
+        UASSERT_INT_EQ(G_AS_INT(g), 2);
+        UASSERT(ulist_iterator_has_next(li_rev));
+        UASSERT(ulist_iterator_has_prev(li_rev));
+
+        g = ulist_iterator_get_next(li_rev);
+        UASSERT_INT_EQ(G_AS_INT(g), 1);
+        UASSERT(!ulist_iterator_has_next(li_rev));
+        UASSERT(ulist_iterator_has_prev(li_rev));
+
         ulist_iterator_reset(li_rev);
+    }
+
+    n = 4;
+    has_next = ulist_iterator_has_next(li_rev);
+    UASSERT(has_next);
+    while (ulist_iterator_has_next(li_rev))
+    {
+        g = ulist_iterator_get_next(li_rev);
+        UASSERT_G_EQ(g, G_INT(n--));
+    }
+    n = 1;
+    while (ulist_iterator_has_prev(li_rev))
+    {
+        g = ulist_iterator_get_prev(li_rev);
+        UASSERT_G_EQ(g, G_INT(++n));
     }
 
     ulist_iterator_destroy(li);

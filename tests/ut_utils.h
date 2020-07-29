@@ -68,10 +68,12 @@ ulist_t *gen_random_list(bool verbose);
 } while (0)
 
 #define UASSERT_G_EQ(g1, g2) do {                                           \
-    if (ugeneric_compare(g1, g2) != 0)                                      \
+    ugeneric_t __g1 = g1;                                                   \
+    ugeneric_t __g2 = g2;                                                   \
+    if (ugeneric_compare(__g1, __g2) != 0)                                  \
     {                                                                       \
-        char *__s1 = ugeneric_as_str(g1);                                   \
-        char *__s2 = ugeneric_as_str(g2);                                   \
+        char *__s1 = ugeneric_as_str(__g1);                                 \
+        char *__s2 = ugeneric_as_str(__g2);                                 \
         fprintf(stderr, "Assertion failed at %s:%d: %s != %s.\n",           \
                 __FILE__, __LINE__, __s1, __s2);                            \
         utrace_print();                                                     \
@@ -100,7 +102,8 @@ ulist_t *gen_random_list(bool verbose);
         if (setrlimit(RLIMIT_CORE, &core_limit) < 0)                        \
         {                                                                   \
             fprintf(stderr,                                                 \
-                    "setrlimit: Can not disable core dumps generation in child process: %s.\n", \
+                    "setrlimit: Cannot disable core dumps generation "      \
+                    "in the child process: %s.\n",                          \
                     strerror(errno));                                       \
         }                                                                   \
         else                                                                \
