@@ -74,12 +74,12 @@ void _check_list(ulist_t *l)
 
     while (ulist_iterator_has_next(li))
     {
-        UASSERT(ulist_iterator_has_prev(li_rev));
+        UASSERT(ulist_iterator_has_next(li_rev));
         ugeneric_t g1 = ulist_iterator_get_next(li);
-        ugeneric_t g2 = ulist_iterator_get_prev(li_rev);
+        ugeneric_t g2 = ulist_iterator_get_next(li_rev);
         UASSERT(ugeneric_compare_v(g1, g2, ulist_get_void_comparator(l)) == 0);
     }
-    UASSERT(!ulist_iterator_has_prev(li_rev));
+    UASSERT(!ulist_iterator_has_next(li_rev));
 
     ulist_reverse(l_copy);
     UASSERT(ulist_compare(l, l_copy, ulist_get_void_comparator(l)) == 0);
