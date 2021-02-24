@@ -3,9 +3,7 @@
 - skip list (and dict on top of it)
 - splay tree (and dict on top of it)
 - improve print_trace() to show output similar to GDB (addr2line functionality)
-- rename xxx_get_size to xxx_get_len, so len applies to any container
-- stack on top of vector or list
-- queue on top of list or circular buffer (current implementation)
+- rename xxx_get_size to xxx_get_len, so len() applies to any container
 - vector unique elements
 - improve parse/serialize compatibilities with JSON spec
 - different types of assert (input check, logic errors, internal sanity checks) with option to disable them
@@ -16,7 +14,6 @@
 - for bst without balancing implement Day–Stout–Warren algorithm to make it balanced
 - merge vector into vector
 - hide RB tree color inside one of the links
-- xxx_set_destroyer,xxx_set_comparator and xxx_set_copier should return the old handler for being able to restore it
 - uqueue_is_full
 - overwrite mode for queue
 - add UTs for file writers (deal with fs garbage)
